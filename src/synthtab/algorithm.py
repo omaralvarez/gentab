@@ -120,7 +120,7 @@ class Algorithm:
                 num_numerical_features=config['n_num_features'],
                 denoise_fn=model,
                 gaussian_loss_type='mse',
-                num_timesteps=10000,
+                num_timesteps=100000,
                 scheduler='cosine',
                 device=device
             )
@@ -132,7 +132,7 @@ class Algorithm:
                 train_loader,
                 lr=0.002,
                 weight_decay=1e-4,
-                steps=10000,
+                steps=100000,
                 device=device
             )
             trainer.run_loop()
