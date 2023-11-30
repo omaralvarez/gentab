@@ -1,0 +1,24 @@
+name: synthtab
+channels:
+  - conda-forge
+  - pytorch
+  - nvidia
+  - cudistas
+  - defaults
+dependencies:
+  - python=3.10
+  - pip=23.3.1
+  #- ipykernel
+  #- ipywidgets
+  - cudatoolkit=11.8.0
+  - cudnn=8.6.0.163
+  - pytorch 
+  - torchvision 
+  - torchaudio 
+  - pytorch-cuda=11.8
+  - pip:
+    - pandas==2.1.3
+    - rich==13.1.0
+    - optuna
+    - scikit-learn
+    - category_encoders
