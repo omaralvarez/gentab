@@ -22,3 +22,5 @@ dependencies:
     - optuna
     - scikit-learn
     - category_encoders
+    - imbalanced-learn
+    - sdv

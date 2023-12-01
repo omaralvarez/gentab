@@ -19,3 +19,13 @@ class ProgressBar:
             TextColumn("•"),
             TimeRemainingColumn(),
         )
+
+# |usage sample|
+# with ProgresBar().progress as p:
+#     # for i in track(range(20), description="Processing..."):
+#     #     time.sleep(1)  # Simulate work being done
+#     for n in p.track(range(1000)):
+#         n = n - 2
+#         total = n + total
+
+# print(total)

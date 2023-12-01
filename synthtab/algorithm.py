@@ -1,12 +1,12 @@
-from copy import deepcopy
-from tabddpm import GaussianMultinomialDiffusion
-from tabddpm.modules import MLPDiffusion, ResNetDiffusion
-import lib
+from synthtab.tabddpm import GaussianMultinomialDiffusion, MLPDiffusion, ResNetDiffusion
+import synthtab.lib
+
 from rich import print
 import tomli
 import torch
 import numpy as np
 import pandas as pd
+from copy import deepcopy
 
 class Trainer:
     def __init__(self, diffusion, train_iter, lr, weight_decay, steps, device=torch.device('cuda')):
@@ -109,7 +109,7 @@ class Algorithm:
             )
             model.to(device)
             #get rid of lib if possible
-            train_loader = lib.prepare_fast_dataloader(dataset, split='train', batch_size=batch_size)
+            train_loader = synthtab.lib.prepare_fast_dataloader(dataset, split='train', batch_size=batch_size)
 
             K = np.array(dataset.get_category_sizes())
             if len(K) == 0 or t_c['cat_encoding'] == 'one-hot':
@@ -120,7 +120,7 @@ class Algorithm:
                 num_numerical_features=config['n_num_features'],
                 denoise_fn=model,
                 gaussian_loss_type='mse',
-                num_timesteps=100000,
+                num_timesteps=1000,
                 scheduler='cosine',
                 device=device
             )
@@ -132,7 +132,7 @@ class Algorithm:
                 train_loader,
                 lr=0.002,
                 weight_decay=1e-4,
-                steps=100000,
+                steps=1000,
                 device=device
             )
             trainer.run_loop()
@@ -193,7 +193,7 @@ class Algorithm:
 
             X_gen, y_gen = x_gen.numpy(), y_gen.numpy()
             # num_numerical_features = 66
-            # num_numerical_features = num_numerical_features + int(dataset.is_regression and not model_params["is_y_cond"])
+            # num_numerical_features = num_numerical_features + int(dataset.is_regression and not t_c['model_params']["is_y_cond"])
 
             # X_num_ = X_gen
             # # if num_numerical_features < X_gen.shape[1]:
@@ -218,11 +218,11 @@ class Algorithm:
             #     if t_c['model_params']['num_classes'] == 0:
             #         y_gen = X_num[:, 0]
             #         X_num = X_num[:, 1:]
-                # if len(disc_cols):
-                #     X_num = round_columns(X_num_real, X_num, disc_cols)
+            #     if len(disc_cols):
+            #         X_num = round_columns(X_num_real, X_num, disc_cols)
 
-            print(X_gen, y_gen)
-            print(dataset.X_num)
+            # print(X_gen, y_gen)
+            # print(dataset.X_num)
 
     def __get_model__(self,
         model_name,
