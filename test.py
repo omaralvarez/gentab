@@ -1,4 +1,4 @@
-from synthtab.generators import ROS,SMOTE,ADASYN,TVAE,CTGAN,GaussianCopula,CopulaGAN 
+from synthtab.generators import ROS,SMOTE,ADASYN,TVAE,CTGAN,GaussianCopula,CopulaGAN,CTABGAN 
 from synthtab.progress import ProgressBar
 from synthtab.algorithm import Algorithm
 from synthtab.data.config import Config
@@ -13,22 +13,32 @@ dataset.reduce_mem()
 
 generator = ROS(dataset)
 generator.generate()
+dataset.save_to_disk(str(generator))
 
 generator = SMOTE(dataset)
 generator.generate()
+dataset.save_to_disk(str(generator))
 
 generator = ADASYN(dataset)
 generator.generate()
+dataset.save_to_disk(str(generator))
 
 generator = TVAE(dataset)
-generator.generate(1000)
+generator.generate()
+dataset.save_to_disk(str(generator))
 
 generator = CTGAN(dataset)
-generator.generate(1000)
+generator.generate()
+dataset.save_to_disk(str(generator))
 
 generator = GaussianCopula(dataset)
-generator.generate(1000)
+generator.generate()
+dataset.save_to_disk(str(generator))
 
 generator = CopulaGAN(dataset)
-generator.generate(1000)
-dataset.save_to_disk()
+generator.generate()
+dataset.save_to_disk(str(generator))
+
+generator = CTABGAN(dataset)
+generator.generate()
+dataset.save_to_disk(str(generator))

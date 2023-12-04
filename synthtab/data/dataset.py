@@ -24,16 +24,19 @@ class Dataset:
 
         console.print('✅ Dataset loaded...')
 
-    def save_to_disk(self) -> None:
+    def save_to_disk(self, name) -> None:
         with console.status(
             'Saving dataset to {}...'.format(self.config['save_path']),
             spinner=SPINNER,  
             refresh_per_second=REFRESH
         ) as status:
-            self.X_gen.to_csv(os.path.join(self.config['save_path'], 'X_gen.csv'), index=False)
-            self.y_gen.to_csv(os.path.join(self.config['save_path'], 'y_gen.csv'), index=False)
+            self.X_gen.to_csv(os.path.join(self.config['save_path'], 'X_gen_' + name + '.csv'), index=False)
+            self.y_gen.to_csv(os.path.join(self.config['save_path'], 'y_gen_' + name + '.csv'), index=False)
 
         console.print('✅ Dataset saved to {}...'.format(self.config['save_path']))
+
+    def class_counts(self) -> int:
+        return self.y[self.config['y_label']].value_counts()
 
     def reduce_mem(self) -> None:
         """ iterate through all the columns of a dataframe and modify the data type

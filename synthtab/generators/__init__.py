@@ -7,3 +7,4 @@ from .tvae import * # noqa
 from .ctgan import * # noqa
 from .gaussiancopula import * # noqa
 from .copulagan import * # noqa
+from .ctabgan import * # noqa
