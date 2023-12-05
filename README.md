@@ -2,8 +2,8 @@
     <a>
 	    <img src='https://img.shields.io/badge/python-3.10%2B-blueviolet' alt='Python' />
 	</a>
-	<a href='https://opensource.org/licenses/Apache-2.0'>
-	    <img src='https://img.shields.io/github/license/clementchadebec/benchmark_VAE?color=blue' />
+	<a href='https://opensource.org/license/gpl-3-0'>
+	    <img src='https://img.shields.io/badge/license-GPLv3-blue' />
 	</a><br>
     <a>
 	    <img src='https://img.shields.io/badge/code%20style-black-black' />
