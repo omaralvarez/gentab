@@ -4,7 +4,7 @@
 	</a>
 	<a href='https://opensource.org/license/gpl-3-0'>
 	    <img src='https://img.shields.io/badge/license-GPLv3-blue' />
-	</a><br>
+	</a>
     <a>
 	    <img src='https://img.shields.io/badge/code%20style-black-black' />
 	</a>
