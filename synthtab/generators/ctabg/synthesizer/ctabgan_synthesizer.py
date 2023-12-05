@@ -654,7 +654,7 @@ class CTABGANSynthesizer:
         
         # initiating the training by computing the number of iterations per epoch
         steps_per_epoch = max(1, len(train_data) // self.batch_size)
-        for i in tqdm(range(self.epochs)):
+        for i in range(self.epochs):
             for _ in range(steps_per_epoch):
                 
                 # sampling noise vectors using a standard normal distribution 

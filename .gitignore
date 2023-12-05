@@ -1,8 +1,7 @@
 datasets/
 data.tar
 config.toml
-X_gen.csv
-y_gen.csv
+.sample.csv.temp
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

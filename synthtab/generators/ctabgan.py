@@ -4,8 +4,6 @@ from .ctabg.synthesizer.ctabgan_synthesizer import CTABGANSynthesizer
 from synthtab.console import console,SPINNER,REFRESH
 
 import pandas as pd
-import time
-
 import warnings
 
 warnings.filterwarnings("ignore")
@@ -33,22 +31,22 @@ class CTABGAN(Generator):
     # TODO Structure to have common problem types, automatic processing and so on
     def __init__(self,
                  dataset,
-                 test_ratio = 0.10,
+                 test_ratio = 0.20,
                  categorical_columns = [], 
                  log_columns = [],
-                 mixed_columns= {'capital-loss':[0.0],'capital-gain':[0.0]},
+                 mixed_columns= {},
                  integer_columns = [],
-                 problem_type= {'Classification': '#play'},
-                 epochs = 150) -> None:
+                 problem_type= {},
+                 epochs = 100) -> None:
         super().__init__(dataset)
         self.__name__ = 'CTABGAN'
               
         self.synthesizer = CTABGANSynthesizer(epochs = epochs)
         self.raw_df = pd.concat([self.dataset.X, self.dataset.y], axis=1)
         self.test_ratio = test_ratio
-        self.categorical_columns = [self.dataset.config['y_label']]
+        self.categorical_columns = categorical_columns
         self.log_columns = log_columns
-        self.mixed_columns = dict([(c,[0.0]) for c in self.dataset.X.columns])
+        self.mixed_columns = mixed_columns
         self.integer_columns = integer_columns
         self.problem_type = problem_type
         
