@@ -14,14 +14,27 @@
 </p>
 
 # synthtab
+
 Synthetic Tabular Data Generation Library
+
+## Overview
+
+This is a Python library designed for synthetic tabular data generation. It uses a variety of algorithms, ML and DL models to learn patterns from real data and emulate them synthetically. Its applications encompass tabular dataset pre-processing, balancing, resampling...
+
+## Features
+
+:nut_and_bolt: Pre-process your data.
+
+:clock130: State-of-the-art models.
+
+:recycle: Easy to use and customize. 
 
 ## Available Models
 
 Below is the list of the models currently available in the library.
 
-|               Model               |                                                                                    Example                                                                                    |                     Paper                    |
-|:----------------------------------:|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|:--------------------------------------------:|
+|               Model                  |                                                                                    Example                                                                                    |                     Paper                    |
+|:--------------------------------------:|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|:--------------------------------------------:|
 | Random Over-Sampling      | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)]() | [link](https://link.springer.com/article/10.1007/s10618-012-0295-5)
 | SMOTE                   | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)]() |            [link](https://arxiv.org/abs/1106.1813)                                  |                                                                            |
 | ADASYN      | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)]() | [link](https://ieeexplore.ieee.org/document/4633969)

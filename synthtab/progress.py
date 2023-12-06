@@ -7,6 +7,7 @@ from rich.progress import (
     TimeRemainingColumn,
 )
 
+
 class ProgressBar:
     def __init__(self) -> None:
         # Define custom progress bar
@@ -19,6 +20,7 @@ class ProgressBar:
             TextColumn("•"),
             TimeRemainingColumn(),
         )
+
 
 # |usage sample|
 # with ProgresBar().progress as p:

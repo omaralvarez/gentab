@@ -1,4 +1,5 @@
-from synthtab.console import console,SPINNER,REFRESH
+from synthtab.console import console, SPINNER, REFRESH
+
 
 class Generator:
     def __init__(self, dataset) -> None:
@@ -12,20 +13,19 @@ class Generator:
 
     def generate(self) -> None:
         with console.status(
-            'Training with {}...'.format(self.__name__), 
-            spinner=SPINNER, 
-            refresh_per_second=REFRESH
+            "Training with {}...".format(self.__name__),
+            spinner=SPINNER,
+            refresh_per_second=REFRESH,
         ) as status:
             self.train()
 
-            status.update(    
-                'Generating with {}...'.format(self.__name__), 
-                spinner=SPINNER
+            status.update(
+                "Generating with {}...".format(self.__name__), spinner=SPINNER
             )
-            
+
             self.sample()
 
-        console.print('✅ Generation complete with {}...'.format(self.__name__))
+        console.print("✅ Generation complete with {}...".format(self.__name__))
 
     def __str__(self) -> str:
         return self.__name__
