@@ -9,25 +9,64 @@ from collections import Counter
 
 
 class GaussianCopula(Generator):
-    def __init__(self, dataset) -> None:
+    def __init__(
+        self,
+        dataset,
+        enforce_min_max_values=True,
+        enforce_rounding=False,
+        locales=["en_US"],
+        numerical_distributions=None,
+        default_distribution="beta",
+        batch_size=8192,
+        max_tries_per_batch=4096,
+    ) -> None:
         super().__init__(dataset)
         self.__name__ = "GaussianCopula"
+        self.enforce_min_max_values = enforce_min_max_values
+        self.enforce_rounding = enforce_rounding
+        self.locales = locales
+        self.numerical_distributions = numerical_distributions
+        self.default_distribution = default_distribution
+        self.batch_size = batch_size
+        self.max_tries_per_batch = max_tries_per_batch
 
     def train(self) -> None:
         data = pd.concat([self.dataset.X, self.dataset.y], axis=1)
         metadata = SingleTableMetadata()
         metadata.detect_from_dataframe(data=data)
-        # console.print(metadata.to_dict())
-        # TODO for more options expand VAE additional custom options
+
         self.synthesizer = GaussianCopulaSynthesizer(
             metadata,  # required
-            enforce_min_max_values=True,
-            enforce_rounding=False,
-            default_distribution="gaussian_kde",
+            enforce_min_max_values=self.enforce_min_max_values,
+            enforce_rounding=self.enforce_rounding,
+            default_distribution=self.default_distribution,
+            numerical_distributions=self.numerical_distributions,
+            locales=self.locales,
         )
         self.synthesizer.fit(data)
 
-    def sample(self) -> None:
+    def resample(self, n_samples) -> None:
+        conditions = []
+        for cls, cnt in n_samples.items():
+            conditions.append(
+                Condition(
+                    num_rows=cnt, column_values={self.dataset.config["y_label"]: cls}
+                )
+            )
+
+        data_gen = self.synthesizer.sample_from_conditions(
+            conditions=conditions,
+            batch_size=self.batch_size,
+            max_tries_per_batch=self.max_tries_per_batch,
+        )
+
+        self.dataset.set_split_result(
+            pd.concat(
+                [self.dataset.get_single_df(), data_gen], ignore_index=True, sort=False
+            )
+        )
+
+    def balance(self) -> None:
         conditions = []
         for cls, cnt in self.counts.items():
             conditions.append(
@@ -37,10 +76,13 @@ class GaussianCopula(Generator):
             )
 
         data_gen = self.synthesizer.sample_from_conditions(
-            conditions=conditions, batch_size=4096, max_tries_per_batch=4096
+            conditions=conditions,
+            batch_size=self.batch_size,
+            max_tries_per_batch=self.max_tries_per_batch,
         )
 
-        self.dataset.X_gen = data_gen.loc[
-            :, data_gen.columns != self.dataset.config["y_label"]
-        ]
-        self.dataset.y_gen = data_gen[self.dataset.config["y_label"]]
+        self.dataset.set_split_result(
+            pd.concat(
+                [self.dataset.get_single_df(), data_gen], ignore_index=True, sort=False
+            )
+        )
