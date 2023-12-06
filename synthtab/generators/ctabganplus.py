@@ -27,7 +27,7 @@ class CTABGANPlus(Generator):
         self.__name__ = "CTABGANPlus"
 
         self.synthesizer = CTABGANSynthesizer(epochs=epochs)
-        self.raw_df = pd.concat([self.dataset.X, self.dataset.y], axis=1)
+        self.raw_df = self.dataset.get_single_df()
         self.test_ratio = test_ratio
         self.categorical_columns = categorical_columns
         self.log_columns = log_columns
@@ -63,7 +63,4 @@ class CTABGANPlus(Generator):
         sample = self.synthesizer.sample(len(self.raw_df))
         data_gen = self.data_prep.inverse_prep(sample)
 
-        self.dataset.X_gen = data_gen.loc[
-            :, data_gen.columns != self.dataset.config["y_label"]
-        ]
-        self.dataset.y_gen = data_gen[self.dataset.config["y_label"]]
+        self.dataset.set_split_result(data_gen)

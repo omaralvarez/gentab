@@ -19,7 +19,7 @@ class Dataset:
             spinner=SPINNER,
             refresh_per_second=REFRESH,
         ) as status:
-            # TODO Reomove range
+            # TODO Remove range
             self.X = pd.read_csv(self.config["path_X"])  # [:8000]
             self.y = pd.read_csv(self.config["path_y"])  # [:8000]
 
@@ -44,6 +44,41 @@ class Dataset:
 
     def class_counts(self) -> int:
         return self.y[self.config["y_label"]].value_counts()
+
+    def reduce_size(self, class_percentages) -> None:
+        for cls, percent in class_percentages.items():
+            self.reduce_uniformly_randomly(
+                self.y[self.config["y_label"]] == cls, percent
+            )
+
+    def get_single_df(self) -> pd.DataFrame:
+        return pd.concat([self.X, self.y], axis=1)
+
+    def set_split_result(self, data) -> None:
+        self.dataset.X_gen = data.loc[:, data.columns != self.dataset.config["y_label"]]
+        self.dataset.y_gen = data[self.dataset.config["y_label"]]
+
+    def reduce_uniformly_randomly(self, condition, percentage) -> None:
+        """
+        Removes a random subset of rows from a DataFrame based on a condition.
+
+        Parameters:
+        - df: pandas DataFrame.
+        - condition: A boolean series indicating which rows comply with the condition.
+        - percentage: Percentage of rows to remove that comply with the condition.
+        """
+        # Identify rows that comply with the condition
+        compliant_rows = self.y[condition]
+
+        # Calculate the number of rows to remove
+        n_remove = int(len(compliant_rows) * percentage)
+
+        # Randomly select rows to remove
+        rows_to_remove = compliant_rows.sample(n=n_remove).index
+
+        # Remove the selected rows from the DataFrame
+        self.X.drop(rows_to_remove, inplace=True)
+        self.y.drop(rows_to_remove, inplace=True)
 
     def reduce_mem(self) -> None:
         """iterate through all the columns of a dataframe and modify the data type

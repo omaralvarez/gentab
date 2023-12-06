@@ -16,7 +16,9 @@ from synthtab.console import console
 config = Config("datasets/playnet/info.json")
 
 dataset = Dataset(config)
-# remember to deactivate if not working sampling and keeps on having weird things
+console.print(dataset.y.value_counts())
+dataset.reduce_size({"left_attack": 0.5, "right_attack": 0.5})
+console.print(dataset.y.value_counts())
 dataset.reduce_mem()
 
 # generator = ROS(dataset)
