@@ -12,8 +12,11 @@ class SMOTE(Generator):
         self.k_neighbors = k_neighbors
         self.sampling_strategy = sampling_strategy
 
+    def preprocess(self) -> None:
+        super().preprocess()
+
     def train(self) -> None:
-        pass
+        super().train()
 
     def resample(self, n_samples) -> None:
         for cls, cnt in n_samples.items():

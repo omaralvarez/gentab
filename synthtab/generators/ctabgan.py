@@ -58,7 +58,7 @@ class CTABGAN(Generator):
         self.batch_size = batch_size
         self.max_tries_per_batch = max_tries_per_batch
 
-    def train(self) -> None:
+    def preprocess(self) -> None:
         self.data_prep = DataPrep(
             self.raw_df,
             self.categorical_columns,
@@ -68,6 +68,8 @@ class CTABGAN(Generator):
             self.problem_type,
             self.test_ratio,
         )
+
+    def train(self) -> None:
         self.synthesizer.fit(
             train_data=self.data_prep.df,
             categorical=self.data_prep.column_types["categorical"],
@@ -80,7 +82,7 @@ class CTABGAN(Generator):
         return self.data_prep.inverse_prep(sample)
 
     def resample(self, n_samples) -> None:
-        data_gen = self.dataset.get_single_df()
+        data_gen = self.raw_df
 
         for _ in range(self.max_tries_per_batch):
             gen = self.sample(self.batch_size)
@@ -106,7 +108,7 @@ class CTABGAN(Generator):
         self.dataset.set_split_result(data_gen)
 
     def balance(self) -> None:
-        data_gen = self.dataset.get_single_df()
+        data_gen = self.raw_df
 
         for _ in range(self.max_tries_per_batch):
             sample = self.synthesizer.sample(self.batch_size)

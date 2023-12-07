@@ -12,9 +12,6 @@ class ADASYN(Generator):
         self.n_neighbors = n_neighbors
         self.sampling_strategy = sampling_strategy
 
-    def train(self) -> None:
-        pass
-
     def resample(self, n_samples) -> None:
         for cls, cnt in n_samples.items():
             n_samples[cls] += self.orig_counts[cls]

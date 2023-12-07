@@ -39,7 +39,7 @@ class CTABGANPlus(Generator):
         self.batch_size = batch_size
         self.max_tries_per_batch = max_tries_per_batch
 
-    def train(self) -> None:
+    def preprocess(self) -> None:
         self.data_prep = DataPrep(
             self.raw_df,
             self.categorical_columns,
@@ -52,6 +52,7 @@ class CTABGANPlus(Generator):
             self.test_ratio,
         )
 
+    def train(self) -> None:
         self.synthesizer.fit(
             train_data=self.data_prep.df,
             categorical=self.data_prep.column_types["categorical"],

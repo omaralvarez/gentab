@@ -14,12 +14,30 @@ class Generator:
         # For reproducibility
         self.seed = SEED
 
+    def __str__(self) -> str:
+        return self.__name__
+
+    def preprocess(self) -> None:
+        pass
+
+    def train(self) -> None:
+        pass
+
+    def balance(self) -> None:
+        pass
+
+    def resample(self, n_samples) -> None:
+        pass
+
     def generate(self, n_samples=None) -> None:
         with console.status(
-            "Training with {}...".format(self.__name__),
+            "Preprocessing {}...".format(self.dataset),
             spinner=SPINNER,
             refresh_per_second=REFRESH,
         ) as status:
+            self.preprocess()
+
+            status.update("Training with {}...".format(self.__name__), spinner=SPINNER)
             self.train()
 
             status.update(
@@ -31,6 +49,3 @@ class Generator:
                 self.resample(n_samples)
 
         console.print("✅ Generation complete with {}...".format(self.__name__))
-
-    def __str__(self) -> str:
-        return self.__name__

@@ -19,10 +19,13 @@ class Dataset:
             spinner=SPINNER,
             refresh_per_second=REFRESH,
         ) as status:
-            self.X = pd.read_csv(self.config["path_X"])
-            self.y = pd.read_csv(self.config["path_y"])
+            self.X = pd.read_csv(self.config["path_X"])[:8000]
+            self.y = pd.read_csv(self.config["path_y"])[:8000]
 
         console.print("✅ Dataset loaded...")
+
+    def __str__(self) -> str:
+        return self.config["name"]
 
     def save_to_disk(self, name) -> None:
         with console.status(

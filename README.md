@@ -51,6 +51,12 @@ Below is the list of the models currently available in the library.
 | CTAB-GAN      | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)]() | [link](https://proceedings.mlr.press/v157/zhao21a.html)
 | CTAB-GAN+      | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)]() |  [link](https://arxiv.org/abs/2204.00401)
 
+### Diffusion
+
+|               Model                  |                                                                                    Example                                                                                    |                     Paper                    |
+|:--------------------------------------:|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|:--------------------------------------------:|
+| AutoDiffusion      | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)]() | [link](https://arxiv.org/abs/2310.15479)
+
 ### Hybrid
 
 |               Model                  |                                                                                    Example                                                                                    |                     Papers                    |

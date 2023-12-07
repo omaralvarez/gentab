@@ -8,6 +8,7 @@ from synthtab.generators import (
     CopulaGAN,
     CTABGAN,
     CTABGANPlus,
+    AutoDiffusion,
 )
 from synthtab.data.config import Config
 from synthtab.data.dataset import Dataset
@@ -35,13 +36,14 @@ console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 
 console.print(dataset.class_counts(), dataset.row_count())
 generator = SMOTE(dataset)
-generator.generate({"right_transition": 83, "time_out": 153})
+generator.generate()
 dataset.save_to_disk(generator)
 console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 
 console.print(dataset.class_counts(), dataset.row_count())
 generator = ADASYN(dataset)
-generator.generate({"right_transition": 83, "time_out": 153})
+# generator.generate({"right_transition": 83, "time_out": 153})
+generator.generate()
 dataset.save_to_disk(generator)
 console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 
@@ -53,7 +55,7 @@ console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 
 console.print(dataset.class_counts(), dataset.row_count())
 generator = CTGAN(dataset)
-generator.generate({"right_transition": 83, "time_out": 153})
+generator.generate()
 dataset.save_to_disk(generator)
 console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 
@@ -78,7 +80,7 @@ generator = CTABGAN(
     problem_type={"Classification": dataset.config["y_label"]},
     epochs=10,
 )
-generator.generate({"right_transition": 83, "time_out": 153})
+generator.generate()
 console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 dataset.save_to_disk(generator)
 
@@ -87,6 +89,7 @@ generator = CTABGANPlus(
     dataset,
     test_ratio=0.10,
     categorical_columns=[dataset.config["y_label"]],
+    # TODO Abstract this.
     mixed_columns=dict([(c, [0.0]) for c in dataset.X.columns]),
     problem_type={"Classification": dataset.config["y_label"]},
     epochs=10,
@@ -94,3 +97,12 @@ generator = CTABGANPlus(
 generator.generate()
 console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 dataset.save_to_disk(generator)
+
+console.print(dataset.class_counts(), dataset.row_count())
+generator = AutoDiffusion(dataset)
+generator.generate()
+console.print(dataset.generated_class_counts(), dataset.generated_row_count())
+dataset.save_to_disk(generator)
+
+
+# TODO When max tries reached warn

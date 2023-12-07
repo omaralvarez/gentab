@@ -53,26 +53,35 @@ class CopulaGAN(Generator):
         self.default_distribution = default_distribution
         self.max_tries_per_batch = max_tries_per_batch
 
+    def preprocess(self) -> None:
+        self.data = self.dataset.get_single_df()
+
     def train(self) -> None:
-        data = pd.concat([self.dataset.X, self.dataset.y], axis=1)
         metadata = SingleTableMetadata()
-        metadata.detect_from_dataframe(data=data)
+        metadata.detect_from_dataframe(data=self.data)
 
         self.synthesizer = CopulaGANSynthesizer(
             metadata,  # required
-            enforce_min_max_values=True,
-            enforce_rounding=False,
-            default_distribution="gaussian_kde",
-            epochs=100,
-            batch_size=4000,
-            generator_dim=(256, 256),
-            discriminator_dim=(256, 256),
-            embedding_dim=128,
+            enforce_min_max_values=self.enforce_min_max_values,
+            enforce_rounding=self.enforce_rounding,
+            default_distribution=self.default_distribution,
+            epochs=self.epochs,
+            batch_size=self.batch_size,
+            generator_dim=self.generator_dim,
+            discriminator_dim=self.discriminator_dim,
+            embedding_dim=self.embedding_dim,
+            discriminator_decay=self.discriminator_decay,
+            discriminator_lr=self.discriminator_lr,
+            discriminator_steps=self.discriminator_steps,
+            generator_decay=self.generator_decay,
+            generator_lr=self.generator_lr,
+            locales=self.locales,
+            numerical_distributions=self.numerical_distributions,
             # TODO Same as CTGAN
-            pac=10,
-            cuda=True,
+            pac=self.pac,
+            cuda=self.cuda,
         )
-        self.synthesizer.fit(data)
+        self.synthesizer.fit(self.data)
 
     def resample(self, n_samples) -> None:
         conditions = []
@@ -90,9 +99,7 @@ class CopulaGAN(Generator):
         )
 
         self.dataset.set_split_result(
-            pd.concat(
-                [self.dataset.get_single_df(), data_gen], ignore_index=True, sort=False
-            )
+            pd.concat([self.data, data_gen], ignore_index=True, sort=False)
         )
 
     def balance(self) -> None:
@@ -111,7 +118,5 @@ class CopulaGAN(Generator):
         )
 
         self.dataset.set_split_result(
-            pd.concat(
-                [self.dataset.get_single_df(), data_gen], ignore_index=True, sort=False
-            )
+            pd.concat([self.data, data_gen], ignore_index=True, sort=False)
         )

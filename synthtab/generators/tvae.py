@@ -34,10 +34,12 @@ class TVAE(Generator):
         self.cuda = cuda
         self.max_tries_per_batch = max_tries_per_batch
 
+    def preprocess(self) -> None:
+        self.data = self.dataset.get_single_df()
+
     def train(self) -> None:
-        data = self.dataset.get_single_df()
         metadata = SingleTableMetadata()
-        metadata.detect_from_dataframe(data=data)
+        metadata.detect_from_dataframe(data=self.data)
 
         self.synthesizer = TVAESynthesizer(
             metadata,  # required
@@ -50,7 +52,7 @@ class TVAE(Generator):
             embedding_dim=self.embedding_dim,
             cuda=self.cuda,
         )
-        self.synthesizer.fit(data)
+        self.synthesizer.fit(self.data)
 
     def resample(self, n_samples) -> None:
         conditions = []
@@ -68,9 +70,7 @@ class TVAE(Generator):
         )
 
         self.dataset.set_split_result(
-            pd.concat(
-                [self.dataset.get_single_df(), data_gen], ignore_index=True, sort=False
-            )
+            pd.concat([self.data, data_gen], ignore_index=True, sort=False)
         )
 
     def balance(self) -> None:
@@ -89,7 +89,5 @@ class TVAE(Generator):
         )
 
         self.dataset.set_split_result(
-            pd.concat(
-                [self.dataset.get_single_df(), data_gen], ignore_index=True, sort=False
-            )
+            pd.concat([self.data, data_gen], ignore_index=True, sort=False)
         )
