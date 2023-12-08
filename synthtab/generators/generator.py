@@ -1,10 +1,14 @@
 from synthtab.console import console, SPINNER, REFRESH
 from synthtab import SEED
 
+import pandas as pd
+
 
 class Generator:
-    def __init__(self, dataset) -> None:
+    def __init__(self, dataset, batch_size=1000, max_tries_per_batch=1000) -> None:
         self.dataset = dataset
+        self.batch_size = batch_size
+        self.max_tries_per_batch = max_tries_per_batch
         # Get class counts
         self.orig_counts = dataset.class_counts()
         # Get max, subtract it to the rest to get target samples
@@ -23,11 +27,60 @@ class Generator:
     def train(self) -> None:
         pass
 
-    def balance(self) -> None:
+    def sample(self) -> pd.DataFrame:
         pass
 
     def resample(self, n_samples) -> None:
-        pass
+        data_gen = self.dataset.get_single_df()
+
+        for _ in range(self.max_tries_per_batch):
+            gen = self.sample()
+
+            for cls, cnt in n_samples.items():
+                if cnt > 0:
+                    filtered = gen[gen[self.dataset.config["y_label"]] == cls]
+
+                    count = len(filtered.index)
+                    if count > cnt:
+                        n_samples[cls] = 0
+                        filtered = filtered.sample(n=cnt)
+                    else:
+                        n_samples[cls] = cnt - count
+
+                    data_gen = pd.concat(
+                        [data_gen, filtered], ignore_index=True, sort=False
+                    )
+
+            if sum(n_samples.values()) == 0:
+                break
+
+        self.dataset.set_split_result(data_gen)
+
+    def balance(self) -> None:
+        data_gen = self.dataset.get_single_df()
+
+        for _ in range(self.max_tries_per_batch):
+            gen = self.sample()
+
+            for cls, cnt in self.counts.items():
+                if cnt > 0:
+                    filtered = gen[gen[self.dataset.config["y_label"]] == cls]
+
+                    count = len(filtered.index)
+                    if count > cnt:
+                        self.counts[cls] = 0
+                        filtered = filtered.sample(n=cnt)
+                    else:
+                        self.counts[cls] = cnt - count
+
+                    data_gen = pd.concat(
+                        [data_gen, filtered], ignore_index=True, sort=False
+                    )
+
+            if self.counts.max() < 1:
+                break
+
+        self.dataset.set_split_result(data_gen)
 
     def generate(self, n_samples=None) -> None:
         with console.status(

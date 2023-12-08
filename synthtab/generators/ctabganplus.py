@@ -24,7 +24,7 @@ class CTABGANPlus(Generator):
         batch_size=8192,
         max_tries_per_batch=4096,
     ) -> None:
-        super().__init__(dataset)
+        super().__init__(dataset, batch_size, max_tries_per_batch)
         self.__name__ = "CTABGANPlus"
         self.synthesizer = CTABGANSynthesizer(epochs=epochs)
         self.raw_df = self.dataset.get_single_df()
@@ -36,8 +36,6 @@ class CTABGANPlus(Generator):
         self.general_columns = general_columns
         self.non_categorical_columns = non_categorical_columns
         self.problem_type = problem_type
-        self.batch_size = batch_size
-        self.max_tries_per_batch = max_tries_per_batch
 
     def preprocess(self) -> None:
         self.data_prep = DataPrep(
@@ -62,59 +60,6 @@ class CTABGANPlus(Generator):
             type=self.problem_type,
         )
 
-    def sample(self, batch_size) -> pd.DataFrame:
-        sample = self.synthesizer.sample(batch_size)
+    def sample(self) -> pd.DataFrame:
+        sample = self.synthesizer.sample(self.batch_size)
         return self.data_prep.inverse_prep(sample)
-
-    def resample(self, n_samples) -> None:
-        data_gen = self.dataset.get_single_df()
-
-        for _ in range(self.max_tries_per_batch):
-            gen = self.sample(self.batch_size)
-
-            for cls, cnt in n_samples.items():
-                if cnt > 0:
-                    filtered = gen[gen[self.dataset.config["y_label"]] == cls]
-
-                    count = len(filtered.index)
-                    if count > cnt:
-                        n_samples[cls] = 0
-                        filtered = filtered.sample(n=cnt)
-                    else:
-                        n_samples[cls] = cnt - count
-
-                    data_gen = pd.concat(
-                        [data_gen, filtered], ignore_index=True, sort=False
-                    )
-
-            if sum(n_samples.values()) == 0:
-                break
-
-        self.dataset.set_split_result(data_gen)
-
-    def balance(self) -> None:
-        data_gen = self.dataset.get_single_df()
-
-        for _ in range(self.max_tries_per_batch):
-            sample = self.synthesizer.sample(self.batch_size)
-            gen = self.data_prep.inverse_prep(sample)
-
-            for cls, cnt in self.counts.items():
-                if cnt > 0:
-                    filtered = gen[gen[self.dataset.config["y_label"]] == cls]
-
-                    count = len(filtered.index)
-                    if count > cnt:
-                        self.counts[cls] = 0
-                        filtered = filtered.sample(n=cnt)
-                    else:
-                        self.counts[cls] = cnt - count
-
-                    data_gen = pd.concat(
-                        [data_gen, filtered], ignore_index=True, sort=False
-                    )
-
-            if self.counts.max() < 1:
-                break
-
-        self.dataset.set_split_result(data_gen)

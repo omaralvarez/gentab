@@ -1,18 +1,15 @@
 name: synthtab
 channels:
-  - conda-forge
   - pytorch
   - nvidia
   - cudistas
-  - esri
+  - conda-forge
   - defaults
 dependencies:
   - python=3.10
   - pip=23.3.1
-  #- ipykernel
-  #- ipywidgets
   - cudatoolkit=11.7.0
-  - cudnn=8.5.0.96
+  #- cudnn=8.5.0.96
   - pytorch=2.0.1 
   - torchvision 
   - torchaudio 
@@ -25,3 +22,4 @@ dependencies:
     - category_encoders
     - imbalanced-learn
     - sdv
+    - ForestDiffusion

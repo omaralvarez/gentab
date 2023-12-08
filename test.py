@@ -9,6 +9,7 @@ from synthtab.generators import (
     CTABGAN,
     CTABGANPlus,
     AutoDiffusion,
+    ForestDiffusion,
 )
 from synthtab.data.config import Config
 from synthtab.data.dataset import Dataset
@@ -104,5 +105,10 @@ generator.generate()
 console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 dataset.save_to_disk(generator)
 
+console.print(dataset.class_counts(), dataset.row_count())
+generator = ForestDiffusion(dataset, n_jobs=8, duplicate_K=10, n_estimators=10)
+generator.generate()
+console.print(dataset.generated_class_counts(), dataset.generated_row_count())
+dataset.save_to_disk(generator)
 
 # TODO When max tries reached warn

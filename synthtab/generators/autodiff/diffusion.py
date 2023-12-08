@@ -2,7 +2,6 @@ import functools
 import torch
 import torch.nn as nn
 import numpy as np
-import tqdm
 import random
 
 from torch.optim import Adam
@@ -167,13 +166,14 @@ def train_diffusion(
         epochs=n_epochs,
     )
 
-    tqdm_epoch = tqdm.trange(n_epochs)
+    # tqdm_epoch = tqdm.trange(n_epochs)
     losses = []
 
     # alpha0 = 0.25
     # beta0 = 0.95
 
-    for epoch in tqdm_epoch:
+    # TODO Progress here
+    for epoch in range(n_epochs):
         batch_idx = random.choices(
             range(latent_features.shape[0]), k=batch_size
         )  ## Choose random indices
@@ -199,7 +199,7 @@ def train_diffusion(
 
         # Print the training loss over the epoch.
         losses.append(loss.item())
-        tqdm_epoch.set_description("Average Loss: {:5f}".format(loss.item()))
+        # tqdm_epoch.set_description("Average Loss: {:5f}".format(loss.item()))
 
     return ScoreNet
 
@@ -213,10 +213,11 @@ def Euler_Maruyama_sampling(model, T, N, P, device):
     init_x = torch.randn(N, P)
     X = init_x.to(device)
 
-    tqdm_epoch = tqdm.trange(T)
+    # tqdm_epoch = tqdm.trange(T)
 
+    # TODO Progress here
     with torch.no_grad():
-        for epoch in tqdm_epoch:
+        for epoch in range(T):
             time_step = time_steps[epoch].unsqueeze(0).to(device)
 
             # Predictor step (Euler-Maruyama)
@@ -227,7 +228,7 @@ def Euler_Maruyama_sampling(model, T, N, P, device):
                 - (f - (g**2) * (model(X, time_step))) * step_size.to(device)
                 + torch.sqrt(step_size).to(device) * g * torch.randn_like(X).to(device)
             )
-            tqdm_epoch.set_description("Diffusion Level: {:5f}".format(epoch))
+            # tqdm_epoch.set_description("Diffusion Level: {:5f}".format(epoch))
 
     Gen_data = X.cpu()
 

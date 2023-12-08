@@ -3,7 +3,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.optim import Adam
 from .process_GQ import DataFrameParser
-import tqdm
 import gc
 import random
 import pandas as pd
@@ -215,13 +214,14 @@ def train_autoencoder(
 
     optimizer = Adam(DS.parameters(), lr=lr, weight_decay=weight_decay)
 
-    tqdm_epoch = tqdm.trange(n_epochs)
+    # tqdm_epoch = tqdm.trange(n_epochs)
 
     losses = []
     batch_size
     all_indices = list(range(data.shape[0]))
 
-    for epoch in tqdm_epoch:
+    # TODO Progress here
+    for epoch in range(n_epochs):
         batch_indices = random.sample(all_indices, batch_size)
 
         output = DS(data[batch_indices, :])
@@ -239,7 +239,7 @@ def train_autoencoder(
         # Print the training loss over the epoch.
         losses.append(l2_loss.item())
 
-        tqdm_epoch.set_description("Average Loss: {:5f}".format(l2_loss.item()))
+        # tqdm_epoch.set_description("Average Loss: {:5f}".format(l2_loss.item()))
 
     num_min_values, _ = torch.min(
         data[:, n_bins + n_cats : n_bins + n_cats + n_nums], dim=0

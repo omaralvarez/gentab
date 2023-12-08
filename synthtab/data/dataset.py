@@ -1,4 +1,5 @@
 from synthtab.console import console, SPINNER, REFRESH
+from synthtab import SEED
 
 import pandas as pd
 import numpy as np
@@ -19,8 +20,8 @@ class Dataset:
             spinner=SPINNER,
             refresh_per_second=REFRESH,
         ) as status:
-            self.X = pd.read_csv(self.config["path_X"])[:8000]
-            self.y = pd.read_csv(self.config["path_y"])[:8000]
+            self.X = pd.read_csv(self.config["path_X"])
+            self.y = pd.read_csv(self.config["path_y"])
 
         console.print("✅ Dataset loaded...")
 
@@ -69,7 +70,6 @@ class Dataset:
                 self.y[self.config["y_label"]] == cls, percent
             )
 
-    # TODO Set fixed seed
     def reduce_uniformly_randomly(self, condition, percentage) -> None:
         """
         Removes a random subset of rows from a DataFrame based on a condition.
@@ -86,7 +86,7 @@ class Dataset:
         n_remove = int(len(compliant_rows) * percentage)
 
         # Randomly select rows to remove
-        rows_to_remove = compliant_rows.sample(n=n_remove).index
+        rows_to_remove = compliant_rows.sample(n=n_remove, random_state=SEED).index
 
         # Remove the selected rows from the DataFrame
         self.X.drop(rows_to_remove, inplace=True)

@@ -21,26 +21,25 @@ class AutoDiffusion(Generator):
         threshold=0.01,
         device="cuda",
         max_tries_per_batch=4096,
-        n_epochs=10,
+        n_epochs=10000,
         eps=1e-5,
         weight_decay=1e-6,
         maximum_learning_rate=1e-2,
         lr=2e-4,
         hidden_size=250,
         num_layers=3,
-        batch_size=50,
-        diff_n_epochs=1000,
+        batch_size=100,
+        diff_n_epochs=10000,
         hidden_dims=(256, 512, 1024, 512, 256),
         sigma=20,
         num_batches_per_epoch=50,
         T=100,
     ) -> None:
-        super().__init__(dataset)
+        super().__init__(dataset, batch_size, max_tries_per_batch)
         self.__name__ = "AutoDiffusion"
         self.threshold = threshold
         # Auto-encoder hyper-parameters
         self.device = device
-        self.max_tries_per_batch = max_tries_per_batch
         self.n_epochs = n_epochs
         self.eps = eps
         self.weight_decay = weight_decay
@@ -48,7 +47,6 @@ class AutoDiffusion(Generator):
         self.lr = lr
         self.hidden_size = hidden_size
         self.num_layers = num_layers
-        self.batch_size = batch_size
         # diffusion hyper-parameters
         self.diff_n_epochs = diff_n_epochs
         self.hidden_dims = hidden_dims
@@ -98,55 +96,3 @@ class AutoDiffusion(Generator):
         gen_output = self.ds[0](sample, self.ds[2], self.ds[3])
 
         return convert_to_table(self.data, gen_output, self.threshold)
-
-    def resample(self, n_samples) -> None:
-        data_gen = self.data
-
-        for _ in range(self.max_tries_per_batch):
-            gen = self.sample()
-
-            for cls, cnt in n_samples.items():
-                if cnt > 0:
-                    filtered = gen[gen[self.dataset.config["y_label"]] == cls]
-
-                    count = len(filtered.index)
-                    if count > cnt:
-                        n_samples[cls] = 0
-                        filtered = filtered.sample(n=cnt)
-                    else:
-                        n_samples[cls] = cnt - count
-
-                    data_gen = pd.concat(
-                        [data_gen, filtered], ignore_index=True, sort=False
-                    )
-
-            if sum(n_samples.values()) == 0:
-                break
-
-        self.dataset.set_split_result(data_gen)
-
-    def balance(self) -> None:
-        data_gen = self.data
-
-        for _ in range(self.max_tries_per_batch):
-            gen = self.sample()
-
-            for cls, cnt in self.counts.items():
-                if cnt > 0:
-                    filtered = gen[gen[self.dataset.config["y_label"]] == cls]
-
-                    count = len(filtered.index)
-                    if count > cnt:
-                        self.counts[cls] = 0
-                        filtered = filtered.sample(n=cnt)
-                    else:
-                        self.counts[cls] = cnt - count
-
-                    data_gen = pd.concat(
-                        [data_gen, filtered], ignore_index=True, sort=False
-                    )
-
-            if self.counts.max() < 1:
-                break
-
-        self.dataset.set_split_result(data_gen)
