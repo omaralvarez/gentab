@@ -10,3 +10,4 @@ from .ctabgan import *  # noqa
 from .ctabganplus import *  # noqa
 from .autodiffusion import *  # noqa
 from .forestdiffusion import *  # noqa
+from .tabula import *  # noqua
