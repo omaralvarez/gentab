@@ -20,8 +20,8 @@ class Dataset:
             spinner=SPINNER,
             refresh_per_second=REFRESH,
         ) as status:
-            self.X = pd.read_csv(self.config["path_X"])[:20000]
-            self.y = pd.read_csv(self.config["path_y"])[:20000]
+            self.X = pd.read_csv(self.config["path_X"])[:30000]
+            self.y = pd.read_csv(self.config["path_y"])[:30000]
 
         console.print("✅ Dataset loaded...")
 
