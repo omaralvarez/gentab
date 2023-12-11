@@ -3,6 +3,7 @@ trainer_tabula/
 data.tar
 config.toml
 .sample.csv.temp
+model_playnet.pt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

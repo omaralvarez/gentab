@@ -63,6 +63,7 @@ Below is the list of the models currently available in the library.
 
 |               Model                  |                                                                                    Example                                                                                    |                     Paper                    |
 |:--------------------------------------:|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|:--------------------------------------------:|
+| GReaT      | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)]() | [link](https://arxiv.org/abs/2210.06280)
 | Tabula      | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)]() | [link](https://arxiv.org/abs/2310.12746)
 
 ### Hybrid

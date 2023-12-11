@@ -121,27 +121,12 @@ class Tab:
             )
         return data
 
-    def fit(
+    def init(
         self,
         data: tp.Union[pd.DataFrame, np.ndarray],
         column_names: tp.Optional[tp.List[str]] = None,
         conditional_col: tp.Optional[str] = None,
-        resume_from_checkpoint: tp.Union[bool, str] = False,
-    ) -> TabulaTrainer:
-        """Fine-tune Tabula using tabular data.
-
-        Args:
-            data: Pandas DataFrame or Numpy Array that contains the tabular data
-            column_names: If data is Numpy Array, the feature names have to be defined. If data is Pandas
-            DataFrame, the value is ignored
-            conditional_col: If given, the distribution of this column is saved and used as a starting
-            point for the generation process later. If None, the last column is considered as conditional feature
-            resume_from_checkpoint: If True, resumes training from the latest checkpoint in the experiment_dir.
-            If path, resumes the training from the given checkpoint (has to be a valid HuggingFace checkpoint!)
-
-        Returns:
-            TabulaTrainer used for the fine-tuning process
-        """
+    ):
         df = _array_to_dataframe(data, columns=column_names)
         self._update_column_information(df)
         self._update_conditional_information(df, conditional_col)
@@ -172,6 +157,32 @@ class Tab:
             data_collator=TabulaDataCollator(self.tokenizer),
         )
 
+        return tabula_trainer
+
+    def fit(
+        self,
+        data: tp.Union[pd.DataFrame, np.ndarray],
+        column_names: tp.Optional[tp.List[str]] = None,
+        conditional_col: tp.Optional[str] = None,
+        resume_from_checkpoint: tp.Union[bool, str] = False,
+    ) -> TabulaTrainer:
+        """Fine-tune Tabula using tabular data.
+
+        Args:
+            data: Pandas DataFrame or Numpy Array that contains the tabular data
+            column_names: If data is Numpy Array, the feature names have to be defined. If data is Pandas
+            DataFrame, the value is ignored
+            conditional_col: If given, the distribution of this column is saved and used as a starting
+            point for the generation process later. If None, the last column is considered as conditional feature
+            resume_from_checkpoint: If True, resumes training from the latest checkpoint in the experiment_dir.
+            If path, resumes the training from the given checkpoint (has to be a valid HuggingFace checkpoint!)
+
+        Returns:
+            TabulaTrainer used for the fine-tuning process
+        """
+        tabula_trainer = self.init(
+            data, column_names=column_names, conditional_col=conditional_col
+        )
         # Start training
         logging.info("Start training...")
         tabula_trainer.train(resume_from_checkpoint=resume_from_checkpoint)
@@ -186,6 +197,7 @@ class Tab:
         k: int = 100,
         max_length: int = 100,
         device: str = "cuda",
+        max_tries: int = 1338,
     ) -> pd.DataFrame:
         """Generate synthetic tabular data samples
 
@@ -219,7 +231,8 @@ class Tab:
         # Start generation process
         with tqdm(total=n_samples) as pbar:
             already_generated = 0
-            while n_samples > df_gen.shape[0]:
+            tries = 0
+            while n_samples > df_gen.shape[0] and tries < max_tries:
                 start_tokens = tabula_start.get_start_tokens(k)
                 start_tokens = torch.tensor(start_tokens).to(device)
 
@@ -234,9 +247,9 @@ class Tab:
 
                 # Convert tokens back to tabular data
                 text_data = _convert_tokens_to_text(tokens, self.tokenizer)
-                print(text_data)
+
                 df_gen = _convert_text_to_tabular_data(text_data, df_gen)
-                print(df_gen)
+
                 # Remove rows with flawed numerical values
                 for i_num_cols in self.num_cols:
                     df_gen = df_gen[
@@ -251,6 +264,13 @@ class Tab:
                 # Update process bar
                 pbar.update(df_gen.shape[0] - already_generated)
                 already_generated = df_gen.shape[0]
+                tries += 1
+
+        if tries == max_tries:
+            raise RuntimeError(
+                "max_tries reached, use a higher number, model did not converge or"
+                " max_length is not high enough."
+            )
 
         df_gen = df_gen.reset_index(drop=True)
 
@@ -397,9 +417,10 @@ class Tab:
         assert conditional_col is None or isinstance(
             conditional_col, str
         ), f"The column name has to be a string and not {type(conditional_col)}"
-        assert (
-            conditional_col is None or conditional_col in df.columns
-        ), f"The column name {conditional_col} is not in the feature names of the given dataset"
+        assert conditional_col is None or conditional_col in df.columns, (
+            f"The column name {conditional_col} is not in the feature names of the"
+            " given dataset"
+        )
 
         # Take the distribution of the conditional column for a starting point in the generation process
         self.conditional_col = conditional_col if conditional_col else df.columns[-1]
@@ -412,11 +433,13 @@ class Tab:
     ) -> TabulaStart:
         if start_col and start_col_dist is None:
             raise ValueError(
-                f"Start column {start_col} was given, but no corresponding distribution."
+                f"Start column {start_col} was given, but no corresponding"
+                " distribution."
             )
         if start_col_dist is not None and not start_col:
             raise ValueError(
-                f"Start column distribution {start_col} was given, the column name is missing."
+                f"Start column distribution {start_col} was given, the column name is"
+                " missing."
             )
 
         assert start_col is None or isinstance(
@@ -426,7 +449,10 @@ class Tab:
             start_col_dist is None
             or isinstance(start_col_dist, dict)
             or isinstance(start_col_dist, list)
-        ), f"The distribution of the start column on has to be a list or a dict and not {type(start_col_dist)}"
+        ), (
+            "The distribution of the start column on has to be a list or a dict and"
+            f" not {type(start_col_dist)}"
+        )
 
         start_col = start_col if start_col else self.conditional_col
         start_col_dist = start_col_dist if start_col_dist else self.conditional_col_dist

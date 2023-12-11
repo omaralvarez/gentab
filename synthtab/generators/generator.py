@@ -33,7 +33,7 @@ class Generator:
     def resample(self, n_samples) -> None:
         data_gen = self.dataset.get_single_df()
 
-        for _ in range(self.max_tries_per_batch):
+        for i in range(self.max_tries_per_batch):
             gen = self.sample()
 
             for cls, cnt in n_samples.items():
@@ -53,13 +53,17 @@ class Generator:
 
             if sum(n_samples.values()) == 0:
                 break
+            elif i == self.max_tries_per_batch - 1:
+                raise RuntimeError(
+                    "Maximum number of tries reached, model probably did not converge."
+                )
 
         self.dataset.set_split_result(data_gen)
 
     def balance(self) -> None:
         data_gen = self.dataset.get_single_df()
 
-        for _ in range(self.max_tries_per_batch):
+        for i in range(self.max_tries_per_batch):
             gen = self.sample()
 
             for cls, cnt in self.counts.items():
@@ -79,6 +83,10 @@ class Generator:
 
             if self.counts.max() < 1:
                 break
+            elif i == self.max_tries_per_batch - 1:
+                raise RuntimeError(
+                    "Maximum number of tries reached, model probably did not converge."
+                )
 
         self.dataset.set_split_result(data_gen)
 

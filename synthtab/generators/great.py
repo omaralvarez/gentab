@@ -1,21 +1,15 @@
 from . import Generator
-from .tabu.tabula import Tab
 from synthtab.console import console
 
-import os
+from be_great import GReaT as GR
 import pandas as pd
-import torch
 import typing as tp
-from huggingface_hub import hf_hub_download
-
-REPO_ID = "omaralvarez/tabula"
-FILENAME = "model.pt"
 
 
-class Tabula(Generator):
-    """Tabula Class
+class GReaT(Generator):
+    """GReaT Class
 
-    The Tabula class handles the whole generation flow. It is used to fine-tune a large language model for tabular data,
+    The GReaT class handles the whole generation flow. It is used to fine-tune a large language model for tabular data,
     and to sample synthetic tabular data.
 
     Attributes:
@@ -30,87 +24,60 @@ class Tabula(Generator):
          https://huggingface.co/docs/transformers/main/en/main_classes/trainer#transformers.TrainingArguments
         columns (list): List of all features/columns of the tabular dataset
         num_cols (list): List of all numerical features/columns of the tabular dataset
-        categorical_columns (dict | list): only for int that are categories? did not work with conditional_col
-        maybe only for other categorical labels
+        conditional_col (str): Name of a feature/column on which the sampling can be conditioned
+        conditional_col_dist (dict | list): Distribution of the feature/column specified by condtional_col
     """
 
     def __init__(
         self,
         dataset,
         llm: str = "distilgpt2",
-        experiment_dir: str = "trainer_tabula",
+        experiment_dir: str = "trainer_great",
         epochs: int = 100,
         batch_size: int = 8,
-        max_tries_per_batch: int = 512,
-        categorical_columns: list = [],
-        resume_from_checkpoint: tp.Union[bool, str] = False,
-        # Generation options
+        max_tries_per_batch: int = 1338,
+        efficient_finetuning: str = "",
         start_col: tp.Optional[str] = "",
         start_col_dist: tp.Optional[tp.Union[dict, list]] = None,
         temperature: float = 0.7,
         k: int = 100,
         max_length: int = 100,
+        drop_nan: bool = False,
         device: str = "cuda",
-        trained_model: str = None,
         n_samples: int = 1338,
     ) -> None:
         super().__init__(dataset, batch_size, max_tries_per_batch)
-        self.__name__ = "Tabula"
+        self.__name__ = "GReaT"
         self.data = self.dataset.get_single_df()
-        self.categorical_columns = categorical_columns
         self.llm = llm
         self.experiment_dir = experiment_dir
-        self.resume_from_checkpoint = resume_from_checkpoint
         self.epochs = epochs
+        self.efficient_finetuning = efficient_finetuning
         self.start_col = start_col
         self.start_col_dist = start_col_dist
         self.temperature = temperature
         self.k = k
+        self.drop_nan = drop_nan
         self.max_length = max_length
         self.device = device
-        self.trained_model = trained_model
         self.n_samples = n_samples
 
-        self.model = Tab(
+        self.model = GR(
             llm=self.llm,
             experiment_dir=self.experiment_dir,
             batch_size=self.batch_size,
             epochs=self.epochs,
-            categorical_columns=self.categorical_columns,
+            efficient_finetuning=self.efficient_finetuning,
         )
-
-        if self.trained_model is None:
-            path = hf_hub_download(repo_id=REPO_ID, filename=FILENAME)
-            # Comment this block out to test tabula starting from randomly initialized model.
-            # Comment this block out when uses tabula_middle_padding
-            self.model.model.load_state_dict(torch.load(path), strict=False)
-        else:
-            self.model.model.load_state_dict(
-                torch.load(self.trained_model), strict=False
-            )
 
     def preprocess(self) -> None:
         return super().preprocess()
 
     def train(self) -> None:
-        if self.trained_model is None:
-            self.model.fit(
-                data=self.data,
-                conditional_col=self.dataset.config["y_label"],
-                resume_from_checkpoint=self.resume_from_checkpoint,
-            )
-            torch.save(
-                self.model.model.state_dict(),
-                os.path.join(self.experiment_dir, "model_" + self.dataset + ".pt"),
-            )
-        else:
-            self.model.init(
-                data=self.data,
-                conditional_col=self.dataset.config["y_label"],
-            )
+        self.model.fit(data=self.data)
 
     def sample(self) -> pd.DataFrame:
-        gen = self.model.sample(
+        return self.model.sample(
             n_samples=self.n_samples,
             start_col=self.start_col,
             start_col_dist=self.start_col_dist,
@@ -118,7 +85,5 @@ class Tabula(Generator):
             k=self.k,
             max_length=self.max_length,
             device=self.device,
-            max_tries=self.max_tries_per_batch,
+            drop_nan=self.drop_nan,
         )
-
-        return gen

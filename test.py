@@ -11,6 +11,7 @@ from synthtab.generators import (
     AutoDiffusion,
     ForestDiffusion,
     Tabula,
+    GReaT,
 )
 from synthtab.data.config import Config
 from synthtab.data.dataset import Dataset
@@ -30,100 +31,113 @@ dataset.reduce_size(
 )
 dataset.reduce_mem()
 
-# console.print(dataset.class_counts(), dataset.row_count())
-# generator = ROS(dataset)
-# generator.generate()
-# dataset.save_to_disk(generator)
-# console.print(dataset.generated_class_counts(), dataset.generated_row_count())
-
-# console.print(dataset.class_counts(), dataset.row_count())
-# generator = SMOTE(dataset)
-# generator.generate()
-# dataset.save_to_disk(generator)
-# console.print(dataset.generated_class_counts(), dataset.generated_row_count())
-
-# console.print(dataset.class_counts(), dataset.row_count())
-# generator = ADASYN(dataset)
-# # generator.generate({"right_transition": 83, "time_out": 153})
-# generator.generate()
-# dataset.save_to_disk(generator)
-# console.print(dataset.generated_class_counts(), dataset.generated_row_count())
-
-# console.print(dataset.class_counts(), dataset.row_count())
-# generator = TVAE(dataset)
-# generator.generate()
-# dataset.save_to_disk(generator)
-# console.print(dataset.generated_class_counts(), dataset.generated_row_count())
-
-# console.print(dataset.class_counts(), dataset.row_count())
-# generator = CTGAN(dataset)
-# generator.generate()
-# dataset.save_to_disk(generator)
-# console.print(dataset.generated_class_counts(), dataset.generated_row_count())
-
-# console.print(dataset.class_counts(), dataset.row_count())
-# generator = GaussianCopula(dataset)
-# generator.generate()
-# dataset.save_to_disk(generator)
-# console.print(dataset.generated_class_counts(), dataset.generated_row_count())
-
-# console.print(dataset.class_counts(), dataset.row_count())
-# generator = CopulaGAN(dataset)
-# generator.generate()
-# dataset.save_to_disk(generator)
-# console.print(dataset.generated_class_counts(), dataset.generated_row_count())
-
-# console.print(dataset.class_counts(), dataset.row_count())
-# generator = CTABGAN(
-#     dataset,
-#     test_ratio=0.10,
-#     categorical_columns=[dataset.config["y_label"]],
-#     mixed_columns=dict([(c, [0.0]) for c in dataset.X.columns]),
-#     problem_type={"Classification": dataset.config["y_label"]},
-#     epochs=10,
-# )
-# generator.generate()
-# console.print(dataset.generated_class_counts(), dataset.generated_row_count())
-# dataset.save_to_disk(generator)
-
-# console.print(dataset.class_counts(), dataset.row_count())
-# generator = CTABGANPlus(
-#     dataset,
-#     test_ratio=0.10,
-#     categorical_columns=[dataset.config["y_label"]],
-#     # TODO Abstract this.
-#     mixed_columns=dict([(c, [0.0]) for c in dataset.X.columns]),
-#     problem_type={"Classification": dataset.config["y_label"]},
-#     epochs=10,
-# )
-# generator.generate()
-# console.print(dataset.generated_class_counts(), dataset.generated_row_count())
-# dataset.save_to_disk(generator)
-
-# console.print(dataset.class_counts(), dataset.row_count())
-# generator = AutoDiffusion(dataset)
-# generator.generate()
-# console.print(dataset.generated_class_counts(), dataset.generated_row_count())
-# dataset.save_to_disk(generator)
-
-# console.print(dataset.class_counts(), dataset.row_count())
-# generator = ForestDiffusion(dataset, n_jobs=8, duplicate_K=10, n_estimators=10)
-# generator.generate()
-# console.print(dataset.generated_class_counts(), dataset.generated_row_count())
-# dataset.save_to_disk(generator)
+console.print(dataset.class_counts(), dataset.row_count())
+generator = ROS(dataset)
+generator.generate()
+dataset.save_to_disk(generator)
+console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 
 console.print(dataset.class_counts(), dataset.row_count())
-generator = Tabula(
+generator = SMOTE(dataset)
+generator.generate()
+dataset.save_to_disk(generator)
+console.print(dataset.generated_class_counts(), dataset.generated_row_count())
+
+console.print(dataset.class_counts(), dataset.row_count())
+generator = ADASYN(dataset)
+# generator.generate({"right_transition": 83, "time_out": 153})
+generator.generate()
+dataset.save_to_disk(generator)
+console.print(dataset.generated_class_counts(), dataset.generated_row_count())
+
+console.print(dataset.class_counts(), dataset.row_count())
+generator = TVAE(dataset)
+generator.generate()
+dataset.save_to_disk(generator)
+console.print(dataset.generated_class_counts(), dataset.generated_row_count())
+
+console.print(dataset.class_counts(), dataset.row_count())
+generator = CTGAN(dataset)
+generator.generate()
+dataset.save_to_disk(generator)
+console.print(dataset.generated_class_counts(), dataset.generated_row_count())
+
+console.print(dataset.class_counts(), dataset.row_count())
+generator = GaussianCopula(dataset)
+generator.generate()
+dataset.save_to_disk(generator)
+console.print(dataset.generated_class_counts(), dataset.generated_row_count())
+
+console.print(dataset.class_counts(), dataset.row_count())
+generator = CopulaGAN(dataset)
+generator.generate()
+dataset.save_to_disk(generator)
+console.print(dataset.generated_class_counts(), dataset.generated_row_count())
+
+console.print(dataset.class_counts(), dataset.row_count())
+generator = CTABGAN(
     dataset,
+    test_ratio=0.10,
     categorical_columns=[dataset.config["y_label"]],
-    epochs=400,
-    max_length=3000,
-    temperature=0.6,
-    batch_size=16,
+    mixed_columns=dict([(c, [0.0]) for c in dataset.X.columns]),
+    problem_type={"Classification": dataset.config["y_label"]},
+    epochs=10,
 )
 generator.generate()
 console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 dataset.save_to_disk(generator)
 
+console.print(dataset.class_counts(), dataset.row_count())
+generator = CTABGANPlus(
+    dataset,
+    test_ratio=0.10,
+    categorical_columns=[dataset.config["y_label"]],
+    # TODO Abstract this.
+    mixed_columns=dict([(c, [0.0]) for c in dataset.X.columns]),
+    problem_type={"Classification": dataset.config["y_label"]},
+    epochs=10,
+)
+generator.generate()
+console.print(dataset.generated_class_counts(), dataset.generated_row_count())
+dataset.save_to_disk(generator)
 
-# TODO When max tries reached warn
+console.print(dataset.class_counts(), dataset.row_count())
+generator = AutoDiffusion(dataset)
+generator.generate()
+console.print(dataset.generated_class_counts(), dataset.generated_row_count())
+dataset.save_to_disk(generator)
+
+console.print(dataset.class_counts(), dataset.row_count())
+generator = ForestDiffusion(dataset, n_jobs=8, duplicate_K=10, n_estimators=10)
+generator.generate()
+console.print(dataset.generated_class_counts(), dataset.generated_row_count())
+dataset.save_to_disk(generator)
+
+console.print(dataset.class_counts(), dataset.row_count())
+generator = Tabula(
+    dataset,
+    # categorical_columns=[dataset.config["y_label"]],
+    epochs=100,
+    max_length=2000,
+    temperature=0.6,
+    batch_size=32,
+    max_tries_per_batch=128,
+    n_samples=512,
+    trained_model="model_playnet.pt",
+)
+generator.generate()
+console.print(dataset.generated_class_counts(), dataset.generated_row_count())
+dataset.save_to_disk(generator)
+
+console.print(dataset.class_counts(), dataset.row_count())
+generator = GReaT(
+    dataset,
+    epochs=1,
+    max_length=2000,
+    temperature=0.6,
+    batch_size=32,
+    max_tries_per_batch=512,
+)
+generator.generate()
+console.print(dataset.generated_class_counts(), dataset.generated_row_count())
+dataset.save_to_disk(generator)

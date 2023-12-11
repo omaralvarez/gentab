@@ -25,3 +25,5 @@ dependencies:
     - ForestDiffusion
     - transformers[torch]==4.22.1
     - datasets
+    - be-great
+    
