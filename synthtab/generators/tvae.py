@@ -14,7 +14,7 @@ class TVAE(Generator):
         dataset,
         enforce_min_max_values=True,
         enforce_rounding=False,
-        epochs=100,
+        epochs=300,
         batch_size=8192,
         compress_dims=(128, 128),
         decompress_dims=(128, 128),

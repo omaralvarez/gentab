@@ -14,7 +14,7 @@ class CTGAN(Generator):
         dataset,
         enforce_min_max_values=True,
         enforce_rounding=False,
-        epochs=100,
+        epochs=300,
         batch_size=8000,
         discriminator_dim=(256, 256),
         discriminator_decay=1e-6,

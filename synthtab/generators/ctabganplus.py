@@ -20,7 +20,7 @@ class CTABGANPlus(Generator):
         general_columns=[],
         non_categorical_columns=[],
         problem_type={},
-        epochs=100,
+        epochs=300,
         batch_size=8192,
         max_tries_per_batch=4096,
     ) -> None:

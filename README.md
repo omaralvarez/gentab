@@ -19,7 +19,7 @@ Synthetic Tabular Data Generation Library
 
 ## Overview
 
-This is a Python library designed for synthetic tabular data generation. It uses a variety of algorithms, ML and DL models to learn patterns from real data and emulate them synthetically. Its applications encompass tabular dataset pre-processing, balancing, resampling...
+This Python library specializes in the generation of synthetic tabular data. It has a diverse range of machine learning (ML) and deep learning (DL) models to accurately capture patterns in real datasets and replicate them in a synthetic context. Its functionalities have multiple applications including pre-processing of tabular datasets, data balancing, resampling...
 
 ## Features
 
@@ -29,7 +29,7 @@ This is a Python library designed for synthetic tabular data generation. It uses
 
 :recycle: Easy to use and customize. 
 
-## Available Models
+## Available Generators
 
 Below is the list of the models currently available in the library.
 
@@ -71,3 +71,22 @@ Below is the list of the models currently available in the library.
 |               Model                  |                                                                                    Example                                                                                    |                     Papers                    |
 |:--------------------------------------:|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|:--------------------------------------------:|
 | Copula GAN      | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)]() | [link](https://ieeexplore.ieee.org/abstract/document/7796926) [link](https://arxiv.org/abs/1907.00503)
+
+## Example
+
+``` python
+from synthtab.generators import AutoDiffusion
+
+from synthtab.data.config import Config
+from synthtab.data.dataset import Dataset
+from synthtab.console import console
+
+config = Config("datasets/playnet/info.json")
+
+dataset = Dataset(config)
+dataset.reduce_mem()
+
+generator = AutoDiffusion(dataset)
+generator.generate()
+dataset.save_to_disk(generator)
+```

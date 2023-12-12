@@ -1,5 +1,6 @@
 datasets/
 trainer_tabula/
+trainer_great/
 data.tar
 config.toml
 .sample.csv.temp

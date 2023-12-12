@@ -6,7 +6,7 @@ from collections import Counter
 
 
 class ADASYN(Generator):
-    def __init__(self, dataset, n_neighbors=10, sampling_strategy="auto") -> None:
+    def __init__(self, dataset, n_neighbors=5, sampling_strategy="auto") -> None:
         super().__init__(dataset)
         self.__name__ = "ADASYN"
         self.n_neighbors = n_neighbors
@@ -23,8 +23,16 @@ class ADASYN(Generator):
         ).fit_resample(self.dataset.X, self.dataset.y)
 
     def balance(self) -> None:
-        self.dataset.X_gen, self.dataset.y_gen = ada(
-            random_state=self.seed,
-            sampling_strategy=self.sampling_strategy,
-            n_neighbors=self.n_neighbors,
-        ).fit_resample(self.dataset.X, self.dataset.y)
+        if self.sampling_strategy == "minority":
+            for _ in range(self.dataset.num_classes() - 2):
+                self.dataset.X_gen, self.dataset.y_gen = ada(
+                    random_state=self.seed,
+                    sampling_strategy=self.sampling_strategy,
+                    n_neighbors=self.n_neighbors,
+                ).fit_resample(self.dataset.X, self.dataset.y)
+        else:
+            self.dataset.X_gen, self.dataset.y_gen = ada(
+                random_state=self.seed,
+                sampling_strategy=self.sampling_strategy,
+                n_neighbors=self.n_neighbors,
+            ).fit_resample(self.dataset.X, self.dataset.y)
