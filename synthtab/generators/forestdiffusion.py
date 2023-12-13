@@ -34,8 +34,8 @@ class ForestDiffusion(Generator):
         beta_min=0.1,
         beta_max=8,
         n_jobs=-1,  # cpus used (feel free to limit it to something small, this will leave more cpus per model; for lgbm you have to use n_jobs=1, otherwise it will never finish)
-        batch_size=1000,
-        max_tries_per_batch=1000,
+        batch_size=8192,
+        max_tries_per_batch=4096,
         **xgboost_kwargs,
     ) -> None:
         super().__init__(dataset, batch_size, max_tries_per_batch)

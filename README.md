@@ -19,7 +19,7 @@ Synthetic Tabular Data Generation Library
 
 ## Overview
 
-This Python library specializes in the generation of synthetic tabular data. It has a diverse range of machine learning (ML) and deep learning (DL) models to accurately capture patterns in real datasets and replicate them in a synthetic context. Its functionalities have multiple applications including pre-processing of tabular datasets, data balancing, resampling...
+This Python library specializes in the generation of synthetic tabular data. It has a diverse range of statistical, Machine Learning (ML) and Deep Learning (DL) methods to accurately capture patterns in real datasets and replicate them in a synthetic context. It has multiple applications including pre-processing of tabular datasets, data balancing, resampling...
 
 ## Features
 
@@ -76,17 +76,23 @@ Below is the list of the models currently available in the library.
 
 ``` python
 from synthtab.generators import AutoDiffusion
-
-from synthtab.data.config import Config
-from synthtab.data.dataset import Dataset
+from synthtab.data import Config, Dataset
 from synthtab.console import console
 
 config = Config("datasets/playnet/info.json")
 
 dataset = Dataset(config)
+dataset.reduce_size({
+    "left_attack": 0.65,
+    "right_attack": 0.65,
+    "right_transition": 0.65,
+    "left_transition": 0.65,
+    "time_out": 0.65,
+})
 dataset.reduce_mem()
 
 generator = AutoDiffusion(dataset)
 generator.generate()
 dataset.save_to_disk(generator)
+console.print(dataset.generated_class_counts())
 ```
