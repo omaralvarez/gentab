@@ -22,6 +22,8 @@ class Dataset:
         ) as status:
             self.X = pd.read_csv(self.config["path_X"])
             self.y = pd.read_csv(self.config["path_y"])
+            self.X_test = pd.read_csv(self.config["path_X_test"])
+            self.y_test = pd.read_csv(self.config["path_y_test"])
 
         console.print("✅ Dataset loaded...")
 
@@ -101,6 +103,8 @@ class Dataset:
         """
         start_mem = self.X.memory_usage().sum() / 1024**2
         console.print("💾 Memory usage of dataframe is {:.2f} MB...".format(start_mem))
+
+        # TODO Reduce memory in test too
 
         with console.status(
             "Reducing memory usage...", spinner=SPINNER, refresh_per_second=REFRESH

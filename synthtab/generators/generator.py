@@ -1,4 +1,5 @@
 from synthtab.console import console, SPINNER, REFRESH
+from synthtab.utils import compute_accuracy, compute_f1_p_r
 from synthtab import SEED
 
 import pandas as pd
@@ -90,6 +91,9 @@ class Generator:
 
         self.dataset.set_split_result(data_gen)
 
+    def tune(self) -> None:
+        pass
+
     def generate(self, n_samples=None) -> None:
         with console.status(
             "Preprocessing {}...".format(self.dataset),
@@ -110,3 +114,16 @@ class Generator:
                 self.resample(n_samples)
 
         console.print("✅ Generation complete with {}...".format(self.__name__))
+
+    def evaluate(self, model) -> None:
+        predictions = model.fit(self.dataset.X_gen, self.dataset.y_gen).predict(
+            self.dataset.X_test
+        )
+
+        accuracy = compute_accuracy(self.dataset.y_test, predictions)
+        macro = compute_f1_p_r(self.dataset.y_test, predictions, "macro")
+        weighted = compute_f1_p_r(self.dataset.y_test, predictions, "weighted")
+
+        console.print("🎯 Accuracy: {}".format(round(accuracy * 100, 1)))
+        console.print(macro)
+        console.print(weighted)

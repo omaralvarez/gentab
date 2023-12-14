@@ -29,9 +29,17 @@ This Python library specializes in the generation of synthetic tabular data. It 
 
 :recycle: Easy to use and customize. 
 
+## Install
+
+The `synthtab` library is available using pip. We recommend using a virtual environment to avoid conflicts with other software on your machine.
+
+``` bash
+pip install synthtab
+```
+
 ## Available Generators
 
-Below is the list of the models currently available in the library.
+Below is the list of the generators currently available in the library.
 
 ### Statistical
 
@@ -79,6 +87,8 @@ from synthtab.generators import AutoDiffusion
 from synthtab.data import Config, Dataset
 from synthtab.console import console
 
+from sklearn import svm
+
 config = Config("datasets/playnet/info.json")
 
 dataset = Dataset(config)
@@ -93,6 +103,7 @@ dataset.reduce_mem()
 
 generator = AutoDiffusion(dataset)
 generator.generate()
+generator.evaluate(svm.SVM(gamma=0.001, C=100.0))
 dataset.save_to_disk(generator)
 console.print(dataset.generated_class_counts())
 ```
