@@ -41,20 +41,30 @@ pip install synthtab
 
 Below is the list of the generators currently available in the library.
 
-### Statistical
+### Linear
 
 |               Model                  |                                                                                    Example                                                                                    |                     Paper                    |
 |:--------------------------------------:|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|:--------------------------------------------:|
 | Random Over-Sampling      | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)]() | [link](https://link.springer.com/article/10.1007/s10618-012-0295-5)
 | SMOTE                   | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)]() |            [link](https://arxiv.org/abs/1106.1813)                                  |                                                                            |
 | ADASYN      | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)]() | [link](https://ieeexplore.ieee.org/document/4633969)
+
+### PDF
+|               Model                  |                                                                                    Example                                                                                    |                     Paper                    |
+|:--------------------------------------:|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|:--------------------------------------------:|
 | Gaussian Copula      | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)]() | [link](https://ieeexplore.ieee.org/abstract/document/7796926)
+
+
+### AE
+
+|               Model                  |                                                                                    Example                                                                                    |                     Paper                    |
+|:--------------------------------------:|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|:--------------------------------------------:|
+| TVAE      | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)]() | [link](https://arxiv.org/abs/1907.00503)
 
 ### GAN
 
 |               Model                  |                                                                                    Example                                                                                    |                     Paper                    |
 |:--------------------------------------:|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|:--------------------------------------------:|
-| TVAE      | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)]() | [link](https://arxiv.org/abs/1907.00503)
 | CTGAN      | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)]() | [link](https://arxiv.org/abs/1907.00503)
 | CTAB-GAN      | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)]() | [link](https://proceedings.mlr.press/v157/zhao21a.html)
 | CTAB-GAN+      | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)]() |  [link](https://arxiv.org/abs/2204.00401)
@@ -64,8 +74,6 @@ Below is the list of the generators currently available in the library.
 |               Model                  |                                                                                    Example                                                                                    |                     Paper                    |
 |:--------------------------------------:|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|:--------------------------------------------:|
 | ForestDiffusion      | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)]() | [link](https://arxiv.org/abs/2309.09968)
-| AutoDiffusion      | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)]() | [link](https://arxiv.org/abs/2310.15479)
-
 
 ### LLM
 
@@ -79,6 +87,7 @@ Below is the list of the generators currently available in the library.
 |               Model                  |                                                                                    Example                                                                                    |                     Papers                    |
 |:--------------------------------------:|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|:--------------------------------------------:|
 | Copula GAN      | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)]() | [link](https://ieeexplore.ieee.org/abstract/document/7796926) [link](https://arxiv.org/abs/1907.00503)
+| AutoDiffusion      | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)]() | [link](https://arxiv.org/abs/2310.15479)
 
 ## Example
 

@@ -116,14 +116,37 @@ class Generator:
         console.print("✅ Generation complete with {}...".format(self.__name__))
 
     def evaluate(self, model) -> None:
-        predictions = model.fit(self.dataset.X_gen, self.dataset.y_gen).predict(
-            self.dataset.X_test
-        )
+        with console.status(
+            "Evaluating original accuracy {}...".format(self.dataset),
+            spinner=SPINNER,
+            refresh_per_second=REFRESH,
+        ) as status:
+            predictions = model.fit(self.dataset.X, self.dataset.y).predict(
+                self.dataset.X_test
+            )
 
-        accuracy = compute_accuracy(self.dataset.y_test, predictions)
-        macro = compute_f1_p_r(self.dataset.y_test, predictions, "macro")
-        weighted = compute_f1_p_r(self.dataset.y_test, predictions, "weighted")
+            accuracy = compute_accuracy(self.dataset.y_test, predictions)
+            macro = compute_f1_p_r(self.dataset.y_test, predictions, "macro")
+            weighted = compute_f1_p_r(self.dataset.y_test, predictions, "weighted")
 
-        console.print("🎯 Accuracy: {}".format(round(accuracy * 100, 1)))
-        console.print(macro)
-        console.print(weighted)
+            console.print("🎯 Original Accuracy: {}".format(round(accuracy * 100, 1)))
+            console.print(macro)
+            console.print(weighted)
+
+            status.update(
+                "Evaluating {} accuracy...".format(self.__name__), spinner=SPINNER
+            )
+
+            predictions = model.fit(self.dataset.X_gen, self.dataset.y_gen).predict(
+                self.dataset.X_test
+            )
+
+            accuracy = compute_accuracy(self.dataset.y_test, predictions)
+            macro = compute_f1_p_r(self.dataset.y_test, predictions, "macro")
+            weighted = compute_f1_p_r(self.dataset.y_test, predictions, "weighted")
+
+            console.print("🎯 Synthetic Accuracy: {}".format(round(accuracy * 100, 1)))
+            console.print(macro)
+            console.print(weighted)
+
+        console.print("✅ Evaluation complete with {}...".format(self.__name__))
