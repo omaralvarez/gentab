@@ -55,10 +55,6 @@ class AutoDiffusion(Generator):
         self.T = T
         self.data = self.dataset.get_single_df()
 
-    def preprocess(self):
-        # TODO right now it looks like this does nothing in the notebook, we should be sure
-        self.parser = DataFrameParser().fit(self.data, self.threshold)
-
     def train(self) -> None:
         self.ds = train_autoencoder(
             self.data,
