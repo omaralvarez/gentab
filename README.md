@@ -113,6 +113,6 @@ dataset.reduce_mem()
 generator = AutoDiffusion(dataset)
 generator.generate()
 generator.evaluate(svm.SVM(gamma=0.001, C=100.0))
-dataset.save_to_disk(generator)
+generator.save_to_disk()
 console.print(dataset.generated_class_counts())
 ```

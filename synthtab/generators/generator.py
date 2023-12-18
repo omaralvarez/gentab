@@ -31,6 +31,9 @@ class Generator:
     def sample(self) -> pd.DataFrame:
         pass
 
+    def save_to_disk(self) -> None:
+        self.dataset.save_to_disk(self)
+
     def resample(self, n_samples) -> None:
         data_gen = self.dataset.get_single_df()
 
