@@ -118,15 +118,15 @@ generator = Tabula(
     dataset,
     # categorical_columns=[dataset.config["y_label"]],
     epochs=100,
-    max_length=2000,
+    max_length=1024,
     temperature=0.6,
     batch_size=32,
     max_tries_per_batch=4096,
-    n_samples=262144,
+    n_samples=8192,
     trained_model="model_playnet.pt",
 )
 generator.generate()
-generator.evaluate(eval_model)
+# generator.evaluate(eval_model)
 generator.save_to_disk()
 console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 
