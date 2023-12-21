@@ -1,7 +1,7 @@
 from . import Evaluator
 from synthtab.console import console, SPINNER, REFRESH
 
-import xgboost import XGBClassifier
+from xgboost import XGBClassifier
 
 
 class XGBoost(Evaluator):

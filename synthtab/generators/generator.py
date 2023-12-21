@@ -34,6 +34,9 @@ class Generator:
     def save_to_disk(self) -> None:
         self.dataset.save_to_disk(self)
 
+    def load_from_disk(self) -> None:
+        self.dataset.load_from_disk(self)
+
     def resample(self, n_samples) -> None:
         data_gen = self.dataset.get_single_df()
 
@@ -117,39 +120,3 @@ class Generator:
                 self.resample(n_samples)
 
         console.print("✅ Generation complete with {}...".format(self.__name__))
-
-    def evaluate(self, model) -> None:
-        with console.status(
-            "Evaluating original accuracy {}...".format(self.dataset),
-            spinner=SPINNER,
-            refresh_per_second=REFRESH,
-        ) as status:
-            predictions = model.fit(self.dataset.X, self.dataset.y).predict(
-                self.dataset.X_test
-            )
-
-            accuracy = compute_accuracy(self.dataset.y_test, predictions)
-            macro = compute_f1_p_r(self.dataset.y_test, predictions, "macro")
-            weighted = compute_f1_p_r(self.dataset.y_test, predictions, "weighted")
-
-            console.print("🎯 Original Accuracy: {}".format(round(accuracy * 100, 1)))
-            console.print(macro)
-            console.print(weighted)
-
-            status.update(
-                "Evaluating {} accuracy...".format(self.__name__), spinner=SPINNER
-            )
-
-            predictions = model.fit(self.dataset.X_gen, self.dataset.y_gen).predict(
-                self.dataset.X_test
-            )
-
-            accuracy = compute_accuracy(self.dataset.y_test, predictions)
-            macro = compute_f1_p_r(self.dataset.y_test, predictions, "macro")
-            weighted = compute_f1_p_r(self.dataset.y_test, predictions, "weighted")
-
-            console.print("🎯 Synthetic Accuracy: {}".format(round(accuracy * 100, 1)))
-            console.print(macro)
-            console.print(weighted)
-
-        console.print("✅ Evaluation complete with {}...".format(self.__name__))

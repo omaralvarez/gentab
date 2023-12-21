@@ -14,6 +14,7 @@ class Dataset:
         self.config = config
         self.X_gen = None
         self.y_gen = None
+        self.y_enc_gen = None
 
         with console.status(
             "Loading dataset {}...".format(self.config["name"]),
@@ -24,6 +25,10 @@ class Dataset:
             self.y = pd.read_csv(self.config["path_y"])
             self.X_test = pd.read_csv(self.config["path_X_test"])
             self.y_test = pd.read_csv(self.config["path_y_test"])
+
+            self.label_encoder = LabelEncoder()
+            self.y_enc = self.label_encoder.fit_transform(self.y)
+            self.y_enc_test = self.label_encoder.transform(self.y_test)
 
         console.print("✅ Dataset loaded...")
 
@@ -46,6 +51,23 @@ class Dataset:
             )
 
         console.print("✅ Dataset saved to {}...".format(self.config["save_path"]))
+
+    def load_from_disk(self, name) -> None:
+        with console.status(
+            "Loading {} dataset...".format(name),
+            spinner=SPINNER,
+            refresh_per_second=REFRESH,
+        ) as status:
+            self.X_gen = pd.read_csv(
+                os.path.join(self.config["save_path"], "X_gen_" + str(name) + ".csv")
+            )
+            self.y_gen = pd.read_csv(
+                os.path.join(self.config["save_path"], "y_gen_" + str(name) + ".csv")
+            )
+
+            self.y_enc_gen = self.label_encoder.transform(self.y_gen)
+
+        console.print("✅ {} dataset loaded...".format(name))
 
     def num_classes(self) -> int:
         return self.y[self.config["y_label"]].nunique()
@@ -75,6 +97,8 @@ class Dataset:
                 self.y[self.config["y_label"]] == cls, percent
             )
 
+        self.y_enc = self.label_encoder.transform(self.y)
+
     def reduce_uniformly_randomly(self, condition, percentage) -> None:
         """
         Removes a random subset of rows from a DataFrame based on a condition.
@@ -97,62 +121,86 @@ class Dataset:
         self.X.drop(rows_to_remove, inplace=True)
         self.y.drop(rows_to_remove, inplace=True)
 
+    def memory_usage_mb(self, df) -> float:
+        return df.memory_usage().sum() / 1024**2
+
+    def reduce_mem_df(self, df) -> None:
+        for col in df.columns:
+            col_type = self.X[col].dtype
+
+            if col_type != object:
+                c_min = self.X[col].min()
+                c_max = self.X[col].max()
+                if str(col_type)[:3] == "int":
+                    if c_min > np.iinfo(np.int8).min and c_max < np.iinfo(np.int8).max:
+                        self.X[col] = self.X[col].astype(np.int8)
+                    elif (
+                        c_min > np.iinfo(np.int16).min
+                        and c_max < np.iinfo(np.int16).max
+                    ):
+                        self.X[col] = self.X[col].astype(np.int16)
+                    elif (
+                        c_min > np.iinfo(np.int32).min
+                        and c_max < np.iinfo(np.int32).max
+                    ):
+                        self.X[col] = self.X[col].astype(np.int32)
+                    elif (
+                        c_min > np.iinfo(np.int64).min
+                        and c_max < np.iinfo(np.int64).max
+                    ):
+                        self.X[col] = self.X[col].astype(np.int64)
+                else:
+                    if (
+                        c_min > np.finfo(np.float16).min
+                        and c_max < np.finfo(np.float16).max
+                    ):
+                        self.X[col] = self.X[col].astype(np.float16)
+                    elif (
+                        c_min > np.finfo(np.float32).min
+                        and c_max < np.finfo(np.float32).max
+                    ):
+                        self.X[col] = self.X[col].astype(np.float32)
+                    else:
+                        self.X[col] = self.X[col].astype(np.float64)
+            else:
+                self.X[col] = self.X[col].astype("category")
+
     def reduce_mem(self) -> None:
         """iterate through all the columns of a dataframe and modify the data type
         to reduce memory usage.
         """
-        start_mem = self.X.memory_usage().sum() / 1024**2
+        start_mem = self.memory_usage_mb(self.X) + self.memory_usage_mb(self.X_test)
         console.print("💾 Memory usage of dataframe is {:.2f} MB...".format(start_mem))
-
-        # TODO Reduce memory in test too
 
         with console.status(
             "Reducing memory usage...", spinner=SPINNER, refresh_per_second=REFRESH
         ) as status:
-            for col in self.X.columns:
-                col_type = self.X[col].dtype
+            self.reduce_mem_df(self.X)
+            self.reduce_mem_df(self.X_test)
 
-                if col_type != object:
-                    c_min = self.X[col].min()
-                    c_max = self.X[col].max()
-                    if str(col_type)[:3] == "int":
-                        if (
-                            c_min > np.iinfo(np.int8).min
-                            and c_max < np.iinfo(np.int8).max
-                        ):
-                            self.X[col] = self.X[col].astype(np.int8)
-                        elif (
-                            c_min > np.iinfo(np.int16).min
-                            and c_max < np.iinfo(np.int16).max
-                        ):
-                            self.X[col] = self.X[col].astype(np.int16)
-                        elif (
-                            c_min > np.iinfo(np.int32).min
-                            and c_max < np.iinfo(np.int32).max
-                        ):
-                            self.X[col] = self.X[col].astype(np.int32)
-                        elif (
-                            c_min > np.iinfo(np.int64).min
-                            and c_max < np.iinfo(np.int64).max
-                        ):
-                            self.X[col] = self.X[col].astype(np.int64)
-                    else:
-                        if (
-                            c_min > np.finfo(np.float16).min
-                            and c_max < np.finfo(np.float16).max
-                        ):
-                            self.X[col] = self.X[col].astype(np.float16)
-                        elif (
-                            c_min > np.finfo(np.float32).min
-                            and c_max < np.finfo(np.float32).max
-                        ):
-                            self.X[col] = self.X[col].astype(np.float32)
-                        else:
-                            self.X[col] = self.X[col].astype(np.float64)
-                else:
-                    self.X[col] = self.X[col].astype("category")
+        end_mem = self.memory_usage_mb(self.X) + self.memory_usage_mb(self.X_test)
+        console.print(
+            "💾 Memory usage after optimization: {:.2f} MB...".format(end_mem)
+        )
+        console.print(
+            "✅ Memory usage reduced by {:.1f}%...".format(
+                100 * (start_mem - end_mem) / start_mem
+            )
+        )
 
-        end_mem = self.X.memory_usage().sum() / 1024**2
+    def reduce_mem_gen(self) -> None:
+        """iterate through all the columns of a dataframe and modify the data type
+        to reduce memory usage.
+        """
+        start_mem = self.memory_usage_mb(self.X_gen)
+        console.print("💾 Memory usage of dataframe is {:.2f} MB...".format(start_mem))
+
+        with console.status(
+            "Reducing memory usage...", spinner=SPINNER, refresh_per_second=REFRESH
+        ) as status:
+            self.reduce_mem_df(self.X_gen)
+
+        end_mem = self.memory_usage_mb(self.X_gen)
         console.print(
             "💾 Memory usage after optimization: {:.2f} MB...".format(end_mem)
         )

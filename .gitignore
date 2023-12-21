@@ -5,6 +5,7 @@ data.tar
 config.toml
 .sample.csv.temp
 model_playnet.pt
+results.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
