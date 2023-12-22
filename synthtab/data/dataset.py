@@ -5,7 +5,7 @@ import pandas as pd
 import numpy as np
 import torch
 from typing import Any, Literal, Optional, Union, cast, Tuple, Dict, List
-from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import LabelEncoder, OneHotEncoder
 import os
 
 
@@ -14,7 +14,7 @@ class Dataset:
         self.config = config
         self.X_gen = None
         self.y_gen = None
-        self.y_enc_gen = None
+        # self.y_enc_gen = None
 
         with console.status(
             "Loading dataset {}...".format(self.config["name"]),
@@ -27,8 +27,10 @@ class Dataset:
             self.y_test = pd.read_csv(self.config["path_y_test"])
 
             self.label_encoder = LabelEncoder()
-            self.y_enc = self.label_encoder.fit_transform(self.y)
-            self.y_enc_test = self.label_encoder.transform(self.y_test)
+            self.label_encoder.fit(self.y)
+            self.label_encoder_ohe = OneHotEncoder(sparse_output=False)
+            self.label_encoder_ohe.fit(self.y)
+            # self.y_enc_test = self.label_encoder.transform(self.y_test)
 
         console.print("✅ Dataset loaded...")
 
@@ -65,12 +67,15 @@ class Dataset:
                 os.path.join(self.config["save_path"], "y_gen_" + str(name) + ".csv")
             )
 
-            self.y_enc_gen = self.label_encoder.transform(self.y_gen)
+            # self.y_enc_gen = self.label_encoder.transform(self.y_gen)
 
         console.print("✅ {} dataset loaded...".format(name))
 
     def num_classes(self) -> int:
         return self.y[self.config["y_label"]].nunique()
+
+    def num_features(self) -> int:
+        return len(self.X.columns)
 
     def class_counts(self) -> int:
         return self.y[self.config["y_label"]].value_counts()
@@ -97,7 +102,7 @@ class Dataset:
                 self.y[self.config["y_label"]] == cls, percent
             )
 
-        self.y_enc = self.label_encoder.transform(self.y)
+        # self.y_enc = self.label_encoder.transform(self.y)
 
     def reduce_uniformly_randomly(self, condition, percentage) -> None:
         """

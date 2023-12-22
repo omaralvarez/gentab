@@ -6,6 +6,8 @@ config.toml
 .sample.csv.temp
 model_playnet.pt
 results.py
+lightning_logs/
+.scale*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

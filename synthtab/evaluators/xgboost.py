@@ -18,3 +18,11 @@ class XGBoost(Evaluator):
             *args,
             **kwargs,
         )
+
+    def preprocess(self, X, y, X_test, y_test):
+        y = self.generator.dataset.label_encoder.transform(y)
+        y_test = self.generator.dataset.label_encoder.transform(y_test)
+        return X, y, X_test, y_test
+
+    def postprocess(self, pred):
+        return self.generator.dataset.label_encoder.inverse_transform(pred)

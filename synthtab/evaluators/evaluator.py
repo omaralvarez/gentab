@@ -22,6 +22,12 @@ class Evaluator:
     def __str__(self) -> str:
         return self.__name__
 
+    def preprocess(self, X, y, X_test, y_test):
+        return X, y, X_test, y_test
+
+    def postprocess(self, pred):
+        return pred
+
     def compute_accuracy(self, y_true, y_pred):
         return accuracy_score(y_true, y_pred)
 
@@ -31,82 +37,50 @@ class Evaluator:
     def compute_f1_p_r(self, y_true, y_pred, average):
         return precision_recall_fscore_support(y_true, y_pred, average=average)
 
-    def evaluate_baseline(self) -> None:
+    def get_metrics(self, X, y, generator):
         with console.status(
-            "Evaluating original accuracy in {}...".format(self.generator.dataset),
+            "Evaluating {} accuracy in {}...".format(generator, self.generator.dataset),
             spinner=SPINNER,
             refresh_per_second=REFRESH,
         ) as status:
-            predictions = self.model.fit(
-                self.generator.dataset.X, self.generator.dataset.y_enc
-            ).predict(self.generator.dataset.X_test)
+            X, y, X_test, _ = self.preprocess(
+                X, y, self.generator.dataset.X_test, self.generator.dataset.y_test
+            )
+
+            predictions = self.postprocess(self.model.fit(X, y).predict(X_test))
 
             self.accuracy = self.compute_accuracy(
-                self.generator.dataset.y_enc_test,
-                predictions,
+                self.generator.dataset.y_test, predictions
             )
-            self.mcc = self.compute_mcc(
-                self.generator.dataset.y_enc_test,
-                predictions,
-            )
+            self.mcc = self.compute_mcc(self.generator.dataset.y_test, predictions)
             self.macro = self.compute_f1_p_r(
-                self.generator.dataset.y_enc_test,
-                predictions,
-                "macro",
+                self.generator.dataset.y_test, predictions, "macro"
             )
             self.weighted = self.compute_f1_p_r(
-                self.generator.dataset.y_enc_test,
-                predictions,
-                "weighted",
+                self.generator.dataset.y_test, predictions, "weighted"
             )
 
             console.print(
-                "🎯 Baseline Accuracy: {}".format(round(self.accuracy * 100, 1))
+                "🎯 {} Accuracy: {}".format(generator, round(self.accuracy * 100, 1))
             )
-            console.print("🎯 Baseline MCC: {}".format(round(self.mcc, 2)))
+            console.print("🎯 {} MCC: {}".format(generator, round(self.mcc, 2)))
 
         console.print(
-            "✅ Evaluation complete with {} for {}...".format(self.__name__, "Baseline")
+            "✅ Evaluation complete with {} for {} in {}...".format(
+                self.__name__, generator, self.generator.dataset
+            )
+        )
+
+    def evaluate_baseline(self) -> None:
+        self.get_metrics(
+            self.generator.dataset.X,
+            self.generator.dataset.y,
+            "Baseline",
         )
 
     def evaluate(self) -> None:
-        with console.status(
-            "Evaluating {} accuracy in {}...".format(
-                self.__name__, self.generator.dataset
-            ),
-            spinner=SPINNER,
-            refresh_per_second=REFRESH,
-        ) as status:
-            predictions = self.model.fit(
-                self.generator.dataset.X_gen, self.generator.dataset.y_enc_gen
-            ).predict(self.generator.dataset.X_test)
-
-            self.accuracy = self.compute_accuracy(
-                self.generator.dataset.y_enc_test,
-                predictions,
-            )
-            self.mcc = self.compute_mcc(
-                self.generator.dataset.y_enc_test,
-                predictions,
-            )
-            self.macro = self.compute_f1_p_r(
-                self.generator.dataset.y_enc_test,
-                predictions,
-                "macro",
-            )
-            self.weighted = self.compute_f1_p_r(
-                self.generator.dataset.y_enc_test,
-                predictions,
-                "weighted",
-            )
-
-            console.print(
-                "🎯 Synthetic Accuracy: {}".format(round(self.accuracy * 100, 1))
-            )
-            console.print("🎯 Synthetic MCC: {}".format(round(self.mcc, 2)))
-
-        console.print(
-            "✅ Evaluation complete with {} for {}...".format(
-                self.__name__, self.generator
-            )
+        self.get_metrics(
+            self.generator.dataset.X_gen,
+            self.generator.dataset.y_gen,
+            self.generator,
         )
