@@ -1,5 +1,5 @@
 from . import Generator
-from synthtab.console import console
+from synthtab.utils import console
 
 from be_great import GReaT as GR
 import pandas as pd

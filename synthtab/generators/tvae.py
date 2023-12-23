@@ -1,5 +1,5 @@
 from . import Generator
-from synthtab.console import console, SPINNER, REFRESH
+from synthtab.utils import console, SPINNER, REFRESH
 
 from sdv.metadata import SingleTableMetadata
 from sdv.single_table import TVAESynthesizer
@@ -19,6 +19,9 @@ class TVAE(Generator):
         compress_dims=(128, 128),
         decompress_dims=(128, 128),
         embedding_dim=128,
+        l2scale=1e-5,
+        loss_factor=2,
+        pac=10,
         cuda=True,
         max_tries_per_batch=4096,
     ) -> None:
@@ -31,6 +34,9 @@ class TVAE(Generator):
         self.compress_dims = compress_dims
         self.decompress_dims = decompress_dims
         self.embedding_dim = embedding_dim
+        self.l2scale = l2scale
+        self.loss_factor = loss_factor
+        self.pac = pac
         self.cuda = cuda
         self.max_tries_per_batch = max_tries_per_batch
 

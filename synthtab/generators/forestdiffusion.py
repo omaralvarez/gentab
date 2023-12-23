@@ -1,5 +1,5 @@
 from . import Generator
-from synthtab.console import console, SPINNER, REFRESH
+from synthtab.utils import console, SPINNER, REFRESH
 
 from ForestDiffusion import ForestDiffusionModel
 import pandas as pd

@@ -1,5 +1,5 @@
 from . import Generator
-from synthtab.console import console, SPINNER, REFRESH
+from synthtab.utils import console, SPINNER, REFRESH
 
 from imblearn.over_sampling import SMOTE as sm
 from collections import Counter

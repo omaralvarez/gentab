@@ -1,6 +1,6 @@
 from . import Generator
 from .tabu.tabula import Tab
-from synthtab.console import console
+from synthtab.utils import console
 
 import os
 import pandas as pd

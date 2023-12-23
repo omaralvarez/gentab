@@ -1,4 +1,4 @@
-from synthtab.console import console, SPINNER, REFRESH
+from synthtab.utils import console, SPINNER, REFRESH
 from synthtab import SEED
 
 import pandas as pd
@@ -6,6 +6,8 @@ import numpy as np
 import torch
 from typing import Any, Literal, Optional, Union, cast, Tuple, Dict, List
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder
+from sklearn.model_selection import train_test_split
+from imblearn import fetch_datasets
 import os
 
 
@@ -14,28 +16,54 @@ class Dataset:
         self.config = config
         self.X_gen = None
         self.y_gen = None
-        # self.y_enc_gen = None
 
         with console.status(
             "Loading dataset {}...".format(self.config["name"]),
             spinner=SPINNER,
             refresh_per_second=REFRESH,
         ) as status:
-            self.X = pd.read_csv(self.config["path_X"])
-            self.y = pd.read_csv(self.config["path_y"])
-            self.X_test = pd.read_csv(self.config["path_X_test"])
-            self.y_test = pd.read_csv(self.config["path_y_test"])
+            if self.config.exists("path_X"):
+                self.X = pd.read_csv(self.config["path_X"])
+                self.y = pd.read_csv(self.config["path_y"])
+                self.X_test = pd.read_csv(self.config["path_X_test"])
+                self.y_test = pd.read_csv(self.config["path_y_test"])
+            else:
+                self.download_imb(self.config["name"])
 
             self.label_encoder = LabelEncoder()
             self.label_encoder.fit(self.y)
             self.label_encoder_ohe = OneHotEncoder(sparse_output=False)
             self.label_encoder_ohe.fit(self.y)
-            # self.y_enc_test = self.label_encoder.transform(self.y_test)
 
         console.print("✅ Dataset loaded...")
 
     def __str__(self) -> str:
         return self.config["name"]
+
+    def download_imb(self) -> None:
+        data = fetch_datasets(
+            filter_data=self.config["name"],
+            data_home=self.config["save_path"],
+            random_state=SEED,
+        )
+
+        self.X, self.y, self.X_test, self.y_test = train_test_split(
+            data.data,
+            data.target,
+            test_size=self.config["test_size"],
+            random_state=SEED,
+            stratify=data.target,
+        )
+
+    # def download_uci(self) -> None:
+    #     uci = fetch_ucirepo(name=self.config["name"])
+
+    #     # metadata
+    #     console.print(uci.metadata)
+    #     console.print(uci.variables)
+
+    #     self.X = uci.dat.features
+    #     self.y = uci.data.targets
 
     def save_to_disk(self, name) -> None:
         with console.status(
@@ -66,8 +94,6 @@ class Dataset:
             self.y_gen = pd.read_csv(
                 os.path.join(self.config["save_path"], "y_gen_" + str(name) + ".csv")
             )
-
-            # self.y_enc_gen = self.label_encoder.transform(self.y_gen)
 
         console.print("✅ {} dataset loaded...".format(name))
 
@@ -101,8 +127,6 @@ class Dataset:
             self.reduce_uniformly_randomly(
                 self.y[self.config["y_label"]] == cls, percent
             )
-
-        # self.y_enc = self.label_encoder.transform(self.y)
 
     def reduce_uniformly_randomly(self, condition, percentage) -> None:
         """

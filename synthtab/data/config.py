@@ -1,4 +1,4 @@
-from synthtab.console import console
+from synthtab.utils import console
 
 import json
 
@@ -15,3 +15,6 @@ class Config:
 
     def __setitem__(self, key, data):
         self._config[key] = data
+
+    def exists(self, key: str) -> bool:
+        return True if key in self._config else False

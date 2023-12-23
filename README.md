@@ -94,7 +94,7 @@ Below is the list of the generators currently available in the library.
 ``` python
 from synthtab.generators import AutoDiffusion
 from synthtab.data import Config, Dataset
-from synthtab.console import console
+from synthtab.utils import console
 
 from sklearn import svm
 

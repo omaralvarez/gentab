@@ -1,12 +1,28 @@
-import numpy as np
-from sklearn.metrics import precision_recall_fscore_support, accuracy_score
+from rich.console import Console
+from rich.progress import (
+    BarColumn,
+    MofNCompleteColumn,
+    Progress,
+    TextColumn,
+    TimeElapsedColumn,
+    TimeRemainingColumn,
+)
+
+SPINNER = "aesthetic"
+REFRESH = 20
+
+console = Console()
 
 
-def compute_accuracy(y_true, y_pred):
-    return accuracy_score(np.argmax(y_true, axis=1), np.argmax(y_pred, axis=1))
-
-
-def compute_f1_p_r(y_true, y_pred, average):
-    return precision_recall_fscore_support(
-        np.argmax(y_true, axis=1), np.argmax(y_pred, axis=1), average=average
-    )
+class ProgressBar:
+    def __init__(self) -> None:
+        # Define custom progress bar
+        self.progress = Progress(
+            TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
+            BarColumn(),
+            MofNCompleteColumn(),
+            TextColumn("•"),
+            TimeElapsedColumn(),
+            TextColumn("•"),
+            TimeRemainingColumn(),
+        )

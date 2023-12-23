@@ -1,5 +1,5 @@
 from . import Generator
-from synthtab.console import console, SPINNER, REFRESH
+from synthtab.utils import console, SPINNER, REFRESH
 
 from sdv.metadata import SingleTableMetadata
 from sdv.single_table import CTGANSynthesizer

@@ -1,7 +1,7 @@
 from . import Generator
 from .ctabg.pipeline.data_preparation import DataPrep
 from .ctabg.synthesizer.ctabgan_synthesizer import CTABGANSynthesizer
-from synthtab.console import console
+from synthtab.utils import console
 
 import pandas as pd
 import warnings

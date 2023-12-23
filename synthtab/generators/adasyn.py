@@ -1,5 +1,5 @@
 from . import Generator
-from synthtab.console import console, SPINNER, REFRESH
+from synthtab.utils import console, SPINNER, REFRESH
 
 from imblearn.over_sampling import ADASYN as ada
 from collections import Counter
@@ -23,8 +23,9 @@ class ADASYN(Generator):
         ).fit_resample(self.dataset.X, self.dataset.y)
 
     def balance(self) -> None:
+        # TODO Check if the loop is working, it looks like it does not
         if self.sampling_strategy == "minority":
-            for _ in range(self.dataset.num_classes() - 2):
+            for _ in range(self.dataset.num_classes() - 1):
                 self.dataset.X_gen, self.dataset.y_gen = ada(
                     random_state=self.seed,
                     sampling_strategy=self.sampling_strategy,

@@ -1,9 +1,8 @@
-from synthtab.console import console, SPINNER, REFRESH
+from synthtab.utils import console, SPINNER, REFRESH
 from synthtab.utils import compute_accuracy, compute_f1_p_r
 from synthtab import SEED
 
-import pandas as pd
-import numpy as np
+from typing import Tuple
 from sklearn.metrics import (
     precision_recall_fscore_support,
     accuracy_score,
@@ -15,6 +14,7 @@ class Evaluator:
     def __init__(self, generator) -> None:
         self.seed = SEED
         self.generator = generator
+        self.dataset = generator.dataset
         self.accuracy = None
         self.macro = None
         self.weighted = None
@@ -37,27 +37,23 @@ class Evaluator:
     def compute_f1_p_r(self, y_true, y_pred, average):
         return precision_recall_fscore_support(y_true, y_pred, average=average)
 
-    def get_metrics(self, X, y, generator):
+    def compute_metrics(self, X, y, generator) -> None:
         with console.status(
-            "Evaluating {} accuracy in {}...".format(generator, self.generator.dataset),
+            "Evaluating {} accuracy in {}...".format(generator, self.dataset),
             spinner=SPINNER,
             refresh_per_second=REFRESH,
         ) as status:
-            X, y, X_test, _ = self.preprocess(
-                X, y, self.generator.dataset.X_test, self.generator.dataset.y_test
+            X, y, X_test, y_test = self.preprocess(
+                X, y, self.dataset.X_test, self.dataset.y_test
             )
 
             predictions = self.postprocess(self.model.fit(X, y).predict(X_test))
 
-            self.accuracy = self.compute_accuracy(
-                self.generator.dataset.y_test, predictions
-            )
-            self.mcc = self.compute_mcc(self.generator.dataset.y_test, predictions)
-            self.macro = self.compute_f1_p_r(
-                self.generator.dataset.y_test, predictions, "macro"
-            )
+            self.accuracy = self.compute_accuracy(self.dataset.y_test, predictions)
+            self.mcc = self.compute_mcc(self.dataset.y_test, predictions)
+            self.macro = self.compute_f1_p_r(self.dataset.y_test, predictions, "macro")
             self.weighted = self.compute_f1_p_r(
-                self.generator.dataset.y_test, predictions, "weighted"
+                self.dataset.y_test, predictions, "weighted"
             )
 
             console.print(
@@ -67,20 +63,24 @@ class Evaluator:
 
         console.print(
             "✅ Evaluation complete with {} for {} in {}...".format(
-                self.__name__, generator, self.generator.dataset
+                self.__name__, generator, self.dataset
             )
         )
 
-    def evaluate_baseline(self) -> None:
-        self.get_metrics(
-            self.generator.dataset.X,
-            self.generator.dataset.y,
+    def evaluate_baseline(self) -> Tuple[float, float]:
+        self.compute_metrics(
+            self.dataset.X,
+            self.dataset.y,
             "Baseline",
         )
 
-    def evaluate(self) -> None:
-        self.get_metrics(
-            self.generator.dataset.X_gen,
-            self.generator.dataset.y_gen,
+        return self.accuracy, self.mcc
+
+    def evaluate(self) -> Tuple[float, float]:
+        self.compute_metrics(
+            self.dataset.X_gen,
+            self.dataset.y_gen,
             self.generator,
         )
+
+        return self.accuracy, self.mcc

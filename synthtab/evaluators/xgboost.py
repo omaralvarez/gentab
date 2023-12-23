@@ -1,5 +1,5 @@
 from . import Evaluator
-from synthtab.console import console, SPINNER, REFRESH
+from synthtab.utils import console, SPINNER, REFRESH
 
 from xgboost import XGBClassifier
 

@@ -1,15 +1,17 @@
-from synthtab.console import console, SPINNER, REFRESH
-from synthtab.utils import compute_accuracy, compute_f1_p_r
 from synthtab import SEED
+from synthtab.utils import console, SPINNER, REFRESH, ProgressBar
 
 import pandas as pd
 
 
 class Generator:
     def __init__(self, dataset, batch_size=1000, max_tries_per_batch=1000) -> None:
-        self.dataset = dataset
         self.batch_size = batch_size
         self.max_tries_per_batch = max_tries_per_batch
+        # Reset generated dataframes
+        self.dataset = dataset
+        self.dataset.X_gen = None
+        self.dataset.y_gen = None
         # Get class counts
         self.orig_counts = dataset.class_counts()
         # Get max, subtract it to the rest to get target samples
@@ -40,65 +42,86 @@ class Generator:
     def resample(self, n_samples) -> None:
         data_gen = self.dataset.get_single_df()
 
-        for i in range(self.max_tries_per_batch):
-            gen = self.sample()
+        total_samples = sum(n_samples.values())
 
-            for cls, cnt in n_samples.items():
-                if cnt > 0:
-                    filtered = gen[gen[self.dataset.config["y_label"]] == cls]
+        with ProgressBar().progress as p:
+            gen_task = p.add_task(
+                "Generating with {}...".format(self.__name__), total=total_samples
+            )
+            for i in range(self.max_tries_per_batch):
+                gen = self.sample()
 
-                    count = len(filtered.index)
-                    if count > cnt:
-                        n_samples[cls] = 0
-                        filtered = filtered.sample(n=cnt)
-                    else:
-                        n_samples[cls] = cnt - count
+                for cls, cnt in n_samples.items():
+                    if cnt > 0:
+                        filtered = gen[gen[self.dataset.config["y_label"]] == cls]
 
-                    data_gen = pd.concat(
-                        [data_gen, filtered], ignore_index=True, sort=False
+                        count = len(filtered.index)
+                        if count > cnt:
+                            n_samples[cls] = 0
+                            filtered = filtered.sample(n=cnt)
+                        else:
+                            n_samples[cls] = cnt - count
+
+                        data_gen = pd.concat(
+                            [data_gen, filtered], ignore_index=True, sort=False
+                        )
+
+                current_samples = sum(n_samples.values())
+
+                p.update(gen_task, advance=current_samples / total_samples)
+
+                if current_samples == 0:
+                    break
+                elif i == self.max_tries_per_batch - 1:
+                    raise RuntimeError(
+                        "Maximum number of tries reached, model probably did not"
+                        " converge."
                     )
-
-            if sum(n_samples.values()) == 0:
-                break
-            elif i == self.max_tries_per_batch - 1:
-                raise RuntimeError(
-                    "Maximum number of tries reached, model probably did not converge."
-                )
 
         self.dataset.set_split_result(data_gen)
 
     def balance(self) -> None:
         data_gen = self.dataset.get_single_df()
 
-        for i in range(self.max_tries_per_batch):
-            gen = self.sample()
+        total_samples = self.counts.max()
 
-            for cls, cnt in self.counts.items():
-                if cnt > 0:
-                    filtered = gen[gen[self.dataset.config["y_label"]] == cls]
+        with ProgressBar().progress as p:
+            gen_task = p.add_task(
+                "Generating with {}...".format(self.__name__), total=total_samples
+            )
 
-                    count = len(filtered.index)
-                    if count > cnt:
-                        self.counts[cls] = 0
-                        filtered = filtered.sample(n=cnt)
-                    else:
-                        self.counts[cls] = cnt - count
+            for i in range(self.max_tries_per_batch):
+                gen = self.sample()
 
-                    data_gen = pd.concat(
-                        [data_gen, filtered], ignore_index=True, sort=False
+                for cls, cnt in self.counts.items():
+                    if cnt > 0:
+                        filtered = gen[gen[self.dataset.config["y_label"]] == cls]
+
+                        count = len(filtered.index)
+                        if count > cnt:
+                            self.counts[cls] = 0
+                            filtered = filtered.sample(n=cnt)
+                        else:
+                            self.counts[cls] = cnt - count
+
+                        data_gen = pd.concat(
+                            [data_gen, filtered], ignore_index=True, sort=False
+                        )
+                current_samples = self.counts.max()
+
+                p.update(gen_task, advance=current_samples / total_samples)
+
+                if current_samples < 1:
+                    break
+                elif i == self.max_tries_per_batch - 1:
+                    raise RuntimeError(
+                        "Maximum number of tries reached, model probably did not"
+                        " converge."
                     )
-
-            if self.counts.max() < 1:
-                break
-            elif i == self.max_tries_per_batch - 1:
-                raise RuntimeError(
-                    "Maximum number of tries reached, model probably did not converge."
-                )
 
         self.dataset.set_split_result(data_gen)
 
-    def tune(self) -> None:
-        pass
+    # TODO Flag to append or just leave generated
 
     def generate(self, n_samples=None) -> None:
         with console.status(
@@ -111,12 +134,14 @@ class Generator:
             status.update("Training with {}...".format(self.__name__), spinner=SPINNER)
             self.train()
 
-            status.update(
-                "Generating with {}...".format(self.__name__), spinner=SPINNER
-            )
-            if n_samples is None:
-                self.balance()
-            else:
-                self.resample(n_samples)
+            # status.update(
+            #     "Generating with {}...".format(self.__name__), spinner=SPINNER
+            # )
+
+        # If progress does not look better indent this
+        if n_samples is None:
+            self.balance()
+        else:
+            self.resample(n_samples)
 
         console.print("✅ Generation complete with {}...".format(self.__name__))

@@ -1,5 +1,6 @@
+from torchmetrics.classification import MultilabelAccuracy, MultilabelMatthewsCorrCoef
 from . import Evaluator
-from synthtab.console import console, SPINNER, REFRESH
+from synthtab.utils import console, SPINNER, REFRESH
 
 from typing_extensions import Self
 import os
@@ -97,7 +98,7 @@ class LightningMLP(pl.LightningModule):
     def __init__(self, num_features, num_classes):
         super().__init__()
         self.layers = nn.Sequential(
-            nn.Linear(num_classes, 256),
+            nn.Linear(num_features, 256),
             nn.ReLU(),
             nn.Linear(256, 64),
             nn.ReLU(),
@@ -106,15 +107,22 @@ class LightningMLP(pl.LightningModule):
             nn.Linear(32, num_classes),
         )
         self.ce = nn.CrossEntropyLoss()
+        self.acc = MultilabelAccuracy(num_labels=num_classes)
+        self.mcc = MultilabelMatthewsCorrCoef(num_labels=num_classes)
 
     def forward(self, x):
         return self.layers(x)
 
     def training_step(self, batch, batch_idx):
         x, y = batch
+
         x = x.view(x.size(0), -1)
         y_hat = self.layers(x)
+
         loss = self.ce(y_hat, y)
+
+        self.log_dict({"loss": loss, "acc": self.acc(y_hat, y), "mcc": self.mcc})
+
         return loss
 
     # def test_step(self, batch, batch_idx):

@@ -3,7 +3,7 @@ from .autodiff.process_GQ import DataFrameParser, convert_to_table
 from .autodiff.autoencoder import train_autoencoder
 from .autodiff.TabDDPMdiff import train_diffusion
 from .autodiff.diffusion import Euler_Maruyama_sampling
-from synthtab.console import console, SPINNER, REFRESH
+from synthtab.utils import console, SPINNER, REFRESH
 
 import pandas as pd
 
