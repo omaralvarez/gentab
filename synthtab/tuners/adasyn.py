@@ -19,7 +19,7 @@ class ADASYNTuner(Tuner):
     def objective(self, trial: optuna.trial.Trial) -> float:
         n_neighbors = trial.suggest_int("n_neighbors", 2, 16384)
 
-        self.generator = ADASYN(n_neighbors=n_neighbors)
+        self.generator = ADASYN(self.dataset, n_neighbors=n_neighbors)
         self.generator.generate()
 
         acc, mcc = self.evaluator.evaluate()

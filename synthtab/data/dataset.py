@@ -7,7 +7,7 @@ import torch
 from typing import Any, Literal, Optional, Union, cast, Tuple, Dict, List
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder
 from sklearn.model_selection import train_test_split
-from imblearn import fetch_datasets
+from imblearn.datasets import fetch_datasets
 import os
 
 
@@ -54,6 +54,18 @@ class Dataset:
             random_state=SEED,
             stratify=data.target,
         )
+        # train_ratio = 0.75
+        # validation_ratio = 0.15
+        # test_ratio = 0.10
+
+        # # train is now 75% of the entire data set
+        # x_train, x_test, y_train, y_test = train_test_split(dataX, dataY, test_size=1 - train_ratio)
+
+        # # test is now 10% of the initial data set
+        # # validation is now 15% of the initial data set
+        # x_val, x_test, y_val, y_test = train_test_split(x_test, y_test, test_size=test_ratio/(test_ratio + validation_ratio))
+
+        # print(x_train, x_val, x_test)
 
     # def download_uci(self) -> None:
     #     uci = fetch_ucirepo(name=self.config["name"])

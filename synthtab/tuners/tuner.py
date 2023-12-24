@@ -10,6 +10,7 @@ class Tuner:
         self.seed = SEED
         self.evaluator = evaluator
         self.generator = evaluator.generator
+        self.dataset = evaluator.generator.dataset
         self.n_trials = n_trials
 
     def __str__(self) -> str:
@@ -19,9 +20,14 @@ class Tuner:
         pass
 
     def tune(self) -> None:
-        self.pruner: optuna.pruners.BasePruner(optuna.pruners.NoPruner())
+        # pruner: optuna.pruners.BasePruner(optuna.pruners.NopPruner())
 
-        self.study = optuna.create_study(direction="maximize", pruner=self.pruner)
+        self.study = optuna.create_study(
+            study_name=self.__name__,
+            direction="maximize",
+            sampler=optuna.samplers.TPESampler(seed=self.seed),
+        )
+        # TODO Test n_jobs = -1
         self.study.optimize(self.objective, n_trials=self.n_trials)
 
         console.print("Number of finished trials: {}".format(len(self.study.trials)))
@@ -34,3 +40,5 @@ class Tuner:
         console.print("  Params: ")
         for key, value in self.trial.params.items():
             console.print("    {}: {}".format(key, value))
+
+        self.generator = self.trial.user_attrs["generator"]

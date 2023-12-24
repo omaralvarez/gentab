@@ -1,5 +1,4 @@
 from synthtab.utils import console, SPINNER, REFRESH
-from synthtab.utils import compute_accuracy, compute_f1_p_r
 from synthtab import SEED
 
 from typing import Tuple

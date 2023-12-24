@@ -44,6 +44,7 @@ class CopulaGANTuner(Tuner):
         pac = trial.suggest_int("pac", 2, 256)
 
         self.generator = CopulaGAN(
+            self.dataset,
             default_distribution=default_distribution,
             epochs=epochs,
             batch_size=batch_size_mult * pac,

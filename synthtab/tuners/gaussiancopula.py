@@ -22,7 +22,9 @@ class GaussianCopulaTuner(Tuner):
             ["norm", "beta", "truncnorm", "uniform", "gamma", "gaussian_kde"],
         )
 
-        self.generator = GaussianCopula(default_distribution=default_distribution)
+        self.generator = GaussianCopula(
+            self.dataset, default_distribution=default_distribution
+        )
         self.generator.generate()
 
         acc, mcc = self.evaluator.evaluate()

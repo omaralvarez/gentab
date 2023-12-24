@@ -1,5 +1,6 @@
 from . import Generator
 from .tabu.tabula import Tab
+from .tabump.tabula import TabMP
 from synthtab.utils import console
 
 import os
@@ -53,6 +54,8 @@ class Tabula(Generator):
         device: str = "cuda",
         trained_model: str = None,
         n_samples: int = 1338,
+        middle_padding: bool = False,
+        random_initialization: bool = False,
     ) -> None:
         super().__init__(dataset, batch_size, max_tries_per_batch)
         self.__name__ = "Tabula"
@@ -71,19 +74,27 @@ class Tabula(Generator):
         self.trained_model = trained_model
         self.n_samples = n_samples
 
-        self.model = Tab(
-            llm=self.llm,
-            experiment_dir=self.experiment_dir,
-            batch_size=self.batch_size,
-            epochs=self.epochs,
-            categorical_columns=self.categorical_columns,
-        )
+        if middle_padding:
+            self.model = TabMP(
+                llm=self.llm,
+                experiment_dir=self.experiment_dir,
+                batch_size=self.batch_size,
+                epochs=self.epochs,
+                categorical_columns=self.categorical_columns,
+            )
+        else:
+            self.model = Tab(
+                llm=self.llm,
+                experiment_dir=self.experiment_dir,
+                batch_size=self.batch_size,
+                epochs=self.epochs,
+                categorical_columns=self.categorical_columns,
+            )
 
         if self.trained_model is None:
-            path = hf_hub_download(repo_id=REPO_ID, filename=FILENAME)
-            # Comment this block out to test tabula starting from randomly initialized model.
-            # Comment this block out when uses tabula_middle_padding
-            self.model.model.load_state_dict(torch.load(path), strict=False)
+            if not middle_padding and not random_initialization:
+                path = hf_hub_download(repo_id=REPO_ID, filename=FILENAME)
+                self.model.model.load_state_dict(torch.load(path), strict=False)
         else:
             self.model.model.load_state_dict(
                 torch.load(self.trained_model), strict=False

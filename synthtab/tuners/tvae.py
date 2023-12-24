@@ -33,6 +33,7 @@ class TVAETuner(Tuner):
         pac = trial.suggest_int("pac", 2, 256)
 
         self.generator = TVAE(
+            self.dataset,
             epochs=epochs,
             batch_size=batch_size_mult * pac,
             embedding_dim=embedding_dim,

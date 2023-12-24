@@ -17,11 +17,14 @@ class SMOTETuner(Tuner):
         self.__name__ = "SMOTETuner"
 
     def objective(self, trial: optuna.trial.Trial) -> float:
-        k_neighbors = trial.suggest_int("k_neighbors", 2, 16384)
+        k_neighbors = trial.suggest_int("k_neighbors", 2, 1024)
 
-        self.generator = SMOTE(k_neighbors=k_neighbors)
+        self.generator = SMOTE(self.dataset, k_neighbors=k_neighbors)
         self.generator.generate()
 
         acc, mcc = self.evaluator.evaluate()
+
+        # TODO Maybe too much memory, maybe fill some other way in the tune func
+        trial.set_user_attr("generator", self.generator)
 
         return mcc
