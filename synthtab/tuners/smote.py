@@ -14,7 +14,6 @@ class SMOTETuner(Tuner):
         **kwargs,
     ) -> None:
         super().__init__(evaluator)
-        self.__name__ = "SMOTETuner"
 
     def objective(self, trial: optuna.trial.Trial) -> float:
         k_neighbors = trial.suggest_int("k_neighbors", 2, 1024)

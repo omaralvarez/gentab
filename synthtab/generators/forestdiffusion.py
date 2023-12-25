@@ -39,7 +39,6 @@ class ForestDiffusion(Generator):
         **xgboost_kwargs,
     ) -> None:
         super().__init__(dataset, batch_size, max_tries_per_batch)
-        self.__name__ = "ForestDiffusion"
         self.n_t = n_t
         self.model = model
         self.diffusion_type = diffusion_type

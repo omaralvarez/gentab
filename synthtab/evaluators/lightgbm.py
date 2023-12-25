@@ -12,9 +12,9 @@ class LightGBM(Evaluator):
         **kwargs,
     ) -> None:
         super().__init__(generator)
-        self.__name__ = "LightGBM"
         self.model = lgb.LGBMClassifier(
-            random_state=self.seed,
             *args,
+            random_state=self.seed,
             **kwargs,
         )
+        self.callbacks = [lgb.log_evaluation(period=0)]

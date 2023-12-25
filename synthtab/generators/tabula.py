@@ -58,7 +58,6 @@ class Tabula(Generator):
         random_initialization: bool = False,
     ) -> None:
         super().__init__(dataset, batch_size, max_tries_per_batch)
-        self.__name__ = "Tabula"
         self.data = self.dataset.get_single_df()
         self.categorical_columns = categorical_columns
         self.llm = llm
@@ -112,7 +111,7 @@ class Tabula(Generator):
             )
             torch.save(
                 self.model.model.state_dict(),
-                os.path.join(self.experiment_dir, "model_" + self.dataset + ".pt"),
+                os.path.join(self.experiment_dir, "model_" + str(self.dataset) + ".pt"),
             )
         else:
             self.model.init(

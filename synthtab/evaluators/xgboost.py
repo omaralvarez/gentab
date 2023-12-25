@@ -12,10 +12,10 @@ class XGBoost(Evaluator):
         **kwargs,
     ) -> None:
         super().__init__(generator)
-        self.__name__ = "XGBoost"
         self.model = XGBClassifier(
-            random_state=self.seed,
             *args,
+            verbosity=0,
+            random_state=self.seed,
             **kwargs,
         )
 

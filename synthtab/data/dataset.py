@@ -8,6 +8,7 @@ from typing import Any, Literal, Optional, Union, cast, Tuple, Dict, List
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder
 from sklearn.model_selection import train_test_split
 from imblearn.datasets import fetch_datasets
+from ucimlrepo import fetch_ucirepo
 import os
 
 
@@ -22,18 +23,22 @@ class Dataset:
             spinner=SPINNER,
             refresh_per_second=REFRESH,
         ) as status:
-            if self.config.exists("path_X"):
+            if not self.config.exists("download"):
                 self.X = pd.read_csv(self.config["path_X"])
                 self.y = pd.read_csv(self.config["path_y"])
                 self.X_test = pd.read_csv(self.config["path_X_test"])
                 self.y_test = pd.read_csv(self.config["path_y_test"])
             else:
-                self.download_imb(self.config["name"])
+                if self.config["download"] == "ucimlrepo":
+                    self.download_uci()
+                else:
+                    self.download_imb()
 
+            # TODO Not necessary for imb learning
             self.label_encoder = LabelEncoder()
             self.label_encoder.fit(self.y)
-            self.label_encoder_ohe = OneHotEncoder(sparse_output=False)
-            self.label_encoder_ohe.fit(self.y)
+            # self.label_encoder_ohe = OneHotEncoder(sparse_output=False)
+            # self.label_encoder_ohe.fit(self.y)
 
         console.print("✅ Dataset loaded...")
 
@@ -42,17 +47,23 @@ class Dataset:
 
     def download_imb(self) -> None:
         data = fetch_datasets(
-            filter_data=self.config["name"],
+            filter_data=(self.config["name"],),
             data_home=self.config["save_path"],
             random_state=SEED,
-        )
+        )[self.config["name"]]
 
-        self.X, self.y, self.X_test, self.y_test = train_test_split(
-            data.data,
-            data.target,
+        features = pd.DataFrame(
+            data=data.data,
+            columns=["f" + str(i + 1) for i in range(data.data.shape[1])],
+        )
+        labels = pd.DataFrame({self.config["y_label"]: data.target})
+
+        self.X, self.X_test, self.y, self.y_test = train_test_split(
+            features,
+            labels,
             test_size=self.config["test_size"],
             random_state=SEED,
-            stratify=data.target,
+            stratify=labels,
         )
         # train_ratio = 0.75
         # validation_ratio = 0.15
@@ -67,15 +78,20 @@ class Dataset:
 
         # print(x_train, x_val, x_test)
 
-    # def download_uci(self) -> None:
-    #     uci = fetch_ucirepo(name=self.config["name"])
+    def download_uci(self) -> None:
+        uci = fetch_ucirepo(name=self.config["name"])
 
-    #     # metadata
-    #     console.print(uci.metadata)
-    #     console.print(uci.variables)
+        # metadata
+        console.print(uci.metadata)
+        console.print(uci.variables)
 
-    #     self.X = uci.dat.features
-    #     self.y = uci.data.targets
+        self.X, self.X_test, self.y, self.y_test = train_test_split(
+            uci.data.features,
+            uci.data.targets,
+            test_size=self.config["test_size"],
+            random_state=SEED,
+            stratify=uci.data.targets,
+        )
 
     def save_to_disk(self, name) -> None:
         with console.status(
@@ -206,6 +222,7 @@ class Dataset:
             else:
                 self.X[col] = self.X[col].astype("category")
 
+    # TODO Does not work numpy
     def reduce_mem(self) -> None:
         """iterate through all the columns of a dataframe and modify the data type
         to reduce memory usage.

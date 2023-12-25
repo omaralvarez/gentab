@@ -14,7 +14,6 @@ class GaussianCopulaTuner(Tuner):
         **kwargs,
     ) -> None:
         super().__init__(evaluator)
-        self.__name__ = "GaussianCopulaTuner"
 
     def objective(self, trial: optuna.trial.Trial) -> float:
         default_distribution = trial.suggest_categorical(

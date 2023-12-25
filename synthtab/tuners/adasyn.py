@@ -14,7 +14,6 @@ class ADASYNTuner(Tuner):
         **kwargs,
     ) -> None:
         super().__init__(evaluator)
-        self.__name__ = "ADASYNTuner"
 
     def objective(self, trial: optuna.trial.Trial) -> float:
         n_neighbors = trial.suggest_int("n_neighbors", 2, 16384)

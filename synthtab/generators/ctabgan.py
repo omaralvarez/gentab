@@ -45,7 +45,6 @@ class CTABGAN(Generator):
         max_tries_per_batch=4096,
     ) -> None:
         super().__init__(dataset, batch_size, max_tries_per_batch)
-        self.__name__ = "CTABGAN"
         self.synthesizer = CTABGANSynthesizer(epochs=epochs)
         self.raw_df = self.dataset.get_single_df()
         self.test_ratio = test_ratio

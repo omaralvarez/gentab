@@ -14,7 +14,6 @@ class TVAETuner(Tuner):
         **kwargs,
     ) -> None:
         super().__init__(evaluator)
-        self.__name__ = "TVAETuner"
 
     def objective(self, trial: optuna.trial.Trial) -> float:
         epochs = trial.suggest_int("epochs", 10, 600)

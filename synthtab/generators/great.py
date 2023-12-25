@@ -47,7 +47,6 @@ class GReaT(Generator):
         n_samples: int = 1338,
     ) -> None:
         super().__init__(dataset, batch_size, max_tries_per_batch)
-        self.__name__ = "GReaT"
         self.data = self.dataset.get_single_df()
         self.llm = llm
         self.experiment_dir = experiment_dir

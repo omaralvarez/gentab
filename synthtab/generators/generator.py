@@ -22,7 +22,7 @@ class Generator:
         self.seed = SEED
 
     def __str__(self) -> str:
-        return self.__name__
+        return self.__class__.__name__
 
     def preprocess(self) -> None:
         pass
@@ -46,7 +46,7 @@ class Generator:
 
         with ProgressBar().progress as p:
             gen_task = p.add_task(
-                "Generating with {}...".format(self.__name__), total=total_samples
+                "Generating with {}...".format(self), total=total_samples
             )
             for i in range(self.max_tries_per_batch):
                 gen = self.sample()
@@ -66,11 +66,11 @@ class Generator:
                             [data_gen, filtered], ignore_index=True, sort=False
                         )
 
-                current_samples = sum(n_samples.values())
+                missing_samples = sum(n_samples.values())
 
-                p.update(gen_task, advance=current_samples / total_samples)
+                p.update(gen_task, completed=total_samples - missing_samples)
 
-                if current_samples == 0:
+                if missing_samples == 0:
                     break
                 elif i == self.max_tries_per_batch - 1:
                     raise RuntimeError(
@@ -83,11 +83,11 @@ class Generator:
     def balance(self) -> None:
         data_gen = self.dataset.get_single_df()
 
-        total_samples = self.counts.max()
+        total_samples = self.counts.sum()
 
         with ProgressBar().progress as p:
             gen_task = p.add_task(
-                "Generating with {}...".format(self.__name__), total=total_samples
+                "Generating with {}...".format(self), total=total_samples
             )
 
             for i in range(self.max_tries_per_batch):
@@ -107,11 +107,12 @@ class Generator:
                         data_gen = pd.concat(
                             [data_gen, filtered], ignore_index=True, sort=False
                         )
-                current_samples = self.counts.max()
 
-                p.update(gen_task, advance=current_samples / total_samples)
+                missing_samples = self.counts.sum()
 
-                if current_samples < 1:
+                p.update(gen_task, completed=total_samples - missing_samples)
+
+                if self.counts.max() < 1:
                     break
                 elif i == self.max_tries_per_batch - 1:
                     raise RuntimeError(
@@ -131,12 +132,14 @@ class Generator:
         ) as status:
             self.preprocess()
 
-            status.update("Training with {}...".format(self.__name__), spinner=SPINNER)
+            status.update("Training with {}...".format(self), spinner=SPINNER)
             self.train()
 
             # status.update(
-            #     "Generating with {}...".format(self.__name__), spinner=SPINNER
+            #     "Generating with {}...".format(self), spinner=SPINNER
             # )
+
+        console.print("🔄 Generating with {}...".format(self))
 
         # If progress does not look better indent this
         if n_samples is None:
@@ -144,4 +147,4 @@ class Generator:
         else:
             self.resample(n_samples)
 
-        console.print("✅ Generation complete with {}...".format(self.__name__))
+        console.print("✅ Generation complete with {}...".format(self))

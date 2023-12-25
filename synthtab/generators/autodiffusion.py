@@ -36,7 +36,6 @@ class AutoDiffusion(Generator):
         T=100,
     ) -> None:
         super().__init__(dataset, batch_size, max_tries_per_batch)
-        self.__name__ = "AutoDiffusion"
         self.threshold = threshold
         # Auto-encoder hyper-parameters
         self.device = device
@@ -54,6 +53,9 @@ class AutoDiffusion(Generator):
         self.num_batches_per_epoch = num_batches_per_epoch
         self.T = T
         self.data = self.dataset.get_single_df()
+
+    def preprocess(self) -> None:
+        super().preprocess()
 
     def train(self) -> None:
         self.ds = train_autoencoder(

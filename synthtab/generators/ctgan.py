@@ -30,7 +30,6 @@ class CTGAN(Generator):
         max_tries_per_batch=4096,
     ) -> None:
         super().__init__(dataset)
-        self.__name__ = "CTGAN"
         self.enforce_min_max_values = enforce_min_max_values
         self.enforce_rounding = enforce_rounding
         self.epochs = epochs
@@ -46,6 +45,9 @@ class CTGAN(Generator):
         self.pac = pac
         self.cuda = cuda
         self.max_tries_per_batch = max_tries_per_batch
+
+    def sample(self) -> pd.DataFrame:
+        return super().sample()
 
     def preprocess(self) -> None:
         self.data = self.dataset.get_single_df()

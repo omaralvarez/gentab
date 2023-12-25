@@ -23,7 +23,6 @@ class DAE(Generator):
         max_tries_per_batch=4096,
     ) -> None:
         super().__init__(dataset)
-        self.__name__ = "DAE"
         self.body_network = body_network
         self.body_network_cfg = body_network_cfg
         self.swap_noise_probas = swap_noise_probas

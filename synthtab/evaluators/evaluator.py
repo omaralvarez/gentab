@@ -17,9 +17,10 @@ class Evaluator:
         self.accuracy = None
         self.macro = None
         self.weighted = None
+        self.callbacks = None
 
     def __str__(self) -> str:
-        return self.__name__
+        return self.__class__.__name__
 
     def preprocess(self, X, y, X_test, y_test):
         return X, y, X_test, y_test
@@ -45,8 +46,12 @@ class Evaluator:
             X, y, X_test, y_test = self.preprocess(
                 X, y, self.dataset.X_test, self.dataset.y_test
             )
-
-            predictions = self.postprocess(self.model.fit(X, y).predict(X_test))
+            if self.callbacks is not None:
+                predictions = self.postprocess(
+                    self.model.fit(X, y, callbacks=self.callbacks).predict(X_test)
+                )
+            else:
+                predictions = self.postprocess(self.model.fit(X, y).predict(X_test))
 
             self.accuracy = self.compute_accuracy(self.dataset.y_test, predictions)
             self.mcc = self.compute_mcc(self.dataset.y_test, predictions)
@@ -62,7 +67,7 @@ class Evaluator:
 
         console.print(
             "✅ Evaluation complete with {} for {} in {}...".format(
-                self.__name__, generator, self.dataset
+                self, generator, self.dataset
             )
         )
 

@@ -14,7 +14,7 @@ class Tuner:
         self.n_trials = n_trials
 
     def __str__(self) -> str:
-        return self.__name__
+        return self.__class__.__name__
 
     def objective(self, trial: optuna.trial.Trial) -> float:
         pass
@@ -23,7 +23,7 @@ class Tuner:
         # pruner: optuna.pruners.BasePruner(optuna.pruners.NopPruner())
 
         self.study = optuna.create_study(
-            study_name=self.__name__,
+            study_name=self,
             direction="maximize",
             sampler=optuna.samplers.TPESampler(seed=self.seed),
         )

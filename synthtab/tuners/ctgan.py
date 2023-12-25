@@ -14,7 +14,6 @@ class CTGANTuner(Tuner):
         **kwargs,
     ) -> None:
         super().__init__(evaluator)
-        self.__name__ = "CTGANTuner"
 
     # TODO Leave the best
 

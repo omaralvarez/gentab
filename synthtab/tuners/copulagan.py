@@ -14,7 +14,6 @@ class CopulaGANTuner(Tuner):
         **kwargs,
     ) -> None:
         super().__init__(evaluator)
-        self.__name__ = "CopulaGANTuner"
 
     def objective(self, trial: optuna.trial.Trial) -> float:
         default_distribution = trial.suggest_categorical(

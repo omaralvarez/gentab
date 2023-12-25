@@ -1,6 +1,7 @@
 from . import Generator
 from synthtab.utils import console, SPINNER, REFRESH
 
+import pandas as pd
 from imblearn.over_sampling import RandomOverSampler
 from collections import Counter
 
@@ -8,7 +9,6 @@ from collections import Counter
 class ROS(Generator):
     def __init__(self, dataset, sampling_strategy="auto", shrinkage=None) -> None:
         super().__init__(dataset)
-        self.__name__ = "RandomOverSampler"
         self.shrinkage = shrinkage
         self.sampling_strategy = sampling_strategy
 
@@ -17,6 +17,9 @@ class ROS(Generator):
 
     def train(self) -> None:
         super().train()
+
+    def sample(self) -> pd.DataFrame:
+        return super().sample()
 
     def resample(self, n_samples) -> None:
         for cls, cnt in n_samples.items():

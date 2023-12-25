@@ -1,6 +1,7 @@
 from . import Generator
 from synthtab.utils import console, SPINNER, REFRESH
 
+import pandas as pd
 from imblearn.over_sampling import ADASYN as ada
 from collections import Counter
 
@@ -8,9 +9,17 @@ from collections import Counter
 class ADASYN(Generator):
     def __init__(self, dataset, n_neighbors=5, sampling_strategy="auto") -> None:
         super().__init__(dataset)
-        self.__name__ = "ADASYN"
         self.n_neighbors = n_neighbors
         self.sampling_strategy = sampling_strategy
+
+    def preprocess(self) -> None:
+        super().preprocess()
+
+    def train(self) -> None:
+        super().train()
+
+    def sample(self) -> pd.DataFrame:
+        return super().sample()
 
     def resample(self, n_samples) -> None:
         for cls, cnt in n_samples.items():

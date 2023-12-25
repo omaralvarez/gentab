@@ -205,7 +205,6 @@ class MLP(Evaluator):
         **kwargs,
     ) -> None:
         super().__init__(generator)
-        self.__name__ = "MLP"
         self.model = MLPClassifier(
             self.generator.dataset.num_features(),
             self.generator.dataset.num_classes(),

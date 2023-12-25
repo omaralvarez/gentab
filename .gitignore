@@ -5,7 +5,7 @@ data.tar
 config.toml
 .sample.csv.temp
 model_playnet.pt
-results.py
+results*.py
 lightning_logs/
 .scale*
 

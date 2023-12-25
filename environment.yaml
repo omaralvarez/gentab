@@ -27,4 +27,5 @@ dependencies:
     - datasets
     - be-great
     - lightning
+    - ucimlrepo
     
