@@ -82,8 +82,10 @@ class Dataset:
         uci = fetch_ucirepo(name=self.config["name"])
 
         # metadata
-        console.print(uci.metadata)
+        # console.print(uci.metadata)
         console.print(uci.variables)
+
+        uci.data.features.fillna("Missing", inplace=True)
 
         self.X, self.X_test, self.y, self.y_test = train_test_split(
             uci.data.features,

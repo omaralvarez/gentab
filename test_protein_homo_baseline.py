@@ -16,11 +16,10 @@ from synthtab.generators import (
 from synthtab.data import Config, Dataset
 from synthtab.utils import console
 
-config = Config("datasets/car_evaluation/info.json")
+config = Config("datasets/protein_homo/info.json")
 
 dataset = Dataset(config)
-# TODO Fix mem reduction for categorical
-# dataset.reduce_mem()
+dataset.reduce_mem()
 
 # console.print(dataset.class_counts(), dataset.row_count())
 # generator = ROS(dataset)
@@ -42,7 +41,7 @@ dataset = Dataset(config)
 # console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 
 # console.print(dataset.class_counts(), dataset.row_count())
-# generator = TVAE(dataset)
+# generator = TVAE(dataset, max_tries_per_batch=8192, epochs=600)
 # generator.generate()
 # dataset.save_to_disk(generator)
 # console.print(dataset.generated_class_counts(), dataset.generated_row_count())
@@ -60,19 +59,18 @@ dataset = Dataset(config)
 # console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 
 # console.print(dataset.class_counts(), dataset.row_count())
-# generator = CopulaGAN(dataset)
+# generator = CopulaGAN(dataset, epochs=600)
 # generator.generate()
 # dataset.save_to_disk(generator)
 # console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 
-cat = list(dataset.X.columns)
-cat.append(dataset.config["y_label"])
 # console.print(dataset.class_counts(), dataset.row_count())
-# console.print(cat)
 # generator = CTABGAN(
 #     dataset,
 #     test_ratio=0.1,
-#     categorical_columns=cat,
+#     categorical_columns=[dataset.config["y_label"]],
+#     integer_columns=dataset.X.columns,
+#     # mixed_columns=dict([(c, [0.0]) for c in dataset.X.columns]),
 #     problem_type={"Classification": dataset.config["y_label"]},
 #     epochs=1000,
 # )
@@ -83,12 +81,13 @@ cat.append(dataset.config["y_label"])
 # console.print(dataset.class_counts(), dataset.row_count())
 # generator = CTABGANPlus(
 #     dataset,
-#     test_ratio=0.05,
-#     categorical_columns=cat,
+#     test_ratio=0.1,
+#     categorical_columns=[dataset.config["y_label"]],
 #     # TODO Abstract this.
 #     # mixed_columns=dict([(c, [0.0]) for c in dataset.X.columns]),
+#     integer_columns=dataset.X.columns,
 #     problem_type={"Classification": dataset.config["y_label"]},
-#     epochs=2000,
+#     epochs=1000,
 # )
 # generator.generate()
 # console.print(dataset.generated_class_counts(), dataset.generated_row_count())
@@ -109,7 +108,7 @@ dataset.save_to_disk(generator)
 console.print(dataset.class_counts(), dataset.row_count())
 generator = GReaT(
     dataset,
-    epochs=100,
+    epochs=15,
     max_length=1024,
     temperature=0.6,
     batch_size=32,
@@ -124,7 +123,7 @@ console.print(dataset.class_counts(), dataset.row_count())
 generator = Tabula(
     dataset,
     # categorical_columns=[dataset.config["y_label"]],
-    epochs=100,
+    epochs=15,
     max_length=1024,
     temperature=0.6,
     batch_size=32,

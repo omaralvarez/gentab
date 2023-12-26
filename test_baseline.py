@@ -30,6 +30,8 @@ dataset.reduce_size({
 })
 dataset.reduce_mem()
 
+console.print(dict([(c, [0.0]) for c in dataset.X.columns]))
+
 # console.print(dataset.class_counts(), dataset.row_count())
 # generator = ROS(dataset)
 # generator.generate()
@@ -110,34 +112,34 @@ dataset.reduce_mem()
 # console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 # dataset.save_to_disk(generator)
 
-console.print(dataset.class_counts(), dataset.row_count())
-generator = GReaT(
-    dataset,
-    epochs=15,
-    max_length=2000,
-    temperature=0.6,
-    batch_size=32,
-    max_tries_per_batch=4096,
-    n_samples=8192,
-)
-generator.generate()
-console.print(dataset.generated_class_counts(), dataset.generated_row_count())
-dataset.save_to_disk(generator)
+# console.print(dataset.class_counts(), dataset.row_count())
+# generator = GReaT(
+#     dataset,
+#     epochs=15,
+#     max_length=2000,
+#     temperature=0.6,
+#     batch_size=32,
+#     max_tries_per_batch=4096,
+#     n_samples=8192,
+# )
+# generator.generate()
+# console.print(dataset.generated_class_counts(), dataset.generated_row_count())
+# dataset.save_to_disk(generator)
 
-console.print(dataset.class_counts(), dataset.row_count())
-generator = Tabula(
-    dataset,
-    # categorical_columns=[dataset.config["y_label"]],
-    epochs=15,
-    max_length=1024,
-    temperature=0.6,
-    batch_size=32,
-    max_tries_per_batch=4096,
-    n_samples=8192,
-)
-generator.generate()
-generator.save_to_disk()
-console.print(dataset.generated_class_counts(), dataset.generated_row_count())
+# console.print(dataset.class_counts(), dataset.row_count())
+# generator = Tabula(
+#     dataset,
+#     # categorical_columns=[dataset.config["y_label"]],
+#     epochs=15,
+#     max_length=1024,
+#     temperature=0.6,
+#     batch_size=32,
+#     max_tries_per_batch=4096,
+#     n_samples=8192,
+# )
+# generator.generate()
+# generator.save_to_disk()
+# console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 
 
 # TODO Timing..
