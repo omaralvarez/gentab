@@ -108,6 +108,11 @@ dataset.reduce_size({
     "left_transition": 0.65,
     "time_out": 0.65,
 })
+dataset.merge_classes({
+    "attack": ["left_attack", "right_attack"],
+    "transition": ["left_transition", "right_transition"],
+    "penalty": ["left_penal", "right_penal"],
+})
 dataset.reduce_mem()
 
 generator = AutoDiffusion(dataset)

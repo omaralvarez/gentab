@@ -28,11 +28,16 @@ dataset.reduce_size({
     "left_penalty": 0.1,
     "right_penalty": 0.25,
 })
+console.print(dataset.class_counts(), dataset.row_count())
+
+dataset.merge_classes({
+    "attack": ["left_attack", "right_attack"],
+    "transition": ["left_transition", "right_transition"],
+    "penalty": ["left_penal", "right_penal"],
+})
 dataset.reduce_mem()
 
-console.print(dict([(c, [0.0]) for c in dataset.X.columns]))
-
-# console.print(dataset.class_counts(), dataset.row_count())
+console.print(dataset.class_counts(), dataset.row_count())
 # generator = ROS(dataset)
 # generator.generate()
 # dataset.save_to_disk(generator)

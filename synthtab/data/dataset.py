@@ -127,6 +127,11 @@ class Dataset:
 
         console.print("✅ {} dataset loaded...".format(name))
 
+    def merge_classes(self, merge: dict[str, list[str]]) -> None:
+        for cls, labs in merge.items():
+            self.y[self.y[self.config["y_label"]].isin(labs)] = cls
+            self.y_test[self.y_test[self.config["y_label"]].isin(labs)] = cls
+
     def num_classes(self) -> int:
         return self.y[self.config["y_label"]].nunique()
 
