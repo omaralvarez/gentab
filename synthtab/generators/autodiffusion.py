@@ -19,6 +19,7 @@ class AutoDiffusion(Generator):
         self,
         dataset,
         threshold=0.01,
+        # TODO keep common device for everything
         device="cuda",
         max_tries_per_batch=4096,
         n_epochs=10000,
@@ -86,6 +87,7 @@ class AutoDiffusion(Generator):
         )
 
     def sample(self) -> pd.DataFrame:
+        # TODO Should this T not be equal to training (self.T)?
         T = 300
         N = self.latent_features.shape[0]
         P = self.latent_features.shape[1]

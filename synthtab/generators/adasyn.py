@@ -11,9 +11,13 @@ class ADASYN(Generator):
         super().__init__(dataset)
         self.n_neighbors = n_neighbors
         self.sampling_strategy = sampling_strategy
+        self.X_ada = None
 
     def preprocess(self) -> None:
-        super().preprocess()
+        # TODO This does not work now
+        self.X_ada = self.dataset.encode_categories()
+
+    # TODO Postprocess to get back to categorical?
 
     def train(self) -> None:
         super().train()
@@ -29,7 +33,7 @@ class ADASYN(Generator):
             random_state=self.seed,
             sampling_strategy=n_samples,
             n_neighbors=self.n_neighbors,
-        ).fit_resample(self.dataset.X, self.dataset.y)
+        ).fit_resample(self.X_ada, self.dataset.y)
 
     def balance(self) -> None:
         # TODO Check if the loop is working, it looks like it does not
@@ -39,10 +43,10 @@ class ADASYN(Generator):
                     random_state=self.seed,
                     sampling_strategy=self.sampling_strategy,
                     n_neighbors=self.n_neighbors,
-                ).fit_resample(self.dataset.X, self.dataset.y)
+                ).fit_resample(self.X_ada, self.dataset.y)
         else:
             self.dataset.X_gen, self.dataset.y_gen = ada(
                 random_state=self.seed,
                 sampling_strategy=self.sampling_strategy,
                 n_neighbors=self.n_neighbors,
-            ).fit_resample(self.dataset.X, self.dataset.y)
+            ).fit_resample(self.X_ada, self.dataset.y)

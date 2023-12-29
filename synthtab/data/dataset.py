@@ -127,6 +127,14 @@ class Dataset:
 
         console.print("✅ {} dataset loaded...".format(name))
 
+    def encode_categories(self) -> pd.DataFrame:
+        X_enc = self.X
+        # TODO Ignore if imblearn
+        cats = self.config["categorical_columns"] + self.config["binary_columns"]
+        X_enc[cats] = X_enc[cats].apply(lambda col: pd.Categorical(col))
+
+        return X_enc
+
     def merge_classes(self, merge: dict[str, list[str]]) -> None:
         for cls, labs in merge.items():
             self.y[self.y[self.config["y_label"]].isin(labs)] = cls

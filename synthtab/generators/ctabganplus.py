@@ -13,28 +13,29 @@ class CTABGANPlus(Generator):
         self,
         dataset,
         test_ratio=0.20,
-        categorical_columns=[],
-        mixed_columns={},
-        integer_columns=[],
-        log_columns=[],
-        general_columns=[],
-        non_categorical_columns=[],
-        problem_type={},
         epochs=300,
         batch_size=8192,
         max_tries_per_batch=4096,
     ) -> None:
         super().__init__(dataset, batch_size, max_tries_per_batch)
+        # TODO Use the rest of the constructor options
         self.synthesizer = CTABGANSynthesizer(epochs=epochs)
         self.raw_df = self.dataset.get_single_df()
         self.test_ratio = test_ratio
-        self.categorical_columns = categorical_columns
-        self.log_columns = log_columns
-        self.mixed_columns = mixed_columns
-        self.integer_columns = integer_columns
-        self.general_columns = general_columns
-        self.non_categorical_columns = non_categorical_columns
-        self.problem_type = problem_type
+        self.categorical_columns = (
+            self.config["categorical_columns"]
+            + self.config["binary_columns"]
+            + [self.config["y_label"]]
+        )
+        self.integer_columns = self.config["integer_columns"]
+        self.log_columns = self.config[str(self)]["log_columns"]
+        self.mixed_columns = self.config[str(self)]["mixed_columns"]
+        self.general_columns = self.config[str(self)]["general_columns"]
+        self.non_categorical_columns = self.config[str(self)]["non_categorical_columns"]
+        if self.config["task_type"] in ["multiclass", "binary"]:
+            self.problem_type = {"Classification": dataset.config["y_label"]}
+        else:
+            self.problem_type = {"Regression": dataset.config["y_label"]}
 
     def preprocess(self) -> None:
         self.data_prep = DataPrep(

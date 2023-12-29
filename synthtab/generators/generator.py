@@ -10,6 +10,7 @@ class Generator:
         self.max_tries_per_batch = max_tries_per_batch
         # Reset generated dataframes
         self.dataset = dataset
+        self.config = dataset.config
         self.dataset.X_gen = None
         self.dataset.y_gen = None
         # Get class counts

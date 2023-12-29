@@ -16,32 +16,19 @@ from synthtab.generators import (
 from synthtab.data import Config, Dataset
 from synthtab.utils import console
 
-config = Config("datasets/playnet/info.json")
+config = Config("datasets/adult/info.json")
 
 dataset = Dataset(config)
-dataset.reduce_size({
-    "left_attack": 0.9,
-    "right_attack": 0.9,
-    "right_transition": 0.9,
-    "left_transition": 0.9,
-    "time_out": 0.9,
-    "left_penalty": 0.1,
-    "right_penalty": 0.25,
-})
-console.print(dataset.class_counts(), dataset.row_count())
+dataset.merge_classes({"<=50K": ["<=50K."], ">50K": [">50K."]})
+# TODO TypeError: Categorical is not ordered for operation min
+# you can use .as_ordered() to change the Categorical to an ordered one
+# dataset.reduce_mem()
 
-# dataset.merge_classes({
-#     "attack": ["left_attack", "right_attack"],
-#     "transition": ["left_transition", "right_transition"],
-#     "penalty": ["left_penal", "right_penal"],
-# })
-dataset.reduce_mem()
-
-console.print(dataset.class_counts(), dataset.row_count())
-generator = ROS(dataset)
-generator.generate()
-dataset.save_to_disk(generator)
-console.print(dataset.generated_class_counts(), dataset.generated_row_count())
+# console.print(dataset.class_counts(), dataset.row_count())
+# generator = ROS(dataset)
+# generator.generate()
+# dataset.save_to_disk(generator)
+# console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 
 # console.print(dataset.class_counts(), dataset.row_count())
 # generator = SMOTE(dataset)
@@ -84,9 +71,6 @@ console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 # generator = CTABGAN(
 #     dataset,
 #     test_ratio=0.10,
-#     categorical_columns=[dataset.config["y_label"]],
-#     mixed_columns=dict([(c, [0.0]) for c in dataset.X.columns]),
-#     problem_type={"Classification": dataset.config["y_label"]},
 # )
 # generator.generate()
 # console.print(dataset.generated_class_counts(), dataset.generated_row_count())
@@ -96,10 +80,6 @@ console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 # generator = CTABGANPlus(
 #     dataset,
 #     test_ratio=0.10,
-#     categorical_columns=[dataset.config["y_label"]],
-#     # TODO Abstract this.
-#     mixed_columns=dict([(c, [0.0]) for c in dataset.X.columns]),
-#     problem_type={"Classification": dataset.config["y_label"]},
 # )
 # generator.generate()
 # console.print(dataset.generated_class_counts(), dataset.generated_row_count())
@@ -111,40 +91,40 @@ console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 # console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 # dataset.save_to_disk(generator)
 
-# console.print(dataset.class_counts(), dataset.row_count())
-# generator = ForestDiffusion(dataset, n_jobs=1, duplicate_K=4, n_estimators=100)
-# generator.generate()
-# console.print(dataset.generated_class_counts(), dataset.generated_row_count())
-# dataset.save_to_disk(generator)
+console.print(dataset.class_counts(), dataset.row_count())
+generator = ForestDiffusion(dataset, n_jobs=1, duplicate_K=4, n_estimators=100)
+generator.generate()
+console.print(dataset.generated_class_counts(), dataset.generated_row_count())
+dataset.save_to_disk(generator)
 
-# console.print(dataset.class_counts(), dataset.row_count())
-# generator = GReaT(
-#     dataset,
-#     epochs=15,
-#     max_length=2000,
-#     temperature=0.6,
-#     batch_size=32,
-#     max_tries_per_batch=4096,
-#     n_samples=8192,
-# )
-# generator.generate()
-# console.print(dataset.generated_class_counts(), dataset.generated_row_count())
-# dataset.save_to_disk(generator)
+console.print(dataset.class_counts(), dataset.row_count())
+generator = GReaT(
+    dataset,
+    epochs=15,
+    max_length=2000,
+    temperature=0.6,
+    batch_size=32,
+    max_tries_per_batch=4096,
+    n_samples=8192,
+)
+generator.generate()
+console.print(dataset.generated_class_counts(), dataset.generated_row_count())
+dataset.save_to_disk(generator)
 
-# console.print(dataset.class_counts(), dataset.row_count())
-# generator = Tabula(
-#     dataset,
-#     # categorical_columns=[dataset.config["y_label"]],
-#     epochs=15,
-#     max_length=1024,
-#     temperature=0.6,
-#     batch_size=32,
-#     max_tries_per_batch=4096,
-#     n_samples=8192,
-# )
-# generator.generate()
-# generator.save_to_disk()
-# console.print(dataset.generated_class_counts(), dataset.generated_row_count())
+console.print(dataset.class_counts(), dataset.row_count())
+generator = Tabula(
+    dataset,
+    # categorical_columns=[dataset.config["y_label"]],
+    epochs=15,
+    max_length=1024,
+    temperature=0.6,
+    batch_size=32,
+    max_tries_per_batch=4096,
+    n_samples=8192,
+)
+generator.generate()
+generator.save_to_disk()
+console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 
 
 # TODO Timing..

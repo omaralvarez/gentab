@@ -16,7 +16,7 @@ class CTABGAN(Generator):
     Variables:
     1) raw_csv_path -> path to real dataset used for generation
     2) test_ratio -> parameter to choose ratio of size of test to train data
-    3) categorical_columns -> list of column names with a categorical distribution
+    3) categorical_columns -> list of column names with a categorical distribution (including label)
     4) log_columns -> list of column names with a skewed exponential distribution
     5) mixed_columns -> dictionary of column name and categorical modes used for "mix" of numeric and categorical distribution
     6) integer_columns -> list of numeric column names without floating numbers
@@ -35,24 +35,27 @@ class CTABGAN(Generator):
         self,
         dataset,
         test_ratio=0.20,
-        categorical_columns=[],
-        log_columns=[],
-        mixed_columns={},
-        integer_columns=[],
-        problem_type={},
         epochs=300,
         batch_size=8192,
         max_tries_per_batch=4096,
     ) -> None:
         super().__init__(dataset, batch_size, max_tries_per_batch)
+        # TODO Use the rest of the constructor options
         self.synthesizer = CTABGANSynthesizer(epochs=epochs)
         self.raw_df = self.dataset.get_single_df()
         self.test_ratio = test_ratio
-        self.categorical_columns = categorical_columns
-        self.log_columns = log_columns
-        self.mixed_columns = mixed_columns
-        self.integer_columns = integer_columns
-        self.problem_type = problem_type
+        self.categorical_columns = (
+            self.config["categorical_columns"]
+            + self.config["binary_columns"]
+            + [self.config["y_label"]]
+        )
+        self.log_columns = self.config[str(self)]["log_columns"]
+        self.mixed_columns = self.config[str(self)]["mixed_columns"]
+        self.integer_columns = self.config["integer_columns"]
+        if self.config["task_type"] in ["multiclass", "binary"]:
+            self.problem_type = {"Classification": dataset.config["y_label"]}
+        else:
+            self.problem_type = {"Regression": dataset.config["y_label"]}
 
     def preprocess(self) -> None:
         self.data_prep = DataPrep(

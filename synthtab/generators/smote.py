@@ -25,15 +25,22 @@ class SMOTE(Generator):
     def resample(self, n_samples) -> None:
         for cls, cnt in n_samples.items():
             n_samples[cls] += self.orig_counts[cls]
-
-        self.dataset.X_gen, self.dataset.y_gen = sm(
-            random_state=self.seed,
-            sampling_strategy=n_samples,
-            k_neighbors=self.k_neighbors,
-        ).fit_resample(self.dataset.X, self.dataset.y)
+        if len(self.dataset.X._get_numeric_data().columns) != len(
+            self.dataset.X.columns
+        ):
+            self.dataset.X_gen, self.dataset.y_gen = smn(
+                random_state=self.seed,
+                sampling_strategy=n_samples,
+                k_neighbors=self.k_neighbors,
+            ).fit_resample(self.dataset.X, self.dataset.y)
+        else:
+            self.dataset.X_gen, self.dataset.y_gen = sm(
+                random_state=self.seed,
+                sampling_strategy=n_samples,
+                k_neighbors=self.k_neighbors,
+            ).fit_resample(self.dataset.X, self.dataset.y)
 
     def balance(self) -> None:
-        console.print(self.dataset.X.columns)
         if len(self.dataset.X._get_numeric_data().columns) != len(
             self.dataset.X.columns
         ):

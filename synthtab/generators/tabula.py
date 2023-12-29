@@ -43,8 +43,8 @@ class Tabula(Generator):
         epochs: int = 100,
         batch_size: int = 8,
         max_tries_per_batch: int = 512,
-        categorical_columns: list = [],
         resume_from_checkpoint: tp.Union[bool, str] = False,
+        encode_categories: bool = False,  # Reduce token length using int categories
         # Generation options
         start_col: tp.Optional[str] = "",
         start_col_dist: tp.Optional[tp.Union[dict, list]] = None,
@@ -59,7 +59,7 @@ class Tabula(Generator):
     ) -> None:
         super().__init__(dataset, batch_size, max_tries_per_batch)
         self.data = self.dataset.get_single_df()
-        self.categorical_columns = categorical_columns
+        self.categorical_columns = self.categorical_columns if encode_categories else []
         self.llm = llm
         self.experiment_dir = experiment_dir
         self.resume_from_checkpoint = resume_from_checkpoint
