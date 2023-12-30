@@ -44,6 +44,8 @@ class TVAETuner(Tuner):
         )
         self.generator.generate()
 
+        trial.set_user_attr("generator", self.generator)
+
         acc, mcc = self.evaluator.evaluate()
 
         return mcc

@@ -124,7 +124,6 @@ class Generator:
         self.dataset.set_split_result(data_gen)
 
     # TODO Flag to append or just leave generated
-
     def generate(self, n_samples=None) -> None:
         with console.status(
             "Preprocessing {}...".format(self.dataset),

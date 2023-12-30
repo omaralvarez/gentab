@@ -68,10 +68,6 @@ dataset.reduce_mem()
 # generator = CTABGAN(
 #     dataset,
 #     test_ratio=0.1,
-#     categorical_columns=[dataset.config["y_label"]],
-#     integer_columns=dataset.X.columns,
-#     # mixed_columns=dict([(c, [0.0]) for c in dataset.X.columns]),
-#     problem_type={"Classification": dataset.config["y_label"]},
 #     epochs=1000,
 # )
 # generator.generate()
@@ -82,11 +78,6 @@ dataset.reduce_mem()
 # generator = CTABGANPlus(
 #     dataset,
 #     test_ratio=0.1,
-#     categorical_columns=[dataset.config["y_label"]],
-#     # TODO Abstract this.
-#     # mixed_columns=dict([(c, [0.0]) for c in dataset.X.columns]),
-#     integer_columns=dataset.X.columns,
-#     problem_type={"Classification": dataset.config["y_label"]},
 #     epochs=1000,
 # )
 # generator.generate()
@@ -133,6 +124,3 @@ generator = Tabula(
 generator.generate()
 generator.save_to_disk()
 console.print(dataset.generated_class_counts(), dataset.generated_row_count())
-
-
-# TODO Timing..

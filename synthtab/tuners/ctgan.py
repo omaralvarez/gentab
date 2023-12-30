@@ -15,8 +15,6 @@ class CTGANTuner(Tuner):
     ) -> None:
         super().__init__(evaluator)
 
-    # TODO Leave the best
-
     def objective(self, trial: optuna.trial.Trial) -> float:
         epochs = trial.suggest_int("epochs", 10, 600)
         batch_size_mult = trial.suggest_int("batch_size_mult", 16, 8192)
@@ -56,6 +54,8 @@ class CTGANTuner(Tuner):
             pac=pac,
         )
         self.generator.generate()
+
+        trial.set_user_attr("generator", self.generator)
 
         acc, mcc = self.evaluator.evaluate()
 

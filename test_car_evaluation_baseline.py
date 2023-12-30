@@ -19,7 +19,6 @@ from synthtab.utils import console
 config = Config("datasets/car_evaluation/info.json")
 
 dataset = Dataset(config)
-# TODO Fix mem reduction for categorical
 # dataset.reduce_mem()
 
 # console.print(dataset.class_counts(), dataset.row_count())
@@ -65,15 +64,11 @@ dataset = Dataset(config)
 # dataset.save_to_disk(generator)
 # console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 
-cat = list(dataset.X.columns)
-cat.append(dataset.config["y_label"])
 # console.print(dataset.class_counts(), dataset.row_count())
 # console.print(cat)
 # generator = CTABGAN(
 #     dataset,
 #     test_ratio=0.1,
-#     categorical_columns=cat,
-#     problem_type={"Classification": dataset.config["y_label"]},
 #     epochs=1000,
 # )
 # generator.generate()
@@ -84,10 +79,6 @@ cat.append(dataset.config["y_label"])
 # generator = CTABGANPlus(
 #     dataset,
 #     test_ratio=0.05,
-#     categorical_columns=cat,
-#     # TODO Abstract this.
-#     # mixed_columns=dict([(c, [0.0]) for c in dataset.X.columns]),
-#     problem_type={"Classification": dataset.config["y_label"]},
 #     epochs=2000,
 # )
 # generator.generate()
@@ -134,6 +125,3 @@ generator = Tabula(
 generator.generate()
 generator.save_to_disk()
 console.print(dataset.generated_class_counts(), dataset.generated_row_count())
-
-
-# TODO Timing..

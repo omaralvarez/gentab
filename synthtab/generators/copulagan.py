@@ -25,7 +25,7 @@ class CopulaGAN(Generator):
         generator_decay=1e-6,
         generator_dim=(256, 256),
         generator_lr=2e-4,
-        # TODO https://github.com/sdv-dev/SDV/issues/1231 maybe set batch size to 10*x
+        # https://github.com/sdv-dev/SDV/issues/1231 batch_size needs to be multiple of pac
         pac=10,
         cuda=True,
         locales=["en_US"],
@@ -80,7 +80,6 @@ class CopulaGAN(Generator):
             generator_lr=self.generator_lr,
             locales=self.locales,
             numerical_distributions=self.numerical_distributions,
-            # TODO Same as CTGAN
             pac=self.pac,
             cuda=self.cuda,
         )

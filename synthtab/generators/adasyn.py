@@ -14,10 +14,7 @@ class ADASYN(Generator):
         self.X_ada = None
 
     def preprocess(self) -> None:
-        # TODO This does not work now
         self.X_ada = self.dataset.encode_categories()
-
-    # TODO Postprocess to get back to categorical?
 
     def train(self) -> None:
         super().train()
@@ -35,8 +32,9 @@ class ADASYN(Generator):
             n_neighbors=self.n_neighbors,
         ).fit_resample(self.X_ada, self.dataset.y)
 
+        self.dataset.X_gen = self.dataset.decode_categories(self.dataset.X_gen)
+
     def balance(self) -> None:
-        # TODO Check if the loop is working, it looks like it does not
         if self.sampling_strategy == "minority":
             for _ in range(self.dataset.num_classes() - 1):
                 self.dataset.X_gen, self.dataset.y_gen = ada(
@@ -50,3 +48,5 @@ class ADASYN(Generator):
                 sampling_strategy=self.sampling_strategy,
                 n_neighbors=self.n_neighbors,
             ).fit_resample(self.X_ada, self.dataset.y)
+
+        self.dataset.X_gen = self.dataset.decode_categories(self.dataset.X_gen)

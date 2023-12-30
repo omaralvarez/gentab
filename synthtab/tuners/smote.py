@@ -23,7 +23,6 @@ class SMOTETuner(Tuner):
 
         acc, mcc = self.evaluator.evaluate()
 
-        # TODO Maybe too much memory, maybe fill some other way in the tune func
         trial.set_user_attr("generator", self.generator)
 
         return mcc

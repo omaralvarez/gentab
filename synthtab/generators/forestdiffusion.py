@@ -58,35 +58,27 @@ class ForestDiffusion(Generator):
         self.n_batch = batch_size
 
     def preprocess(self) -> None:
+        X = self.dataset.encode_categories()
+
+        # due to forestdiffusion not using pd.DF we need to get col idx...
+        # vector which indicates which column is binary
+        self.bin_indexes = [X.columns.get_loc(k) for k in self.config["binary_columns"]]
+        # vector which indicates which column is categorical (>=3 categories)
+        self.cat_indexes = [
+            X.columns.get_loc(k) for k in self.config["categorical_columns"]
+        ]
+        # vector which indicates which column is an integer (ordinal variables such as number of cats in a box)
+        self.int_indexes = [
+            X.columns.get_loc(k) for k in self.config["integer_columns"]
+        ]
+
+        self.X = X.to_numpy()
+
         if self.dataset.config["task_type"] in ["binary", "multiclass"]:
-            self.X_cat = self.dataset.encode_categories()
-
-            X = self.X_cat
-            cat_columns = self.X_cat.select_dtypes(["category"]).columns
-            X[cat_columns] = X[cat_columns].apply(lambda col: col.cat.codes)
-
-            # due to forestdiffusion not using pd.DF we need to get col idx...
-            # vector which indicates which column is binary
-            self.bin_indexes = [
-                X.columns.get_loc(k) for k in self.config["binary_columns"]
-            ]
-            # vector which indicates which column is categorical (>=3 categories)
-            self.cat_indexes = [
-                X.columns.get_loc(k) for k in self.config["categorical_columns"]
-            ]
-            # vector which indicates which column is an integer (ordinal variables such as number of cats in a box)
-            self.int_indexes = [
-                X.columns.get_loc(k) for k in self.config["integer_columns"]
-            ]
-            self.X = X.to_numpy()
             self.codes = pd.Categorical(self.dataset.y[self.dataset.config["y_label"]])
             self.y = self.codes.codes
-            self.Xy = np.concatenate((self.X, np.expand_dims(self.y, axis=1)), axis=1)
-        else:
-            # TODO We need to deal with all categorical indexes in the pandas df
-            # set the indexes in the config for everything and then have them available
-            # for the methods that need them
-            self.Xy = self.dataset.get_single_df().to_numpy()
+
+        self.Xy = np.concatenate((self.X, np.expand_dims(self.y, axis=1)), axis=1)
 
     def train(self) -> None:
         if self.dataset.config["task_type"] in ["binary", "multiclass"]:
@@ -133,9 +125,7 @@ class ForestDiffusion(Generator):
                 subsample=self.subsample,
                 duplicate_K=self.duplicate_K,
                 bin_indexes=self.bin_indexes,
-                # TODO Double check this when using regression
                 cat_indexes=self.cat_indexes,
-                # cat_indexes=self.cat_indexes + [self.config["label_y"]],
                 int_indexes=self.int_indexes,
                 true_min_max_values=self.true_min_max_values,
                 gpu_hist=self.gpu_hist,
@@ -149,22 +139,23 @@ class ForestDiffusion(Generator):
 
     def sample(self) -> pd.DataFrame:
         Xy_gen = self.forest_model.generate(batch_size=self.batch_size)
+
+        df = pd.DataFrame(data=Xy_gen[:, :-1], columns=self.dataset.X.columns)
+
+        # This is due to the library not converting back to integer binary
+        # and categorical variables and not converting back to strings on its own
+        int_cls = self.config["binary_columns"] + self.config["categorical_columns"]
+        df[int_cls] = df[int_cls].apply(lambda col: col.round().astype("int64"))
+
+        df = self.dataset.decode_categories(df)
+
         if self.dataset.config["task_type"] in ["binary", "multiclass"]:
-            # TODO Go back to original data in categories in X, now we have ints
-            df = pd.DataFrame(data=Xy_gen[:, :-1], columns=self.dataset.X.columns)
-            # for col in self.X_cat.select_dtypes(["category"]).columns:
-            #     df[col] = pd.Categorical.from_codes(df[col], self.X_cat[col].cat.categories)
-            cat_columns = self.X_cat.select_dtypes(["category"]).columns
-            df[cat_columns] = df[cat_columns].apply(
-                lambda col: pd.Categorical.from_codes(
-                    col, self.X_cat[col.name].cat.categories
-                )
-            )
             df[self.dataset.config["y_label"]] = pd.DataFrame({"tmp": Xy_gen[:, -1]})[
                 "tmp"
             ].apply(lambda x: self.codes.categories[int(x)])
         else:
-            # TODO This for sure does not work
-            df = pd.DataFrame(data=Xy_gen, columns=self.dataset.get_single_df().columns)
+            df[self.dataset.config["y_label"]] = Xy_gen[:, -1]
+
+        # TODO Something here breaks the next generator
 
         return df

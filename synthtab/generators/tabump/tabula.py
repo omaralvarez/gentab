@@ -163,7 +163,6 @@ class TabMP:
         tabula_trainer.train(resume_from_checkpoint=resume_from_checkpoint)
         return tabula_trainer
 
-    # TODO Modify what is necessary here
     def sample(
         self,
         n_samples: int,
@@ -173,6 +172,7 @@ class TabMP:
         k: int = 100,
         max_length: int = 100,
         device: str = "cuda",
+        max_tries: int = 1338,
     ) -> pd.DataFrame:
         """Generate synthetic tabular data samples
 
@@ -206,7 +206,8 @@ class TabMP:
         # Start generation process
         with tqdm(total=n_samples) as pbar:
             already_generated = 0
-            while n_samples > df_gen.shape[0]:
+            tries = 0
+            while n_samples > df_gen.shape[0] and tries < max_tries:
                 start_tokens = tabula_start.get_start_tokens(k)
                 start_tokens = torch.tensor(start_tokens).to(device)
 
@@ -237,6 +238,13 @@ class TabMP:
                 # Update process bar
                 pbar.update(df_gen.shape[0] - already_generated)
                 already_generated = df_gen.shape[0]
+                tries += 1
+
+        if tries == max_tries:
+            raise RuntimeError(
+                "max_tries reached, use a higher number, model did not converge or"
+                " max_length is not high enough."
+            )
 
         df_gen = df_gen.reset_index(drop=True)
         return df_gen.head(n_samples)
@@ -264,7 +272,6 @@ class TabMP:
          Returns:
             Pandas DataFrame with synthetic data generated based on starting_prompts
         """
-        # ToDo: Add n_samples argument to generate more samples for one conditional input.
 
         self.model.to(device)
         starting_prompts = (

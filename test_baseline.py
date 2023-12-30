@@ -84,9 +84,6 @@ console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 # generator = CTABGAN(
 #     dataset,
 #     test_ratio=0.10,
-#     categorical_columns=[dataset.config["y_label"]],
-#     mixed_columns=dict([(c, [0.0]) for c in dataset.X.columns]),
-#     problem_type={"Classification": dataset.config["y_label"]},
 # )
 # generator.generate()
 # console.print(dataset.generated_class_counts(), dataset.generated_row_count())
@@ -96,10 +93,6 @@ console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 # generator = CTABGANPlus(
 #     dataset,
 #     test_ratio=0.10,
-#     categorical_columns=[dataset.config["y_label"]],
-#     # TODO Abstract this.
-#     mixed_columns=dict([(c, [0.0]) for c in dataset.X.columns]),
-#     problem_type={"Classification": dataset.config["y_label"]},
 # )
 # generator.generate()
 # console.print(dataset.generated_class_counts(), dataset.generated_row_count())
@@ -145,6 +138,3 @@ console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 # generator.generate()
 # generator.save_to_disk()
 # console.print(dataset.generated_class_counts(), dataset.generated_row_count())
-
-
-# TODO Timing..

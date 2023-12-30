@@ -19,7 +19,6 @@ from synthtab.utils import console
 config = Config("datasets/congressional/info.json")
 
 dataset = Dataset(config)
-# TODO Fix mem reduction for categorical
 # dataset.reduce_mem()
 
 # console.print(dataset.class_counts(), dataset.row_count())
@@ -84,10 +83,6 @@ console.print(cat)
 # generator = CTABGANPlus(
 #     dataset,
 #     test_ratio=0.05,
-#     categorical_columns=cat,
-#     # TODO Abstract this.
-#     # mixed_columns=dict([(c, [0.0]) for c in dataset.X.columns]),
-#     problem_type={"Classification": dataset.config["y_label"]},
 #     epochs=2000,
 # )
 # generator.generate()
@@ -134,6 +129,3 @@ console.print(cat)
 # generator.generate()
 # generator.save_to_disk()
 # console.print(dataset.generated_class_counts(), dataset.generated_row_count())
-
-
-# TODO Timing..

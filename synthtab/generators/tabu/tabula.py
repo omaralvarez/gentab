@@ -303,7 +303,6 @@ class Tab:
          Returns:
             Pandas DataFrame with synthetic data generated based on starting_prompts
         """
-        # ToDo: Add n_samples argument to generate more samples for one conditional input.
 
         self.model.to(device)
         starting_prompts = (

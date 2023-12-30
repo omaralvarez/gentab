@@ -3,7 +3,13 @@ from collections import Counter
 from torch.utils.data import Dataset
 
 
-__all__ = ['StandardScaler', 'LabelEncoder', 'FreqLabelEncoder', 'DataFrameParser', 'SingleDataset']
+__all__ = [
+    "StandardScaler",
+    "LabelEncoder",
+    "FreqLabelEncoder",
+    "DataFrameParser",
+    "SingleDataset",
+]
 
 
 class StandardScaler(object):
@@ -41,7 +47,8 @@ class LabelEncoder(object):
 
 
 class FreqLabelEncoder(object):
-    ''' A composition of label encoding and frequency encoding. Not reversible. '''
+    """A composition of label encoding and frequency encoding. Not reversible."""
+
     def __init__(self):
         self.freq_counts = None
 
@@ -64,24 +71,25 @@ class FreqLabelEncoder(object):
 
 
 class DataFrameParser(object):
-    """ Transform dataframe to numpy array for modeling. Not a reversible process.
+    """Transform dataframe to numpy array for modeling. Not a reversible process.
 
-        It will reshuffle the columns according to datatype: binary->categorical->numerical
+    It will reshuffle the columns according to datatype: binary->categorical->numerical
 
-        Encoding:
-            + Binary variables will be coded as 0, 1
-            + Small categorical variables will be label encoded as integers.
-            + Categorical variables with large cardinalities will go through count/frequency encoding before label encoding.
-            + Numerical will be standardized.
+    Encoding:
+        + Binary variables will be coded as 0, 1
+        + Small categorical variables will be label encoded as integers.
+        + Categorical variables with large cardinalities will go through count/frequency encoding before label encoding.
+        + Numerical will be standardized.
 
-        NaN handling:
-            + Fill with mean for numerical. # TODO: Need handling of NaN in categorical? If present in training data is fine.
+    NaN handling:
+        + Fill with mean for numerical. # NODO: Need handling of NaN in categorical? If present in training data is fine.
 
     """
+
     def __init__(self, max_cardinality=128):
         self.max_cardinality = max_cardinality
         self.binary_columns = list()
-        self.categorical_columns = dict() # variable name to mode mapping
+        self.categorical_columns = dict()  # variable name to mode mapping
         self._cards = list()
         self.numerical_columns = list()
         self.need_freq_encoding = set()
@@ -92,7 +100,7 @@ class DataFrameParser(object):
 
         # sort through columns in dataframe.
         for column, datatype in column_to_dtype.items():
-            if datatype in ['O', '<U32']:
+            if datatype in ["O", "<U32"]:
                 cardinality = dataframe[column].nunique(dropna=False)
                 if cardinality == 2:
                     self.binary_columns.append(column)
@@ -100,12 +108,18 @@ class DataFrameParser(object):
                     self.categorical_columns[column] = dataframe[column].mode()
                     if cardinality > self.max_cardinality:
                         self.need_freq_encoding.add(column)
-            elif np.issubdtype(datatype, np.integer) and dataframe[column].nunique() == 2:
+            elif (
+                np.issubdtype(datatype, np.integer) and dataframe[column].nunique() == 2
+            ):
                 self.binary_columns.append(column)
             else:
                 self.numerical_columns.append(column)
 
-        self._column_order = self.binary_columns + list(self.categorical_columns.keys()) + self.numerical_columns
+        self._column_order = (
+            self.binary_columns
+            + list(self.categorical_columns.keys())
+            + self.numerical_columns
+        )
 
         # fit encoders
         encoders = dict()
@@ -122,7 +136,7 @@ class DataFrameParser(object):
         for column in self.numerical_columns:
             encoders[column] = StandardScaler().fit(dataframe[column])
 
-        self._embeds = [int(min(600, 1.6 * card ** .5)) for card in self._cards]
+        self._embeds = [int(min(600, 1.6 * card**0.5)) for card in self._cards]
         self.encoders = encoders
         return self
 
@@ -145,36 +159,47 @@ class DataFrameParser(object):
         return np.array(output)
 
     @property
-    def n_bins(self): return len(self.binary_columns)
+    def n_bins(self):
+        return len(self.binary_columns)
 
     @property
-    def n_cats(self): return len(self.categorical_columns)
+    def n_cats(self):
+        return len(self.categorical_columns)
 
     @property
-    def n_nums(self): return len(self.numerical_columns)
+    def n_nums(self):
+        return len(self.numerical_columns)
 
     @property
-    def cards(self): return self._cards
+    def cards(self):
+        return self._cards
 
     @property
-    def embeds(self): return self._embeds
+    def embeds(self):
+        return self._embeds
 
-    def datatype_info(self): return {'n_bins': self.n_bins, 'n_cats': self.n_cats, 'n_nums': self.n_nums}
+    def datatype_info(self):
+        return {"n_bins": self.n_bins, "n_cats": self.n_cats, "n_nums": self.n_nums}
 
 
 class SingleDataset(Dataset):
     def __init__(self, data, datatype_info):
         self.data = data
-        self.n_bins = datatype_info['n_bins']
-        self.n_cats = datatype_info['n_cats']
-        self.n_nums = datatype_info['n_nums']
+        self.n_bins = datatype_info["n_bins"]
+        self.n_cats = datatype_info["n_cats"]
+        self.n_nums = datatype_info["n_nums"]
 
     def __len__(self):
         return self.data.shape[0]
 
     def __getitem__(self, index):
         single_data = dict()
-        if self.n_bins: single_data['bins'] = self.data[index, :self.n_bins].astype('float32')
-        if self.n_cats: single_data['cats'] = self.data[index, self.n_bins: self.n_bins + self.n_cats].astype('float32')
-        if self.n_nums: single_data['nums'] = self.data[index, -self.n_nums:].astype('float32')
+        if self.n_bins:
+            single_data["bins"] = self.data[index, : self.n_bins].astype("float32")
+        if self.n_cats:
+            single_data["cats"] = self.data[
+                index, self.n_bins : self.n_bins + self.n_cats
+            ].astype("float32")
+        if self.n_nums:
+            single_data["nums"] = self.data[index, -self.n_nums :].astype("float32")
         return single_data

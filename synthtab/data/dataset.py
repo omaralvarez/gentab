@@ -34,11 +34,10 @@ class Dataset:
                 else:
                     self.download_imb()
 
-            # TODO Not necessary for imb learning
             self.label_encoder = LabelEncoder()
             self.label_encoder.fit(self.y)
-            # self.label_encoder_ohe = OneHotEncoder(sparse_output=False)
-            # self.label_encoder_ohe.fit(self.y)
+            self.label_encoder_ohe = OneHotEncoder(sparse_output=False)
+            self.label_encoder_ohe.fit(self.y)
 
         console.print("✅ Dataset loaded...")
 
@@ -65,6 +64,11 @@ class Dataset:
             random_state=SEED,
             stratify=labels,
         )
+
+        self.config["binary_columns"] = self.X.columns.values.tolist()
+        self.config["categorical_columns"] = []
+        self.config["integer_columns"] = []
+
         # train_ratio = 0.75
         # validation_ratio = 0.15
         # test_ratio = 0.10
@@ -128,12 +132,31 @@ class Dataset:
         console.print("✅ {} dataset loaded...".format(name))
 
     def encode_categories(self) -> pd.DataFrame:
-        X_enc = self.X
-        # TODO Ignore if imblearn
-        cats = self.config["categorical_columns"] + self.config["binary_columns"]
-        X_enc[cats] = X_enc[cats].apply(lambda col: pd.Categorical(col))
+        if self.config["download"] == "imbalanced":
+            return self.X
+        else:
+            cats = self.config["categorical_columns"] + self.config["binary_columns"]
+            self.X[cats] = self.X[cats].apply(lambda col: pd.Categorical(col))
+            # TODO Check if this breaks GReaT, looks like it tries to deal with categ.
+            # and it cant
+
+            X_enc = self.X.copy()
+            X_enc[cats] = X_enc[cats].apply(lambda col: col.cat.codes)
 
         return X_enc
+
+    def decode_categories(self, df: pd.DataFrame) -> pd.DataFrame:
+        if self.config["download"] == "imbalanced":
+            return df
+        else:
+            cat_columns = self.X.select_dtypes(["category"]).columns
+            df[cat_columns] = df[cat_columns].apply(
+                lambda col: pd.Categorical.from_codes(
+                    col, self.X[col.name].cat.categories
+                )
+            )
+
+        return df
 
     def merge_classes(self, merge: dict[str, list[str]]) -> None:
         for cls, labs in merge.items():
@@ -237,7 +260,6 @@ class Dataset:
             else:
                 self.X[col] = self.X[col].astype("category")
 
-    # TODO Does not work numpy
     def reduce_mem(self) -> None:
         """iterate through all the columns of a dataframe and modify the data type
         to reduce memory usage.

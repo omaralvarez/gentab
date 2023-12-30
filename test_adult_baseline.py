@@ -91,11 +91,11 @@ dataset.merge_classes({"<=50K": ["<=50K."], ">50K": [">50K."]})
 # console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 # dataset.save_to_disk(generator)
 
-console.print(dataset.class_counts(), dataset.row_count())
-generator = ForestDiffusion(dataset, n_jobs=1, duplicate_K=4, n_estimators=100)
-generator.generate()
-console.print(dataset.generated_class_counts(), dataset.generated_row_count())
-dataset.save_to_disk(generator)
+# console.print(dataset.class_counts(), dataset.row_count())
+# generator = ForestDiffusion(dataset, n_jobs=1, duplicate_K=4, n_estimators=100)
+# generator.generate()
+# console.print(dataset.generated_class_counts(), dataset.generated_row_count())
+# dataset.save_to_disk(generator)
 
 console.print(dataset.class_counts(), dataset.row_count())
 generator = GReaT(
@@ -114,7 +114,6 @@ dataset.save_to_disk(generator)
 console.print(dataset.class_counts(), dataset.row_count())
 generator = Tabula(
     dataset,
-    # categorical_columns=[dataset.config["y_label"]],
     epochs=15,
     max_length=1024,
     temperature=0.6,

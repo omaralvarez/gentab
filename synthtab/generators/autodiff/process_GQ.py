@@ -102,7 +102,7 @@ class DataFrameParser(object):
         + Categorical variables with large cardinalities will go through count/frequency encoding before label encoding.
         + Numerical will be standardized.
     NaN handling:
-        + Fill with mean for numerical. # TODO: Need handling of NaN in categorical? If present in training data is fine.
+        + Fill with mean for numerical. # NODO: Need handling of NaN in categorical? If present in training data is fine.
     """
 
     def __init__(self, max_cardinality=128):
@@ -163,9 +163,11 @@ class DataFrameParser(object):
                     self.new_dataframe[new_column_name] = self.new_dataframe[
                         column
                     ].apply(
-                        lambda x: repeated_entries.index(x) + 1
-                        if x in repeated_entries
-                        else 0
+                        lambda x: (
+                            repeated_entries.index(x) + 1
+                            if x in repeated_entries
+                            else 0
+                        )
                     )
                     self.new_dataframe[new_column_name] = self.new_dataframe[
                         new_column_name
@@ -178,9 +180,11 @@ class DataFrameParser(object):
                     self.new_dataframe[new_column_name] = self.new_dataframe[
                         column
                     ].apply(
-                        lambda x: repeated_entries.index(x) + 1
-                        if x in repeated_entries
-                        else 0
+                        lambda x: (
+                            repeated_entries.index(x) + 1
+                            if x in repeated_entries
+                            else 0
+                        )
                     )
                     self.new_dataframe[new_column_name] = self.new_dataframe[
                         new_column_name
@@ -372,9 +376,9 @@ def convert_to_table(org_df, gen_output, threshold):
         label_to_number = {
             label: number for label, number in enumerate(repeated_entries, 1)
         }
-        array_replaced = np.array(
-            [label_to_number.get(label, label) for label in syn_df[cat_col]]
-        ).astype(int)
+        array_replaced = np.array([
+            label_to_number.get(label, label) for label in syn_df[cat_col]
+        ]).astype(int)
         syn_df[col] = np.where(
             array_replaced != 0, array_replaced, syn_df[col].to_numpy()
         )
@@ -396,9 +400,9 @@ def convert_to_table(org_df, gen_output, threshold):
         label_to_number = {
             label: number for label, number in enumerate(repeated_entries, 1)
         }
-        array_replaced = np.array(
-            [label_to_number.get(label, label) for label in syn_df[bin_col]]
-        ).astype(int)
+        array_replaced = np.array([
+            label_to_number.get(label, label) for label in syn_df[bin_col]
+        ]).astype(int)
         syn_df[col] = np.where(
             array_replaced != 0, array_replaced, syn_df[col].to_numpy()
         )

@@ -23,4 +23,6 @@ class ADASYNTuner(Tuner):
 
         acc, mcc = self.evaluator.evaluate()
 
+        trial.set_user_attr("generator", self.generator)
+
         return mcc

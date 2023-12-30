@@ -120,9 +120,7 @@ def _make_nn_module(module_type: ModuleType, *args) -> nn.Module:
         (
             ReGLU()
             if module_type == "ReGLU"
-            else GEGLU()
-            if module_type == "GEGLU"
-            else getattr(nn, module_type)(*args)
+            else GEGLU() if module_type == "GEGLU" else getattr(nn, module_type)(*args)
         )
         if isinstance(module_type, str)
         else module_type(*args)
@@ -189,20 +187,19 @@ class MLP(nn.Module):
         assert len(d_layers) == len(dropouts)
         assert activation not in ["ReGLU", "GEGLU"]
 
-        self.blocks = nn.ModuleList(
-            [
-                MLP.Block(
-                    d_in=d_layers[i - 1] if i else d_in,
-                    d_out=d,
-                    bias=True,
-                    activation=activation,
-                    dropout=dropout,
-                )
-                for i, (d, dropout) in enumerate(zip(d_layers, dropouts))
-            ]
-        )
+        self.blocks = nn.ModuleList([
+            MLP.Block(
+                d_in=d_layers[i - 1] if i else d_in,
+                d_out=d,
+                bias=True,
+                activation=activation,
+                dropout=dropout,
+            )
+            for i, (d, dropout) in enumerate(zip(d_layers, dropouts))
+        ])
         self.head = nn.Linear(d_layers[-1] if d_layers else d_in, d_out)
 
+    # CODE MLP implementation for tabular
     @classmethod
     def make_baseline(
         cls: Type["MLP"],

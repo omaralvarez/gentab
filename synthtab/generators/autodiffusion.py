@@ -7,9 +7,6 @@ from synthtab.utils import console, SPINNER, REFRESH
 
 import pandas as pd
 
-
-# TODO TABDDPM & diffusion EulerMaruyama cuda in train_diffusion not working, check what is going on
-# TODO Check that everything uses same device, right now it is a mess
 # TODO (1) Stasy-AutoDiff : process_edited.py + diffusion.py + autoencoder.py
 #      (2) Tab-AutoDiff : proccess_GQ.py + TabDDPMdiff.py + autoencoder.py
 
@@ -19,7 +16,6 @@ class AutoDiffusion(Generator):
         self,
         dataset,
         threshold=0.01,
-        # TODO keep common device for everything
         device="cuda",
         max_tries_per_batch=4096,
         n_epochs=10000,
