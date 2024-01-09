@@ -16,3 +16,9 @@ class KNN(Evaluator):
             *args,
             **kwargs,
         )
+
+    def preprocess(self, X, y, X_test, y_test):
+        X = self.dataset.encode_categories(X)
+        X_test = self.dataset.encode_categories(X_test)
+
+        return X, y, X_test, y_test

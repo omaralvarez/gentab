@@ -34,10 +34,7 @@ class Dataset:
                 else:
                     self.download_imb()
 
-            self.label_encoder = LabelEncoder()
-            self.label_encoder.fit(self.y)
-            self.label_encoder_ohe = OneHotEncoder(sparse_output=False)
-            self.label_encoder_ohe.fit(self.y)
+            self.encode_labels()
 
         console.print("✅ Dataset loaded...")
 
@@ -145,6 +142,14 @@ class Dataset:
 
         return X_enc
 
+    # TODO Use only one
+    def encode_categories(self, df: pd.DataFrame) -> pd.DataFrame:
+        X_enc = df.copy()
+        cats = self.config["categorical_columns"] + self.config["binary_columns"]
+        X_enc[cats] = X_enc[cats].apply(lambda col: pd.Categorical(col).codes)
+
+        return X_enc
+
     def decode_categories(self, df: pd.DataFrame) -> pd.DataFrame:
         if self.config["download"] == "imbalanced":
             return df
@@ -162,6 +167,14 @@ class Dataset:
         for cls, labs in merge.items():
             self.y[self.y[self.config["y_label"]].isin(labs)] = cls
             self.y_test[self.y_test[self.config["y_label"]].isin(labs)] = cls
+
+        self.encode_labels()
+
+    def encode_labels(self):
+        self.label_encoder = LabelEncoder()
+        self.label_encoder.fit(self.y)
+        self.label_encoder_ohe = OneHotEncoder(sparse_output=False)
+        self.label_encoder_ohe.fit(self.y)
 
     def num_classes(self) -> int:
         return self.y[self.config["y_label"]].nunique()

@@ -215,8 +215,12 @@ class MLP(Evaluator):
         )
 
     def preprocess(self, X, y, X_test, y_test):
+        X = self.dataset.encode_categories(X)
+        X_test = self.dataset.encode_categories(X_test)
+
         y = self.generator.dataset.label_encoder_ohe.transform(y)
         y_test = self.generator.dataset.label_encoder_ohe.transform(y_test)
+
         return X, y, X_test, y_test
 
     def postprocess(self, pred):
