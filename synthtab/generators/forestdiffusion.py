@@ -58,7 +58,7 @@ class ForestDiffusion(Generator):
         self.n_batch = batch_size
 
     def preprocess(self) -> None:
-        X = self.dataset.encode_categories()
+        X = self.dataset.encode_categories(self.dataset.X)
 
         # due to forestdiffusion not using pd.DF we need to get col idx...
         # vector which indicates which column is binary
@@ -146,16 +146,14 @@ class ForestDiffusion(Generator):
         # and categorical variables and not converting back to strings on its own
         int_cls = self.config["binary_columns"] + self.config["categorical_columns"]
         df[int_cls] = df[int_cls].apply(lambda col: col.round().astype("int64"))
-
         df = self.dataset.decode_categories(df)
 
+        # TODO Use decode labels in dataset
         if self.dataset.config["task_type"] in ["binary", "multiclass"]:
             df[self.dataset.config["y_label"]] = pd.DataFrame({"tmp": Xy_gen[:, -1]})[
                 "tmp"
             ].apply(lambda x: self.codes.categories[int(x)])
         else:
             df[self.dataset.config["y_label"]] = Xy_gen[:, -1]
-
-        # TODO Something here breaks the next generator
 
         return df

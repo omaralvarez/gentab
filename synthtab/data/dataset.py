@@ -35,6 +35,7 @@ class Dataset:
                     self.download_imb()
 
             self.encode_labels()
+            self.get_categories()
 
         console.print("✅ Dataset loaded...")
 
@@ -128,25 +129,21 @@ class Dataset:
 
         console.print("✅ {} dataset loaded...".format(name))
 
-    def encode_categories(self) -> pd.DataFrame:
-        if self.config["download"] == "imbalanced":
-            return self.X
-        else:
-            cats = self.config["categorical_columns"] + self.config["binary_columns"]
-            self.X[cats] = self.X[cats].apply(lambda col: pd.Categorical(col))
-            # TODO Check if this breaks GReaT, looks like it tries to deal with categ.
-            # and it cant
+    def get_categories(self) -> None:
+        self.cats = self.config["categorical_columns"] + self.config["binary_columns"]
+        self.X_cats = self.X[self.cats].copy()
+        self.X_cats[self.cats] = self.X_cats[self.cats].apply(
+            lambda col: pd.Categorical(col)
+        )
 
-            X_enc = self.X.copy()
-            X_enc[cats] = X_enc[cats].apply(lambda col: col.cat.codes)
-
-        return X_enc
-
-    # TODO Use only one
     def encode_categories(self, df: pd.DataFrame) -> pd.DataFrame:
-        X_enc = df.copy()
-        cats = self.config["categorical_columns"] + self.config["binary_columns"]
-        X_enc[cats] = X_enc[cats].apply(lambda col: pd.Categorical(col).codes)
+        if self.config["download"] == "imbalanced":
+            return df
+        else:
+            X_enc = df.copy()
+            X_enc[self.cats] = X_enc[self.cats].apply(
+                lambda col: pd.Categorical(col).codes
+            )
 
         return X_enc
 
@@ -154,10 +151,10 @@ class Dataset:
         if self.config["download"] == "imbalanced":
             return df
         else:
-            cat_columns = self.X.select_dtypes(["category"]).columns
+            cat_columns = self.X_cats.select_dtypes(["category"]).columns
             df[cat_columns] = df[cat_columns].apply(
                 lambda col: pd.Categorical.from_codes(
-                    col, self.X[col.name].cat.categories
+                    col, self.X_cats[col.name].cat.categories
                 )
             )
 
@@ -170,11 +167,14 @@ class Dataset:
 
         self.encode_labels()
 
-    def encode_labels(self):
+    def encode_labels(self) -> None:
         self.label_encoder = LabelEncoder()
         self.label_encoder.fit(self.y)
         self.label_encoder_ohe = OneHotEncoder(sparse_output=False)
         self.label_encoder_ohe.fit(self.y)
+
+    def decode_labels(self):
+        pass
 
     def num_classes(self) -> int:
         return self.y[self.config["y_label"]].nunique()

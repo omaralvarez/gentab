@@ -14,7 +14,7 @@ class ADASYN(Generator):
         self.X_ada = None
 
     def preprocess(self) -> None:
-        self.X_ada = self.dataset.encode_categories()
+        self.X_ada = self.dataset.encode_categories(self.dataset.X)
 
     def train(self) -> None:
         super().train()
