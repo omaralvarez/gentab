@@ -1,0 +1,46 @@
+{
+    "task_type": "multiclass",
+    "name": "Adult",
+    "download": "ucimlrepo",
+    "save_path": "~/ml-workspace/synthtab/datasets/adult",
+    "id": "adult--id",
+    "y_label": "income",
+    "train_size": 0.8,
+    "validation_size": 0.1,
+    "test_size": 0.2,
+    "categorical_columns": [
+        "workclass",
+        "education",
+        "marital-status",
+        "occupation",
+        "relationship",
+        "race",
+        "native-country"
+    ],
+    "binary_columns": [
+        "sex"
+    ],
+    "integer_columns": [
+        "age",
+        "fnlwgt",
+        "capital-gain",
+        "capital-loss",
+        "hours-per-week"
+    ],
+    "CTABGAN": {
+        "log_columns": [],
+        "mixed_columns": {
+            "capital-loss": [0.0], 
+            "capital-gain": [0.0]
+        }
+    },
+    "CTABGANPlus": {
+        "log_columns": [],
+        "general_columns": ["age"],
+        "non_categorical_columns": [],
+        "mixed_columns": {
+            "capital-loss": [0.0], 
+            "capital-gain": [0.0]
+        }
+    }
+}

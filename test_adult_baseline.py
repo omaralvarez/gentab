@@ -16,7 +16,7 @@ from synthtab.generators import (
 from synthtab.data import Config, Dataset
 from synthtab.utils import console
 
-config = Config("datasets/adult/info.json")
+config = Config("configs/adult.json")
 
 dataset = Dataset(config)
 dataset.merge_classes({"<=50K": ["<=50K."], ">50K": [">50K."]})
