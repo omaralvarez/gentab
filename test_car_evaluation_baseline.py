@@ -16,7 +16,7 @@ from synthtab.generators import (
 from synthtab.data import Config, Dataset
 from synthtab.utils import console
 
-config = Config("datasets/car_evaluation/info.json")
+config = Config("configs/car_evaluation.json")
 
 dataset = Dataset(config)
 # dataset.reduce_mem()
@@ -65,7 +65,6 @@ dataset = Dataset(config)
 # console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 
 # console.print(dataset.class_counts(), dataset.row_count())
-# console.print(cat)
 # generator = CTABGAN(
 #     dataset,
 #     test_ratio=0.1,
@@ -78,29 +77,29 @@ dataset = Dataset(config)
 # console.print(dataset.class_counts(), dataset.row_count())
 # generator = CTABGANPlus(
 #     dataset,
-#     test_ratio=0.05,
-#     epochs=2000,
+#     test_ratio=0.1,
+#     epochs=1000,
 # )
 # generator.generate()
 # console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 # dataset.save_to_disk(generator)
 
-console.print(dataset.class_counts(), dataset.row_count())
-generator = AutoDiffusion(dataset)
-generator.generate()
-console.print(dataset.generated_class_counts(), dataset.generated_row_count())
-dataset.save_to_disk(generator)
+# console.print(dataset.class_counts(), dataset.row_count())
+# generator = AutoDiffusion(dataset)
+# generator.generate()
+# console.print(dataset.generated_class_counts(), dataset.generated_row_count())
+# dataset.save_to_disk(generator)
 
-console.print(dataset.class_counts(), dataset.row_count())
-generator = ForestDiffusion(dataset, n_jobs=1, duplicate_K=4, n_estimators=100)
-generator.generate()
-console.print(dataset.generated_class_counts(), dataset.generated_row_count())
-dataset.save_to_disk(generator)
+# console.print(dataset.class_counts(), dataset.row_count())
+# generator = ForestDiffusion(dataset, n_jobs=1, duplicate_K=4, n_estimators=100)
+# generator.generate()
+# console.print(dataset.generated_class_counts(), dataset.generated_row_count())
+# dataset.save_to_disk(generator)
 
 console.print(dataset.class_counts(), dataset.row_count())
 generator = GReaT(
     dataset,
-    epochs=100,
+    epochs=600,
     max_length=1024,
     temperature=0.6,
     batch_size=32,
@@ -115,7 +114,7 @@ console.print(dataset.class_counts(), dataset.row_count())
 generator = Tabula(
     dataset,
     # categorical_columns=[dataset.config["y_label"]],
-    epochs=100,
+    epochs=600,
     max_length=1024,
     temperature=0.6,
     batch_size=32,
