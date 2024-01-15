@@ -6,7 +6,7 @@ from synthtab.utils import console, SPINNER, REFRESH
 import optuna
 
 
-class CTABGANTuner(Tuner):
+class CTABGANPlusTuner(Tuner):
     def __init__(
         self,
         evaluator: Evaluator,
@@ -17,7 +17,7 @@ class CTABGANTuner(Tuner):
 
     def objective(self, trial: optuna.trial.Trial) -> float:
         test_ratio = trial.suggest_float("test_ratio", 0.1, 0.3)
-        epochs = trial.suggest_int("epochs", 100, 800)
+        epochs = trial.suggest_int("epochs", 300, 800)
         class_dim = trial.suggest_categorical(
             "class_dim",
             [

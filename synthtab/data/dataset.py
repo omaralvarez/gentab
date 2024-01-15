@@ -174,6 +174,7 @@ class Dataset:
         self.label_encoder_ohe.fit(self.y)
 
     def decode_labels(self):
+        # TODO
         pass
 
     def num_classes(self) -> int:
@@ -184,6 +185,9 @@ class Dataset:
 
     def class_counts(self) -> int:
         return self.y[self.config["y_label"]].value_counts()
+
+    def min_class_count(self) -> int:
+        return self.y[self.config["y_label"]].value_counts().min()
 
     def row_count(self) -> int:
         return len(self.X.index)

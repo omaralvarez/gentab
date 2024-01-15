@@ -26,6 +26,7 @@ class CTGAN(Generator):
         generator_lr=2e-4,
         # https://github.com/sdv-dev/SDV/issues/1231 batch_size needs to be multiple of pac
         pac=10,
+        log_frequency=True,
         cuda=True,
         max_tries_per_batch=4096,
     ) -> None:
@@ -43,6 +44,7 @@ class CTGAN(Generator):
         self.generator_decay = generator_decay
         self.generator_lr = generator_lr
         self.pac = pac
+        self.log_frequency = log_frequency
         self.cuda = cuda
         self.max_tries_per_batch = max_tries_per_batch
 
@@ -71,6 +73,7 @@ class CTGAN(Generator):
             generator_decay=self.generator_decay,
             generator_lr=self.generator_lr,
             pac=self.pac,
+            log_frequency=self.log_frequency,
             cuda=self.cuda,
         )
         self.synthesizer.fit(self.data)

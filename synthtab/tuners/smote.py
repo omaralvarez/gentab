@@ -16,7 +16,9 @@ class SMOTETuner(Tuner):
         super().__init__(evaluator)
 
     def objective(self, trial: optuna.trial.Trial) -> float:
-        k_neighbors = trial.suggest_int("k_neighbors", 2, 1024)
+        k_neighbors = trial.suggest_int(
+            "k_neighbors", 2, self.dataset.min_class_count()
+        )
 
         self.generator = SMOTE(self.dataset, k_neighbors=k_neighbors)
         self.generator.generate()

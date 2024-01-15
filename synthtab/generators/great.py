@@ -40,7 +40,7 @@ class GReaT(Generator):
         start_col: tp.Optional[str] = "",
         start_col_dist: tp.Optional[tp.Union[dict, list]] = None,
         temperature: float = 0.7,
-        k: int = 100,
+        k: int = 1024,
         max_length: int = 100,
         drop_nan: bool = False,
         device: str = "cuda",

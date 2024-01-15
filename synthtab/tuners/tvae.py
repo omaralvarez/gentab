@@ -16,8 +16,8 @@ class TVAETuner(Tuner):
         super().__init__(evaluator)
 
     def objective(self, trial: optuna.trial.Trial) -> float:
-        epochs = trial.suggest_int("epochs", 10, 600)
-        batch_size_mult = trial.suggest_int("batch_size_mult", 16, 8192)
+        epochs = trial.suggest_int("epochs", 300, 600)
+        batch_size_mult = trial.suggest_int("batch_size_mult", 16, 8192, step=2)
         compress_dims = (
             trial.suggest_int("comp_dims_in", 32, 512),
             trial.suggest_int("comp_dims_out", 32, 512),
@@ -29,7 +29,7 @@ class TVAETuner(Tuner):
         embedding_dim = trial.suggest_int("embedding_dim", 64, 1024)
         l2scale = trial.suggest_float("l2scale", 1e-6, 1e-4, log=True)
         loss_factor = trial.suggest_int("loss_factor", 2, 16)
-        pac = trial.suggest_int("pac", 2, 256)
+        pac = trial.suggest_int("pac", 2, 256, step=2)
 
         self.generator = TVAE(
             self.dataset,

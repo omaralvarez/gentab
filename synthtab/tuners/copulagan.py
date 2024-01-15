@@ -20,8 +20,8 @@ class CopulaGANTuner(Tuner):
             "default_distribution",
             ["norm", "beta", "truncnorm", "uniform", "gamma", "gaussian_kde"],
         )
-        epochs = trial.suggest_int("epochs", 10, 600)
-        batch_size_mult = trial.suggest_int("batch_size_mult", 16, 8192)
+        epochs = trial.suggest_int("epochs", 300, 600)
+        batch_size_mult = trial.suggest_int("batch_size_mult", 16, 8192, step=2)
         discriminator_dim = (
             trial.suggest_int("disc_dim_in", 32, 512),
             trial.suggest_int("disc_dim_out", 32, 512),
@@ -40,7 +40,7 @@ class CopulaGANTuner(Tuner):
         generator_lr = trial.suggest_float("discriminator_lr", 2e-5, 2e-3, log=True)
 
         log_frequency = trial.suggest_categorical("log_frequency", [True, False])
-        pac = trial.suggest_int("pac", 2, 256)
+        pac = trial.suggest_int("pac", 2, 256, step=2)
 
         self.generator = CopulaGAN(
             self.dataset,

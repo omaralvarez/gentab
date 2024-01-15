@@ -31,6 +31,7 @@ class CopulaGAN(Generator):
         locales=["en_US"],
         numerical_distributions=None,
         default_distribution="beta",
+        log_frequency=True,
         max_tries_per_batch=4096,
     ) -> None:
         super().__init__(dataset)
@@ -51,6 +52,7 @@ class CopulaGAN(Generator):
         self.locales = locales
         self.numerical_distributions = numerical_distributions
         self.default_distribution = default_distribution
+        self.log_frequency = log_frequency
         self.max_tries_per_batch = max_tries_per_batch
 
     def sample(self) -> pd.DataFrame:
@@ -81,6 +83,7 @@ class CopulaGAN(Generator):
             locales=self.locales,
             numerical_distributions=self.numerical_distributions,
             pac=self.pac,
+            log_frequency=self.log_frequency,
             cuda=self.cuda,
         )
         self.synthesizer.fit(self.data)

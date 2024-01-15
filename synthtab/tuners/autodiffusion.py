@@ -16,8 +16,8 @@ class AutoDiffusionTuner(Tuner):
         super().__init__(evaluator)
 
     def objective(self, trial: optuna.trial.Trial) -> float:
-        n_epochs = trial.suggest_int("n_epochs", 100, 10000)
-        diff_n_epochs = trial.suggest_int("diff_n_epochs", 100, 10000)
+        n_epochs = trial.suggest_int("n_epochs", 200, 10000)
+        diff_n_epochs = trial.suggest_int("diff_n_epochs", 200, 10000)
         threshold = trial.suggest_float("threshold", 0.05, 0.05)
         weight_decay = trial.suggest_float("weight_decay", 1e-7, 1e-5, log=True)
         lr = trial.suggest_float("lr", 2e-5, 2e-3, log=True)
