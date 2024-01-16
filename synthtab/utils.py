@@ -6,6 +6,7 @@ from rich.progress import (
     TextColumn,
     TimeElapsedColumn,
     TimeRemainingColumn,
+    SpinnerColumn,
 )
 
 SPINNER = "aesthetic"
@@ -15,14 +16,22 @@ console = Console()
 
 
 class ProgressBar:
-    def __init__(self) -> None:
+    def __init__(self, indeterminate=False) -> None:
         # Define custom progress bar
-        self.progress = Progress(
-            TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
-            BarColumn(),
-            MofNCompleteColumn(),
-            TextColumn("•"),
-            TimeElapsedColumn(),
-            TextColumn("•"),
-            TimeRemainingColumn(),
-        )
+        if indeterminate:
+            self.progress = Progress(
+                # SpinnerColumn(spinner_name=SPINNER),
+                TextColumn("🔄 [progress.description]{task.description}"),
+                BarColumn(),
+                transient=True,
+            )
+        else:
+            self.progress = Progress(
+                TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
+                BarColumn(),
+                MofNCompleteColumn(),
+                TextColumn("•"),
+                TimeElapsedColumn(),
+                TextColumn("•"),
+                TimeRemainingColumn(),
+            )

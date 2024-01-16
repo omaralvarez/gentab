@@ -196,6 +196,7 @@ class MLPClassifier:
         return torch.cat(predictions).numpy()
 
 
+# TODO Improve robustness...
 class MLP(Evaluator):
     def __init__(
         self,

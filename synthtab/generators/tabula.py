@@ -50,7 +50,7 @@ class Tabula(Generator):
         start_col_dist: tp.Optional[tp.Union[dict, list]] = None,
         temperature: float = 0.7,
         k: int = 100,
-        max_length: int = 100,
+        max_length: int = 1024,
         device: str = "cuda",
         trained_model: str = None,
         n_samples: int = 1338,

@@ -5,7 +5,9 @@ import pandas as pd
 
 
 class Generator:
-    def __init__(self, dataset, batch_size=1000, max_tries_per_batch=1000) -> None:
+    def __init__(
+        self, dataset, batch_size=1000, max_tries_per_batch=1000, seed=SEED
+    ) -> None:
         self.batch_size = batch_size
         self.max_tries_per_batch = max_tries_per_batch
         # Reset generated dataframes
@@ -20,7 +22,7 @@ class Generator:
         # Filter the maximum class no need to generate for it
         self.counts = self.counts[self.counts > 0]
         # For reproducibility
-        self.seed = SEED
+        self.seed = seed
 
     def __str__(self) -> str:
         return self.__class__.__name__
@@ -125,19 +127,16 @@ class Generator:
 
     # TODO Flag to append or just leave generated
     def generate(self, n_samples=None) -> None:
-        with console.status(
-            "Preprocessing {}...".format(self.dataset),
-            spinner=SPINNER,
-            refresh_per_second=REFRESH,
-        ) as status:
+
+        with ProgressBar(indeterminate=True).progress as p:
+            gen_task = p.add_task(
+                "Preprocessing with {}...".format(self.dataset), total=None
+            )
             self.preprocess()
+            # p.start_task()
 
-            status.update("Training with {}...".format(self), spinner=SPINNER)
+            p.update(gen_task, description="Training with {}...".format(self))
             self.train()
-
-            # status.update(
-            #     "Generating with {}...".format(self), spinner=SPINNER
-            # )
 
         console.print("🔄 Generating with {}...".format(self))
 

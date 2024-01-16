@@ -2,7 +2,7 @@
     "task_type": "multiclass",
     "name": "Car Evaluation",
     "download": "ucimlrepo",
-    "save_path": "~/ml-workspace/synthtab/datasets/car_evaluation_knn",
+    "save_path": "datasets/car_evaluation_knn",
     "id": "car_evaluation--id",
     "y_label": "class",
     "train_size": 0.6,

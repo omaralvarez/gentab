@@ -19,8 +19,6 @@ from synthtab.utils import console
 config = Config("datasets/wine_quality/info.json")
 
 dataset = Dataset(config)
-# TODO TypeError: Categorical is not ordered for operation min
-# you can use .as_ordered() to change the Categorical to an ordered one
 # dataset.reduce_mem()
 
 console.print(dataset.class_counts(), dataset.row_count())
@@ -123,6 +121,3 @@ generator = Tabula(
 generator.generate()
 generator.save_to_disk()
 console.print(dataset.generated_class_counts(), dataset.generated_row_count())
-
-
-# TODO Timing..

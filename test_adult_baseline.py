@@ -127,3 +127,6 @@ console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 
 
 # TODO Timing..
+# TODO Synthetic dataset only, with same distribution, get class counts and use n_samples in generate
+# TODO DCR
+# TODO Tabsyn

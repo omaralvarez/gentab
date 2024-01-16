@@ -2,7 +2,7 @@
     "task_type": "multiclass",
     "name": "Adult",
     "download": "ucimlrepo",
-    "save_path": "~/ml-workspace/synthtab/datasets/adult",
+    "save_path": "synthtab/datasets/adult",
     "id": "adult--id",
     "y_label": "income",
     "train_size": 0.8,

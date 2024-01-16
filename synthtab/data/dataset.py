@@ -1,4 +1,4 @@
-from synthtab.utils import console, SPINNER, REFRESH
+from synthtab.utils import console, ProgressBar
 from synthtab import SEED
 
 import pandas as pd
@@ -10,6 +10,7 @@ from sklearn.model_selection import train_test_split
 from imblearn.datasets import fetch_datasets
 from ucimlrepo import fetch_ucirepo
 import os
+from pathlib import Path
 
 
 class Dataset:
@@ -18,11 +19,11 @@ class Dataset:
         self.X_gen = None
         self.y_gen = None
 
-        with console.status(
-            "Loading dataset {}...".format(self.config["name"]),
-            spinner=SPINNER,
-            refresh_per_second=REFRESH,
-        ) as status:
+        with ProgressBar(indeterminate=True).progress as p:
+            gen_task = p.add_task(
+                "Loading dataset {}...".format(self.config["name"]), total=None
+            )
+
             if not self.config.exists("download"):
                 self.X = pd.read_csv(self.config["path_X"])
                 self.y = pd.read_csv(self.config["path_y"])
@@ -98,11 +99,13 @@ class Dataset:
         )
 
     def save_to_disk(self, name) -> None:
-        with console.status(
-            "Saving dataset to {}...".format(self.config["save_path"]),
-            spinner=SPINNER,
-            refresh_per_second=REFRESH,
-        ) as status:
+        with ProgressBar(indeterminate=True).progress as p:
+            gen_task = p.add_task(
+                "Saving dataset to {}...".format(self.config["save_path"]), total=None
+            )
+
+            Path(self.config["save_path"]).mkdir(parents=True, exist_ok=True)
+
             self.X_gen.to_csv(
                 os.path.join(self.config["save_path"], "X_gen_" + str(name) + ".csv"),
                 index=False,
@@ -115,11 +118,8 @@ class Dataset:
         console.print("✅ Dataset saved to {}...".format(self.config["save_path"]))
 
     def load_from_disk(self, name) -> None:
-        with console.status(
-            "Loading {} dataset...".format(name),
-            spinner=SPINNER,
-            refresh_per_second=REFRESH,
-        ) as status:
+        with ProgressBar(indeterminate=True).progress as p:
+            gen_task = p.add_task("Loading dataset {}...".format(name), total=None)
             self.X_gen = pd.read_csv(
                 os.path.join(self.config["save_path"], "X_gen_" + str(name) + ".csv")
             )
@@ -137,7 +137,7 @@ class Dataset:
         )
 
     def encode_categories(self, df: pd.DataFrame) -> pd.DataFrame:
-        if self.config["download"] == "imbalanced":
+        if self.config.exists("download") and self.config["download"] == "imbalanced":
             return df
         else:
             X_enc = df.copy()
@@ -148,7 +148,7 @@ class Dataset:
         return X_enc
 
     def decode_categories(self, df: pd.DataFrame) -> pd.DataFrame:
-        if self.config["download"] == "imbalanced":
+        if self.config.exists("download") and self.config["download"] == "imbalanced":
             return df
         else:
             cat_columns = self.X_cats.select_dtypes(["category"]).columns
@@ -284,9 +284,9 @@ class Dataset:
         start_mem = self.memory_usage_mb(self.X) + self.memory_usage_mb(self.X_test)
         console.print("💾 Memory usage of dataframe is {:.2f} MB...".format(start_mem))
 
-        with console.status(
-            "Reducing memory usage...", spinner=SPINNER, refresh_per_second=REFRESH
-        ) as status:
+        with ProgressBar(indeterminate=True).progress as p:
+            gen_task = p.add_task("Reducing memory usage...", total=None)
+
             self.reduce_mem_df(self.X)
             self.reduce_mem_df(self.X_test)
 
@@ -307,9 +307,9 @@ class Dataset:
         start_mem = self.memory_usage_mb(self.X_gen)
         console.print("💾 Memory usage of dataframe is {:.2f} MB...".format(start_mem))
 
-        with console.status(
-            "Reducing memory usage...", spinner=SPINNER, refresh_per_second=REFRESH
-        ) as status:
+        with ProgressBar(indeterminate=True).progress as p:
+            gen_task = p.add_task("Reducing memory usage...", total=None)
+
             self.reduce_mem_df(self.X_gen)
 
         end_mem = self.memory_usage_mb(self.X_gen)
