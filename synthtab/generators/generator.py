@@ -42,8 +42,14 @@ class Generator:
     def load_from_disk(self) -> None:
         self.dataset.load_from_disk(self)
 
-    def resample(self, n_samples) -> None:
-        data_gen = self.dataset.get_single_df()
+    def resample(self, n_samples, append) -> None:
+        # TODO On run after ctabgan it has 0 count it is modifying
+        n_samples = n_samples.copy()
+
+        if append:
+            data_gen = self.dataset.get_single_df()
+        else:
+            data_gen = pd.DataFrame()
 
         total_samples = sum(n_samples.values())
 
@@ -125,8 +131,7 @@ class Generator:
 
         self.dataset.set_split_result(data_gen)
 
-    # TODO Flag to append or just leave generated
-    def generate(self, n_samples=None) -> None:
+    def generate(self, n_samples=None, append=True) -> None:
 
         with ProgressBar(indeterminate=True).progress as p:
             gen_task = p.add_task(
@@ -144,6 +149,6 @@ class Generator:
         if n_samples is None:
             self.balance()
         else:
-            self.resample(n_samples)
+            self.resample(n_samples, append)
 
         console.print("✅ Generation complete with {}...".format(self))

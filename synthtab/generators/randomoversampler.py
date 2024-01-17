@@ -21,9 +21,10 @@ class ROS(Generator):
     def sample(self) -> pd.DataFrame:
         return super().sample()
 
-    def resample(self, n_samples) -> None:
-        for cls, cnt in n_samples.items():
-            n_samples[cls] += self.orig_counts[cls]
+    def resample(self, n_samples, append) -> None:
+        if append:
+            for cls, cnt in n_samples.items():
+                n_samples[cls] += self.orig_counts[cls]
 
         ros = RandomOverSampler(
             random_state=self.seed,

@@ -25,10 +25,10 @@ class XGBoost(Evaluator):
         X = self.dataset.encode_categories(X)
         X_test = self.dataset.encode_categories(X_test)
 
-        y = self.generator.dataset.label_encoder.transform(y)
-        y_test = self.generator.dataset.label_encoder.transform(y_test)
+        y = self.dataset.encode_labels(y)
+        y_test = self.dataset.encode_labels(y_test)
 
         return X, y, X_test, y_test
 
     def postprocess(self, pred):
-        return self.generator.dataset.label_encoder.inverse_transform(pred)
+        return self.dataset.decode_labels(pred)

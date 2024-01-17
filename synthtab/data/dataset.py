@@ -35,7 +35,7 @@ class Dataset:
                 else:
                     self.download_imb()
 
-            self.encode_labels()
+            self.get_label_encoders()
             self.get_categories()
 
         console.print("✅ Dataset loaded...")
@@ -165,17 +165,19 @@ class Dataset:
             self.y[self.y[self.config["y_label"]].isin(labs)] = cls
             self.y_test[self.y_test[self.config["y_label"]].isin(labs)] = cls
 
-        self.encode_labels()
+        self.get_label_encoders()
 
-    def encode_labels(self) -> None:
+    def get_label_encoders(self) -> None:
         self.label_encoder = LabelEncoder()
         self.label_encoder.fit(self.y)
         self.label_encoder_ohe = OneHotEncoder(sparse_output=False)
         self.label_encoder_ohe.fit(self.y)
 
-    def decode_labels(self):
-        # TODO
-        pass
+    def encode_labels(self, df: pd.DataFrame) -> pd.DataFrame:
+        return self.label_encoder.transform(df)
+
+    def decode_labels(self, df: pd.DataFrame) -> pd.DataFrame:
+        return self.label_encoder.inverse_transform(df)
 
     def num_classes(self) -> int:
         return self.y[self.config["y_label"]].nunique()
@@ -321,3 +323,25 @@ class Dataset:
                 100 * (start_mem - end_mem) / start_mem
             )
         )
+
+    def get_correlation(self) -> pd.Series:
+        X_real = self.encode_categories(self.X)
+        X_gen = self.encode_categories(self.X_gen)
+
+        y_real = pd.Series(self.encode_labels(self.y))
+        y_gen = pd.Series(self.encode_labels(self.y_gen))
+
+        # TODO Is this concat correct?? Not really, we are trying to add a columns
+        real_data = pd.concat([X_real, y_real], axis=1)
+        gen_data = pd.concat([X_gen, y_gen], axis=1)
+
+        # TODO Last column 0, check what the hell is that about, probably the label, but just in case
+        return (real_data.corr() - gen_data.corr()).abs()
+
+        # return (
+        #     pd.concat([real_data, gen_data], axis=1, keys=["df_1", "df_2"])
+        #     .corr()
+        #     .loc["df_2", "df_1"]
+        # )
+
+        # return real_data.corrwith(gen_data)

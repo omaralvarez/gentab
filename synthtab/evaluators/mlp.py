@@ -207,8 +207,8 @@ class MLP(Evaluator):
     ) -> None:
         super().__init__(generator)
         self.model = MLPClassifier(
-            self.generator.dataset.num_features(),
-            self.generator.dataset.num_classes(),
+            self.dataset.num_features(),
+            self.dataset.num_classes(),
             *args,
             batch_size=batch_size,
             seed=self.seed,
@@ -219,10 +219,11 @@ class MLP(Evaluator):
         X = self.dataset.encode_categories(X)
         X_test = self.dataset.encode_categories(X_test)
 
+        # TODO Add ohe to label encoding function
         y = self.generator.dataset.label_encoder_ohe.transform(y)
         y_test = self.generator.dataset.label_encoder_ohe.transform(y_test)
 
         return X, y, X_test, y_test
 
     def postprocess(self, pred):
-        return self.generator.dataset.label_encoder.inverse_transform(pred)
+        return self.dataset.decode_labels(pred)

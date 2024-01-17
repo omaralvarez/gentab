@@ -1,4 +1,4 @@
-from synthtab.utils import console, SPINNER, REFRESH
+from synthtab.utils import ProgressBar, console, SPINNER, REFRESH
 from synthtab import SEED
 
 from typing import Tuple
@@ -38,11 +38,12 @@ class Evaluator:
         return precision_recall_fscore_support(y_true, y_pred, average=average)
 
     def compute_metrics(self, X, y, generator) -> None:
-        with console.status(
-            "Evaluating {} accuracy in {}...".format(generator, self.dataset),
-            spinner=SPINNER,
-            refresh_per_second=REFRESH,
-        ) as status:
+        with ProgressBar(indeterminate=True).progress as p:
+            eval_task = p.add_task(
+                "Evaluating {} accuracy in {}...".format(generator, self.dataset),
+                total=None,
+            )
+
             X, y, X_test, y_test = self.preprocess(
                 X, y, self.dataset.X_test, self.dataset.y_test
             )

@@ -11,6 +11,7 @@ from rich.progress import (
 
 SPINNER = "aesthetic"
 REFRESH = 20
+EXPAND = False
 
 console = Console()
 
@@ -24,6 +25,8 @@ class ProgressBar:
                 TextColumn("🔄 [progress.description]{task.description}"),
                 BarColumn(),
                 transient=True,
+                console=console,
+                expand=EXPAND,
             )
         else:
             self.progress = Progress(
@@ -34,4 +37,6 @@ class ProgressBar:
                 TimeElapsedColumn(),
                 TextColumn("•"),
                 TimeRemainingColumn(),
+                console=console,
+                expand=EXPAND,
             )

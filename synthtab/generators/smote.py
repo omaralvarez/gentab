@@ -22,9 +22,11 @@ class SMOTE(Generator):
     def sample(self) -> pd.DataFrame:
         return super().sample()
 
-    def resample(self, n_samples) -> None:
-        for cls, cnt in n_samples.items():
-            n_samples[cls] += self.orig_counts[cls]
+    def resample(self, n_samples, append) -> None:
+        if append:
+            for cls, cnt in n_samples.items():
+                n_samples[cls] += self.orig_counts[cls]
+
         if len(self.dataset.X._get_numeric_data().columns) != len(
             self.dataset.X.columns
         ):

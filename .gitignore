@@ -1,4 +1,5 @@
 datasets/
+figures/
 trainer_tabula/
 trainer_great/
 data.tar
@@ -6,6 +7,7 @@ config.toml
 .sample.csv.temp
 model_playnet.pt
 results*.py
+correlation*.py
 lightning_logs/
 .scale*
 

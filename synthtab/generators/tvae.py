@@ -63,7 +63,7 @@ class TVAE(Generator):
         )
         self.synthesizer.fit(self.data)
 
-    def resample(self, n_samples) -> None:
+    def resample(self, n_samples, append) -> None:
         conditions = []
         for cls, cnt in n_samples.items():
             conditions.append(
@@ -78,9 +78,12 @@ class TVAE(Generator):
             max_tries_per_batch=self.max_tries_per_batch,
         )
 
-        self.dataset.set_split_result(
-            pd.concat([self.data, data_gen], ignore_index=True, sort=False)
-        )
+        if append:
+            self.dataset.set_split_result(
+                pd.concat([self.data, data_gen], ignore_index=True, sort=False)
+            )
+        else:
+            self.dataset.set_split_result(data_gen)
 
     def balance(self) -> None:
         conditions = []
