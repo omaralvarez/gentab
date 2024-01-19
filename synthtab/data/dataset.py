@@ -334,4 +334,7 @@ class Dataset:
         real_data = pd.concat([X_real, y_real], axis=1)
         gen_data = pd.concat([X_gen, y_gen], axis=1)
 
-        return (real_data.corr() - gen_data.corr()).abs()
+        corr = (real_data.corr() - gen_data.corr()).abs()
+
+        # return (corr - corr.min()) / (corr.max() - corr.min())
+        return corr
