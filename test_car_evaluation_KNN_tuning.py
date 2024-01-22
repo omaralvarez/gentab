@@ -93,28 +93,28 @@ trials = 10
 # dataset.save_to_disk(generator)
 # console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 
-console.print(dataset.class_counts(), dataset.row_count())
-generator = CopulaGAN(dataset)
-evaluator = KNN(generator)
-tuner = CopulaGANTuner(evaluator, trials)
-tuner.tune()
-generator = tuner.generator
-generator.generate()
-dataset.save_to_disk(generator)
-console.print(dataset.generated_class_counts(), dataset.generated_row_count())
+# console.print(dataset.class_counts(), dataset.row_count())
+# generator = CopulaGAN(dataset)
+# evaluator = KNN(generator)
+# tuner = CopulaGANTuner(evaluator, trials)
+# tuner.tune()
+# generator = tuner.generator
+# generator.generate()
+# dataset.save_to_disk(generator)
+# console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 
-console.print(dataset.class_counts(), dataset.row_count())
-generator = CTABGAN(
-    dataset,
-    test_ratio=0.10,
-)
-evaluator = KNN(generator)
-tuner = CTABGANTuner(evaluator, trials)
-tuner.tune()
-generator = tuner.generator
-generator.generate()
-console.print(dataset.generated_class_counts(), dataset.generated_row_count())
-dataset.save_to_disk(generator)
+# console.print(dataset.class_counts(), dataset.row_count())
+# generator = CTABGAN(
+#     dataset,
+#     test_ratio=0.10,
+# )
+# evaluator = KNN(generator)
+# tuner = CTABGANTuner(evaluator, trials)
+# tuner.tune()
+# generator = tuner.generator
+# generator.generate()
+# console.print(dataset.generated_class_counts(), dataset.generated_row_count())
+# dataset.save_to_disk(generator)
 
 # console.print(dataset.class_counts(), dataset.row_count())
 # generator = CTABGANPlus(
@@ -129,15 +129,15 @@ dataset.save_to_disk(generator)
 # console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 # dataset.save_to_disk(generator)
 
-console.print(dataset.class_counts(), dataset.row_count())
-generator = AutoDiffusion(dataset)
-evaluator = KNN(generator)
-tuner = AutoDiffusionTuner(evaluator, trials)
-tuner.tune()
-generator = tuner.generator
-generator.generate()
-console.print(dataset.generated_class_counts(), dataset.generated_row_count())
-dataset.save_to_disk(generator)
+# console.print(dataset.class_counts(), dataset.row_count())
+# generator = AutoDiffusion(dataset)
+# evaluator = KNN(generator)
+# tuner = AutoDiffusionTuner(evaluator, trials)
+# tuner.tune()
+# generator = tuner.generator
+# generator.generate()
+# console.print(dataset.generated_class_counts(), dataset.generated_row_count())
+# dataset.save_to_disk(generator)
 
 console.print(dataset.class_counts(), dataset.row_count())
 generator = ForestDiffusion(dataset)

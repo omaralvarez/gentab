@@ -1,0 +1,31 @@
+{   
+    "task_type": "multiclass",
+    "name": "Car Evaluation",
+    "download": "ucimlrepo",
+    "save_path": "datasets/car_evaluation_cr",
+    "id": "car_evaluation--id",
+    "y_label": "class",
+    "train_size": 0.6,
+    "validation_size": 0.1,
+    "test_size": 0.4,
+    "categorical_columns": [
+        "buying",
+        "maint",
+        "doors",
+        "persons",
+        "lug_boot",
+        "safety"
+    ],
+    "binary_columns": [],
+    "integer_columns": [],
+    "CTABGAN": {
+        "log_columns": [],
+        "mixed_columns": {}
+    },
+    "CTABGANPlus": {
+        "log_columns": [],
+        "general_columns": [],
+        "non_categorical_columns": [],
+        "mixed_columns": {}
+    }
+}
