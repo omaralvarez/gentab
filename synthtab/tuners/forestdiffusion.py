@@ -24,9 +24,9 @@ class ForestDiffusionTuner(Tuner):
         max_depth = trial.suggest_int("max_depth", 3, 9, step=2)
         n_estimators = trial.suggest_int("n_estimators", 2, 100)
         eta = trial.suggest_float("eta", 1e-8, 1.0, log=True)
-        tree_method = trial.suggest_categorical(
-            "tree_method", ["exact", "approx", "hist"]
-        )
+        # tree_method = trial.suggest_categorical(
+        #     "tree_method", ["exact", "approx", "hist"]
+        # )
         reg_lambda = trial.suggest_float("reg_lambda", 1e-8, 1.0, log=True)
         reg_alpha = trial.suggest_float("reg_alpha", 1e-8, 1.0, log=True)
         subsample = trial.suggest_float("subsample", 0.2, 1.0)
@@ -39,6 +39,9 @@ class ForestDiffusionTuner(Tuner):
         batch_size = trial.suggest_int("batch_size", 512, 16384)
 
         # TODO Maybe add batch sizes
+        # TODO xgboost.core.XGBoostError: [10:59:07] /workspace/src/data/iterative_dmatrix.h:61:
+        # Check failed: !param.regen && param.hess.empty(): Only `hist` and `gpu_hist` tree
+        # method can use `QuantileDMatrix`.
         self.generator = ForestDiffusion(
             self.dataset,
             n_t=n_t,
@@ -47,7 +50,7 @@ class ForestDiffusionTuner(Tuner):
             max_depth=max_depth,
             n_estimators=n_estimators,
             eta=eta,
-            tree_method=tree_method,
+            # tree_method=tree_method,
             reg_lambda=reg_lambda,
             reg_alpha=reg_alpha,
             subsample=subsample,

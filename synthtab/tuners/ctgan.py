@@ -17,7 +17,7 @@ class CTGANTuner(Tuner):
 
     def objective(self, trial: optuna.trial.Trial) -> float:
         epochs = trial.suggest_int("epochs", 300, 600)
-        batch_size_mult = trial.suggest_int("batch_size_mult", 16, 8192, step=2)
+        batch_size_mult = trial.suggest_int("batch_size_mult", 16, 4196, step=2)
         discriminator_dim = (
             trial.suggest_int("disc_dim_in", 32, 512),
             trial.suggest_int("disc_dim_out", 32, 512),
