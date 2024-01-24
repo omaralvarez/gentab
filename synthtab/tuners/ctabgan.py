@@ -11,13 +11,26 @@ class CTABGANTuner(Tuner):
         self,
         evaluator: Evaluator,
         *args,
+        min_epochs: int = 300,
+        max_epochs: int = 800,
+        min_batch: int = 512,
+        max_batch: int = 16384,
         **kwargs,
     ) -> None:
-        super().__init__(evaluator)
+        super().__init__(
+            evaluator,
+            min_epochs=min_epochs,
+            max_epochs=max_epochs,
+            min_batch=min_batch,
+            max_batch=max_batch,
+        )
 
     def objective(self, trial: optuna.trial.Trial) -> float:
         test_ratio = trial.suggest_float("test_ratio", 0.1, 0.3)
-        epochs = trial.suggest_int("epochs", 300, 800)
+        epochs = trial.suggest_int("epochs", self.min_epochs, self.max_epochs)
+        batch_size = trial.suggest_int(
+            "batch_size", self.min_batch, self.max_batch, step=2
+        )
         class_dim = trial.suggest_categorical(
             "class_dim",
             [
@@ -27,9 +40,9 @@ class CTABGANTuner(Tuner):
             ],
         )
         random_dim = trial.suggest_int("random_dim", 50, 400)
-        num_channels = trial.suggest_int("num_channels", 16, 128)
+        num_channels = trial.suggest_int("num_channels", 16, 128, step=2)
         l2scale = trial.suggest_float("l2scale", 1e-6, 1e-3, log=True)
-        batch_size = trial.suggest_int("batch_size", 512, 16384)
+        # batch_size = trial.suggest_int("batch_size", 512, 16384)
 
         self.generator = CTABGAN(
             self.dataset,

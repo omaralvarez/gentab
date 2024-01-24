@@ -6,12 +6,24 @@ import optuna
 
 
 class Tuner:
-    def __init__(self, evaluator: Evaluator, n_trials: int = 10) -> None:
+    def __init__(
+        self,
+        evaluator: Evaluator,
+        n_trials: int = 10,
+        min_epochs: int = 300,
+        max_epochs: int = 800,
+        min_batch: int = 512,
+        max_batch: int = 4196,
+    ) -> None:
         self.seed = SEED
         self.evaluator = evaluator
         self.generator = evaluator.generator
         self.dataset = evaluator.generator.dataset
         self.n_trials = n_trials
+        self.min_epochs = min_epochs
+        self.max_epochs = max_epochs
+        self.min_batch = min_batch
+        self.max_batch = max_batch
 
     def __str__(self) -> str:
         return self.__class__.__name__
