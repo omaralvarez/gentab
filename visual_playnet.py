@@ -1,0 +1,190 @@
+from synthtab.evaluators import KNN, LightGBM, XGBoost, MLP
+from synthtab.generators import (
+    ROS,
+    SMOTE,
+    ADASYN,
+    TVAE,
+    CTGAN,
+    GaussianCopula,
+    CopulaGAN,
+    CTABGAN,
+    CTABGANPlus,
+    AutoDiffusion,
+    ForestDiffusion,
+    Tabula,
+    GReaT,
+)
+from synthtab.data import Config, Dataset
+from synthtab.utils import console
+
+import matplotlib.gridspec as gridspec
+import matplotlib.pyplot as plt
+from matplotlib.patches import Rectangle, Circle, Ellipse, Arc
+
+
+def preproc_playnet(dataset):
+    dataset.reduce_size({
+        "left_attack": 0.97,
+        "right_attack": 0.97,
+        "right_transition": 0.9,
+        "left_transition": 0.9,
+        "time_out": 0.8,
+        "left_penal": 0.5,
+        "right_penal": 0.5,
+    })
+    dataset.merge_classes({
+        "attack": ["left_attack", "right_attack"],
+        "transition": ["left_transition", "right_transition"],
+        "penalty": ["left_penal", "right_penal"],
+    })
+    dataset.reduce_mem()
+
+    return dataset
+
+
+gens = [
+    (None, "Baseline"),
+    (TVAE, "TVAE"),
+    (CTGAN, "CTGAN"),
+    (GaussianCopula, "Gaussian Copula"),
+    (CopulaGAN, "Copula GAN"),
+    (CTABGAN, "CTAB-GAN"),
+    (CTABGANPlus, "CTAB-GAN+"),
+    (AutoDiffusion, "AutoDiffusion"),
+    (ForestDiffusion, "ForestDiffusion"),
+    (Tabula, "Tabula"),
+    (GReaT, "GReaT"),
+]
+
+config = Config("configs/playnet_cr.json")
+
+dataset = preproc_playnet(Dataset(config))
+
+gs = gridspec.GridSpec(len(gens), dataset.num_classes())
+fig = plt.figure(figsize=(40, 30))
+fig.subplots_adjust(wspace=0.25, hspace=0.125)
+
+axs, ims = [], []
+
+first = True
+i = 0
+for g in gens:
+    if g[0] is not None:
+        generator = g[0](dataset)
+        generator.load_from_disk()
+
+    #    ax = grid.axes_all[i]
+    #    ax = fig.add_subplot(gs[i,0])
+
+    j = 0
+    for c in dataset.class_names():
+        ax = fig.add_subplot(gs[i, j])
+
+        # Set labels
+        if i == 0:
+            ax.set_title(c, fontsize=19)
+        if j == 0:
+            if g[0] is not None:
+                ax.set_ylabel(g[1], fontsize=18)
+            else:
+                ax.set_ylabel(g[1], fontsize=18)
+
+        # Remove chart borders and ticks
+        ax.spines["top"].set_visible(False)
+        ax.spines["right"].set_visible(False)
+        ax.spines["bottom"].set_visible(False)
+        ax.spines["left"].set_visible(False)
+        ax.get_xaxis().set_ticks([])
+        ax.get_yaxis().set_ticks([])
+
+        # Get positions
+        if g[0] is not None:
+            row = generator.dataset.get_random_gen_class_rows(c, 1)
+        else:
+            row = dataset.get_random_class_rows(c, 1)
+
+        xpoints = row.filter(regex="^#x").values.flatten().tolist()
+        ypoints = row.filter(regex="^#y").values.flatten().tolist()
+        vxpoints = row.filter(regex="^#vx").values.flatten().tolist()
+        vypoints = row.filter(regex="^#vy").values.flatten().tolist()
+        ballx = row.filter(regex="^#ball_x").values.flatten().tolist()
+        bally = row.filter(regex="^#ball_y").values.flatten().tolist()
+
+        # Remove undetected points
+        for k, _ in enumerate(xpoints):
+            if (
+                xpoints[k] == 0.0
+                and ypoints[k] == 0.0
+                and vxpoints[k] == 0.0
+                and vypoints[k] == 0.0
+            ):
+                del xpoints[k]
+                del ypoints[k]
+                del vxpoints[k]
+                del vypoints[k]
+
+        if ballx[0] == 0.0 and bally[0] == 0.0:
+            del ballx[0]
+            del bally[0]
+
+        # First array horiz. coords., second vertical
+        # Middle line
+        ax.plot([0.5, 0.5], [0.0, 1.0], color="black")
+        # Center circle
+        ax.add_patch(Ellipse((0.5, 0.5), 0.2, 0.7, facecolor="none", ec="k", lw=2))
+        # Areas
+        ax.add_patch(
+            Arc(
+                (0.0, 0.5),
+                0.2,
+                0.9,
+                angle=180,
+                theta1=90,
+                theta2=270,
+                facecolor="none",
+                ec="k",
+                lw=2,
+            )
+        )
+        ax.add_patch(
+            Arc(
+                (1.0, 0.5),
+                0.2,
+                0.9,
+                theta1=90,
+                theta2=270,
+                facecolor="none",
+                ec="k",
+                lw=2,
+            )
+        )
+        # Player positions
+        ax.plot(xpoints, ypoints, "o")
+        # Ball
+        ax.plot(ballx, bally, "o", color="magenta")
+        # Speeds
+        ax.quiver(
+            xpoints,
+            ypoints,
+            vxpoints,
+            vypoints,
+            color="orange",
+            angles="uv",
+            scale=4,
+            headaxislength=3,
+            headlength=3,
+        )
+        # Field
+        ims.append(
+            ax.add_patch(Rectangle((0, 0), 1, 1, facecolor="none", ec="k", lw=2))
+        )
+
+        axs.append(ax)
+
+        j += 1
+
+    i += 1
+
+    first = False
+
+plt.savefig("figures/VisualPlaynet.pdf", format="pdf", bbox_inches="tight")

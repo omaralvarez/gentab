@@ -185,6 +185,9 @@ class Dataset:
     def num_features(self) -> int:
         return len(self.X.columns)
 
+    def class_names(self) -> list[str]:
+        return self.y[self.config["y_label"]].unique().tolist()
+
     def class_counts(self) -> int:
         return self.y[self.config["y_label"]].value_counts()
 
@@ -206,6 +209,16 @@ class Dataset:
     def set_split_result(self, data) -> None:
         self.X_gen = data.loc[:, data.columns != self.config["y_label"]]
         self.y_gen = data[self.config["y_label"]]
+
+    def get_random_class_rows(self, cls: str, n: int):
+        compliant_rows = self.y[self.y[self.config["y_label"]] == cls]
+        idx = compliant_rows.sample(n=n, random_state=SEED).index
+        return self.X.loc[idx]
+
+    def get_random_gen_class_rows(self, cls: str, n: int):
+        compliant_rows = self.y_gen[self.y_gen[self.config["y_label"]] == cls]
+        idx = compliant_rows.sample(n=n, random_state=SEED).index
+        return self.X_gen.loc[idx]
 
     def reduce_size(self, class_percentages) -> None:
         for cls, percent in class_percentages.items():
