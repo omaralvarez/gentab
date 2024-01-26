@@ -66,15 +66,11 @@ fig.subplots_adjust(wspace=0.25, hspace=0.125)
 
 axs, ims = [], []
 
-first = True
 i = 0
 for g in gens:
     if g[0] is not None:
         generator = g[0](dataset)
         generator.load_from_disk()
-
-    #    ax = grid.axes_all[i]
-    #    ax = fig.add_subplot(gs[i,0])
 
     j = 0
     for c in dataset.class_names():
@@ -184,7 +180,5 @@ for g in gens:
         j += 1
 
     i += 1
-
-    first = False
 
 plt.savefig("figures/VisualPlaynet.pdf", format="pdf", bbox_inches="tight")

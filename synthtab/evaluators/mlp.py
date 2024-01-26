@@ -148,6 +148,7 @@ class MLPClassifier:
         input_features,
         num_classes,
         *args,
+        epochs: int = 800,
         batch_size: int = 8192,
         seed: int = 42,
         **kwargs,
@@ -162,7 +163,7 @@ class MLPClassifier:
             devices=1,
             accelerator="auto",
             deterministic=True,
-            max_epochs=100,
+            max_epochs=epochs,
         )
 
     def fit(self, X, y) -> Self:
@@ -202,6 +203,7 @@ class MLP(Evaluator):
         self,
         generator,
         *args,
+        epochs: int = 800,
         batch_size: int = 32768,
         **kwargs,
     ) -> None:
@@ -210,6 +212,7 @@ class MLP(Evaluator):
             self.dataset.num_features(),
             self.dataset.num_classes(),
             *args,
+            epochs=epochs,
             batch_size=batch_size,
             seed=self.seed,
             **kwargs,
