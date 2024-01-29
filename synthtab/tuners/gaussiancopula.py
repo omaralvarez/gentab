@@ -10,10 +10,11 @@ class GaussianCopulaTuner(Tuner):
     def __init__(
         self,
         evaluator: Evaluator,
+        trials: int,
         *args,
         **kwargs,
     ) -> None:
-        super().__init__(evaluator)
+        super().__init__(evaluator, trials)
 
     def objective(self, trial: optuna.trial.Trial) -> float:
         default_distribution = trial.suggest_categorical(
@@ -26,8 +27,8 @@ class GaussianCopulaTuner(Tuner):
         )
         self.generator.generate()
 
-        acc, mcc = self.evaluator.evaluate()
+        trial.set_user_attr("dataset", self.dataset)
 
-        trial.set_user_attr("generator", self.generator)
+        acc, mcc = self.evaluator.evaluate()
 
         return mcc

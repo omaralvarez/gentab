@@ -21,6 +21,7 @@ class Generator:
         self.counts = self.orig_counts.max() - self.orig_counts
         # Filter the maximum class no need to generate for it
         self.counts = self.counts[self.counts > 0]
+        self.target_counts = self.counts
         # For reproducibility
         self.seed = seed
 
@@ -36,11 +37,11 @@ class Generator:
     def sample(self) -> pd.DataFrame:
         pass
 
-    def save_to_disk(self) -> None:
-        self.dataset.save_to_disk(self)
+    # def save_to_disk(self, tuner: str = "") -> None:
+    #     self.dataset.save_to_disk(self, tuner)
 
-    def load_from_disk(self) -> None:
-        self.dataset.load_from_disk(self)
+    def load_from_disk(self, tuner: str = "") -> None:
+        self.dataset.load_from_disk(self, tuner)
 
     def resample(self, n_samples, append) -> None:
         # TODO On run after ctabgan it has 0 count it is modifying
@@ -92,7 +93,8 @@ class Generator:
     def balance(self) -> None:
         data_gen = self.dataset.get_single_df()
 
-        total_samples = self.counts.sum()
+        total_samples = self.target_counts.sum()
+        self.counts = self.target_counts
 
         with ProgressBar().progress as p:
             gen_task = p.add_task(
@@ -131,6 +133,7 @@ class Generator:
 
         self.dataset.set_split_result(data_gen)
 
+    # TODO Flag to not train only generate?
     def generate(self, n_samples=None, append=True) -> None:
 
         with ProgressBar(indeterminate=True).progress as p:

@@ -20,6 +20,8 @@ from synthtab.utils import console
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle, Circle, Ellipse, Arc
+import numpy as np
+from scipy.stats import kde
 
 
 def preproc_playnet(dataset):
@@ -95,37 +97,33 @@ for g in gens:
 
         # Get positions
         if g[0] is not None:
-            row = generator.dataset.get_random_gen_class_rows(c, 1)
+            row = generator.dataset.get_gen_class_rows(c)
         else:
-            row = dataset.get_random_class_rows(c, 1)
+            row = dataset.get_class_rows(c)
 
-        xpoints = row.filter(regex="^#x").values.flatten().tolist()
-        ypoints = row.filter(regex="^#y").values.flatten().tolist()
-        vxpoints = row.filter(regex="^#vx").values.flatten().tolist()
-        vypoints = row.filter(regex="^#vy").values.flatten().tolist()
-        ballx = row.filter(regex="^#ball_x").values.flatten().tolist()
-        bally = row.filter(regex="^#ball_y").values.flatten().tolist()
-
-        # Remove undetected points
-        # TODO This is wrong, we need to delete after, do it with numpy like heatmap
-        # We are deleting as we are traversing the array...
-        for k, _ in enumerate(xpoints):
-            if (
-                xpoints[k] == 0.0
-                and ypoints[k] == 0.0
-                and vxpoints[k] == 0.0
-                and vypoints[k] == 0.0
-            ):
-                del xpoints[k]
-                del ypoints[k]
-                del vxpoints[k]
-                del vypoints[k]
-
-        if ballx[0] == 0.0 and bally[0] == 0.0:
-            del ballx[0]
-            del bally[0]
-
+        xpoints = row.filter(regex="^#x").values.flatten()
+        ypoints = row.filter(regex="^#y").values.flatten()
+        ids = ~(np.array(xpoints == 0) & np.array(ypoints == 0))
+        xpoints = xpoints[ids]
+        ypoints = ypoints[ids]
         # First array horiz. coords., second vertical
+        # Player position heatmap
+        # ax.hist2d(
+        #     xpoints,
+        #     ypoints,
+        #     # bins=[np.arange(0, 1.0, 0.08), np.arange(0.0, 1.0, 0.08)],
+        #     cmap="Greens",
+        # )
+        # Evaluate a gaussian kde on a regular grid of nbins x nbins over data extents
+        nbins = 20
+        k = kde.gaussian_kde([xpoints, ypoints])
+        xi, yi = np.mgrid[
+            0 : 1 : nbins * 1j,
+            0 : 1 : nbins * 1j,
+        ]
+        zi = k(np.vstack([xi.flatten(), yi.flatten()]))
+        # Make the plot
+        ax.pcolormesh(xi, yi, zi.reshape(xi.shape), shading="auto", cmap="Greens")
         # Middle line
         ax.plot([0.5, 0.5], [0.0, 1.0], color="black")
         # Center circle
@@ -156,22 +154,6 @@ for g in gens:
                 lw=2,
             )
         )
-        # Player positions
-        ax.plot(xpoints, ypoints, "o")
-        # Ball
-        ax.plot(ballx, bally, "o", color="magenta")
-        # Speeds
-        ax.quiver(
-            xpoints,
-            ypoints,
-            vxpoints,
-            vypoints,
-            color="orange",
-            angles="uv",
-            scale=4,
-            headaxislength=3,
-            headlength=3,
-        )
         # Field
         ims.append(
             ax.add_patch(Rectangle((0, 0), 1, 1, facecolor="none", ec="k", lw=2))
@@ -183,4 +165,4 @@ for g in gens:
 
     i += 1
 
-plt.savefig("figures/VisualPlaynet.pdf", format="pdf", bbox_inches="tight")
+plt.savefig("figures/HeatmapPlaynet.pdf", format="pdf", bbox_inches="tight")

@@ -32,7 +32,7 @@ from synthtab.tuners import (
 from synthtab.data import Config, Dataset
 from synthtab.utils import console
 
-config = Config("configs/adult_lightgbm.json")
+config = Config("configs/adult.json")
 
 dataset = Dataset(config)
 dataset.merge_classes({"<=50K": ["<=50K."], ">50K": [">50K."]})
@@ -45,7 +45,7 @@ trials = 10
 # console.print(dataset.class_counts(), dataset.row_count())
 # generator = ROS(dataset)
 # generator.generate()
-# dataset.save_to_disk(generator)
+# dataset.save_to_disk(generator, evaluator)
 # console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 
 # console.print(dataset.class_counts(), dataset.row_count())
@@ -55,7 +55,7 @@ trials = 10
 # tuner.tune()
 # generator = tuner.generator
 # generator.generate()
-# dataset.save_to_disk(generator)
+# dataset.save_to_disk(generator, evaluator)
 # console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 
 # console.print(dataset.class_counts(), dataset.row_count())
@@ -66,7 +66,7 @@ trials = 10
 # generator = tuner.generator
 # # generator.generate({"right_transition": 83, "time_out": 153})
 # generator.generate()
-# dataset.save_to_disk(generator)
+# dataset.save_to_disk(generator, evaluator)
 # console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 
 # console.print(dataset.class_counts(), dataset.row_count())
@@ -76,7 +76,7 @@ trials = 10
 # tuner.tune()
 # generator = tuner.generator
 # generator.generate()
-# dataset.save_to_disk(generator)
+# dataset.save_to_disk(generator, evaluator)
 # console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 
 # console.print(dataset.class_counts(), dataset.row_count())
@@ -86,7 +86,7 @@ trials = 10
 # tuner.tune()
 # generator = tuner.generator
 # generator.generate()
-# dataset.save_to_disk(generator)
+# dataset.save_to_disk(generator, evaluator)
 # console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 
 # console.print(dataset.class_counts(), dataset.row_count())
@@ -96,7 +96,7 @@ trials = 10
 # tuner.tune()
 # generator = tuner.generator
 # generator.generate()
-# dataset.save_to_disk(generator)
+# dataset.save_to_disk(generator, evaluator)
 # console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 
 # console.print(dataset.class_counts(), dataset.row_count())
@@ -106,7 +106,7 @@ trials = 10
 # tuner.tune()
 # generator = tuner.generator
 # generator.generate()
-# dataset.save_to_disk(generator)
+# dataset.save_to_disk(generator, evaluator)
 # console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 
 console.print(dataset.class_counts(), dataset.row_count())
@@ -120,7 +120,7 @@ tuner.tune()
 generator = tuner.generator
 generator.generate()
 console.print(dataset.generated_class_counts(), dataset.generated_row_count())
-dataset.save_to_disk(generator)
+dataset.save_to_disk(generator, evaluator)
 
 console.print(dataset.class_counts(), dataset.row_count())
 generator = CTABGANPlus(
@@ -133,7 +133,7 @@ tuner.tune()
 generator = tuner.generator
 generator.generate()
 console.print(dataset.generated_class_counts(), dataset.generated_row_count())
-dataset.save_to_disk(generator)
+dataset.save_to_disk(generator, evaluator)
 
 # console.print(dataset.class_counts(), dataset.row_count())
 # generator = AutoDiffusion(dataset)
@@ -143,7 +143,7 @@ dataset.save_to_disk(generator)
 # generator = tuner.generator
 # generator.generate()
 # console.print(dataset.generated_class_counts(), dataset.generated_row_count())
-# dataset.save_to_disk(generator)
+# dataset.save_to_disk(generator, evaluator)
 
 console.print(dataset.class_counts(), dataset.row_count())
 generator = ForestDiffusion(dataset, n_jobs=1, duplicate_K=4, n_estimators=100)
@@ -153,7 +153,7 @@ tuner.tune()
 generator = tuner.generator
 generator.generate()
 console.print(dataset.generated_class_counts(), dataset.generated_row_count())
-dataset.save_to_disk(generator)
+dataset.save_to_disk(generator, evaluator)
 
 console.print(dataset.class_counts(), dataset.row_count())
 generator = GReaT(
@@ -171,7 +171,7 @@ tuner.tune()
 generator = tuner.generator
 generator.generate()
 console.print(dataset.generated_class_counts(), dataset.generated_row_count())
-dataset.save_to_disk(generator)
+dataset.save_to_disk(generator, evaluator)
 
 console.print(dataset.class_counts(), dataset.row_count())
 generator = Tabula(
@@ -188,9 +188,7 @@ tuner = TabulaTuner(evaluator, trials)
 tuner.tune()
 generator = tuner.generator
 generator.generate()
-generator.save_to_disk()
-console.print(dataset.generated_class_counts(), dataset.generated_row_count())
-
+dataset.save_to_disk(generator, evaluator)
 
 # TODO Timing..
 # TODO Synthetic dataset only, with same distribution, get class counts and use n_samples in generate

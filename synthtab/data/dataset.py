@@ -98,36 +98,47 @@ class Dataset:
             stratify=uci.data.targets,
         )
 
-    def save_to_disk(self, name) -> None:
+    def save_to_disk(self, generator, tuner="") -> None:
         with ProgressBar(indeterminate=True).progress as p:
             gen_task = p.add_task(
                 "Saving dataset to {}...".format(self.config["save_path"]), total=None
             )
 
-            Path(self.config["save_path"]).mkdir(parents=True, exist_ok=True)
+            if tuner == "":
+                path = self.config["save_path"]
+            else:
+                path = self.config["save_path"] + "_" + str(tuner).lower()
+
+            Path(path).mkdir(parents=True, exist_ok=True)
 
             self.X_gen.to_csv(
-                os.path.join(self.config["save_path"], "X_gen_" + str(name) + ".csv"),
+                os.path.join(path, "X_gen_" + str(generator) + ".csv"),
                 index=False,
             )
             self.y_gen.to_csv(
-                os.path.join(self.config["save_path"], "y_gen_" + str(name) + ".csv"),
+                os.path.join(path, "y_gen_" + str(generator) + ".csv"),
                 index=False,
             )
 
-        console.print("✅ Dataset saved to {}...".format(self.config["save_path"]))
+        console.print("✅ Dataset saved to {}...".format(path))
 
-    def load_from_disk(self, name) -> None:
+    def load_from_disk(self, generator, tuner="") -> None:
         with ProgressBar(indeterminate=True).progress as p:
-            gen_task = p.add_task("Loading dataset {}...".format(name), total=None)
+            gen_task = p.add_task("Loading dataset {}...".format(generator), total=None)
+
+            if tuner == "":
+                path = self.config["save_path"]
+            else:
+                path = self.config["save_path"] + "_" + str(tuner).lower()
+
             self.X_gen = pd.read_csv(
-                os.path.join(self.config["save_path"], "X_gen_" + str(name) + ".csv")
+                os.path.join(path, "X_gen_" + str(generator) + ".csv")
             )
             self.y_gen = pd.read_csv(
-                os.path.join(self.config["save_path"], "y_gen_" + str(name) + ".csv")
+                os.path.join(path, "y_gen_" + str(generator) + ".csv")
             )
 
-        console.print("✅ {} dataset loaded...".format(name))
+        console.print("✅ {} dataset loaded...".format(generator))
 
     def get_categories(self) -> None:
         self.cats = self.config["categorical_columns"] + self.config["binary_columns"]
@@ -218,6 +229,16 @@ class Dataset:
     def get_random_gen_class_rows(self, cls: str, n: int):
         compliant_rows = self.y_gen[self.y_gen[self.config["y_label"]] == cls]
         idx = compliant_rows.sample(n=n, random_state=SEED).index
+        return self.X_gen.loc[idx]
+
+    def get_class_rows(self, cls: str):
+        compliant_rows = self.y[self.y[self.config["y_label"]] == cls]
+        idx = compliant_rows.index
+        return self.X.loc[idx]
+
+    def get_gen_class_rows(self, cls: str):
+        compliant_rows = self.y_gen[self.y_gen[self.config["y_label"]] == cls]
+        idx = compliant_rows.index
         return self.X_gen.loc[idx]
 
     def reduce_size(self, class_percentages) -> None:

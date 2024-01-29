@@ -9,6 +9,7 @@ model_playnet.pt
 results*.py
 correlation*.py
 lightning_logs/
+tuning/
 .scale*
 
 # Byte-compiled / optimized / DLL files

@@ -124,5 +124,5 @@ dataset.save_to_disk(generator)
 #     n_samples=8192,
 # )
 # generator.generate(n_samples=n_samples, append=False)
-# generator.save_to_disk()
 # console.print(dataset.generated_class_counts(), dataset.generated_row_count())
+# dataset.save_to_disk(generator)

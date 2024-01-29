@@ -127,5 +127,5 @@ console.print(cat)
 #     n_samples=8192,
 # )
 # generator.generate()
-# generator.save_to_disk()
 # console.print(dataset.generated_class_counts(), dataset.generated_row_count())
+# dataset.save_to_disk(generator)

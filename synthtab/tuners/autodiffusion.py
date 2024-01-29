@@ -10,6 +10,7 @@ class AutoDiffusionTuner(Tuner):
     def __init__(
         self,
         evaluator: Evaluator,
+        trials: int,
         *args,
         min_epochs: int = 200,
         max_epochs: int = 1000,
@@ -19,6 +20,7 @@ class AutoDiffusionTuner(Tuner):
     ) -> None:
         super().__init__(
             evaluator,
+            trials,
             min_epochs=min_epochs,
             max_epochs=max_epochs,
             min_batch=min_batch,
@@ -63,9 +65,7 @@ class AutoDiffusionTuner(Tuner):
         )
         self.generator.generate()
 
-        # TODO RuntimeError: Only Tensors created explicitly by the user (graph leaves) support the deepcopy protocol at the moment
-        # Internally it uses return copy.deepcopy(self._storage.get_best_trial(self._study_id)) AutoDiff object inside.
-        trial.set_user_attr("generator", self.generator)
+        trial.set_user_attr("dataset", self.dataset)
 
         acc, mcc = self.evaluator.evaluate()
 

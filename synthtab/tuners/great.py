@@ -10,6 +10,7 @@ class GReaTTuner(Tuner):
     def __init__(
         self,
         evaluator: Evaluator,
+        trials: int,
         *args,
         min_epochs: int = 200,
         max_epochs: int = 800,
@@ -19,6 +20,7 @@ class GReaTTuner(Tuner):
     ) -> None:
         super().__init__(
             evaluator,
+            trials,
             min_epochs=min_epochs,
             max_epochs=max_epochs,
             min_batch=min_batch,
@@ -42,7 +44,7 @@ class GReaTTuner(Tuner):
         )
         self.generator.generate()
 
-        trial.set_user_attr("generator", self.generator)
+        trial.set_user_attr("dataset", self.dataset)
 
         acc, mcc = self.evaluator.evaluate()
 

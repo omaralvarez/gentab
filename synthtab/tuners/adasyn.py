@@ -4,16 +4,18 @@ from synthtab.evaluators import Evaluator
 from synthtab.utils import console, SPINNER, REFRESH
 
 import optuna
+import copy
 
 
 class ADASYNTuner(Tuner):
     def __init__(
         self,
         evaluator: Evaluator,
+        trials: int,
         *args,
         **kwargs,
     ) -> None:
-        super().__init__(evaluator)
+        super().__init__(evaluator, trials)
 
     def objective(self, trial: optuna.trial.Trial) -> float:
         n_neighbors = trial.suggest_int(
@@ -23,8 +25,8 @@ class ADASYNTuner(Tuner):
         self.generator = ADASYN(self.dataset, n_neighbors=n_neighbors)
         self.generator.generate()
 
-        acc, mcc = self.evaluator.evaluate()
+        trial.set_user_attr("dataset", copy.copy(self.dataset))
 
-        trial.set_user_attr("generator", self.generator)
+        acc, mcc = self.evaluator.evaluate()
 
         return mcc

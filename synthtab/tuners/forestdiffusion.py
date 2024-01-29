@@ -10,6 +10,7 @@ class ForestDiffusionTuner(Tuner):
     def __init__(
         self,
         evaluator: Evaluator,
+        trials: int,
         *args,
         min_batch: int = 512,
         max_batch: int = 16384,
@@ -17,6 +18,7 @@ class ForestDiffusionTuner(Tuner):
     ) -> None:
         super().__init__(
             evaluator,
+            trials,
             min_batch=min_batch,
             max_batch=max_batch,
         )
@@ -46,10 +48,6 @@ class ForestDiffusionTuner(Tuner):
             "batch_size", self.min_batch, self.max_batch, step=2
         )
 
-        # TODO Maybe add batch sizes
-        # TODO xgboost.core.XGBoostError: [10:59:07] /workspace/src/data/iterative_dmatrix.h:61:
-        # Check failed: !param.regen && param.hess.empty(): Only `hist` and `gpu_hist` tree
-        # method can use `QuantileDMatrix`.
         self.generator = ForestDiffusion(
             self.dataset,
             n_t=n_t,
@@ -71,7 +69,7 @@ class ForestDiffusionTuner(Tuner):
         )
         self.generator.generate()
 
-        trial.set_user_attr("generator", self.generator)
+        trial.set_user_attr("dataset", self.dataset)
 
         acc, mcc = self.evaluator.evaluate()
 

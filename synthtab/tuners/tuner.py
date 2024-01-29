@@ -2,6 +2,9 @@ from synthtab.evaluators import Evaluator
 from synthtab.utils import console, SPINNER, REFRESH
 from synthtab import SEED
 
+from pathlib import Path
+import json
+import os
 import optuna
 
 
@@ -9,7 +12,7 @@ class Tuner:
     def __init__(
         self,
         evaluator: Evaluator,
-        n_trials: int = 10,
+        n_trials: int,
         min_epochs: int = 300,
         max_epochs: int = 800,
         min_batch: int = 512,
@@ -24,12 +27,16 @@ class Tuner:
         self.max_epochs = max_epochs
         self.min_batch = min_batch
         self.max_batch = max_batch
+        self.folder = "tuning"
 
     def __str__(self) -> str:
         return self.__class__.__name__
 
     def objective(self, trial: optuna.trial.Trial) -> float:
         pass
+
+    def save_to_disk(self):
+        self.dataset.save_to_disk(self.generator, self.evaluator)
 
     def tune(self) -> None:
         # pruner: optuna.pruners.BasePruner(optuna.pruners.NopPruner())
@@ -53,4 +60,19 @@ class Tuner:
         for key, value in self.trial.params.items():
             console.print("    {}: {}".format(key, value))
 
-        self.generator = self.trial.user_attrs["generator"]
+        Path(self.folder).mkdir(parents=True, exist_ok=True)
+
+        path = os.path.join(
+            self.folder,
+            str(self.dataset).lower()
+            + "_"
+            + str(self.generator).lower()
+            + "_"
+            + str(self.evaluator).lower()
+            + ".json",
+        )
+
+        with open(path, "w") as fp:
+            json.dump(self.trial.params, fp, indent=4)
+
+        self.dataset = self.trial.user_attrs["dataset"]

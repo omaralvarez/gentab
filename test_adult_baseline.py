@@ -122,9 +122,8 @@ generator = Tabula(
     n_samples=8192,
 )
 generator.generate()
-generator.save_to_disk()
 console.print(dataset.generated_class_counts(), dataset.generated_row_count())
-
+dataset.save_to_disk(generator)
 
 # TODO Timing..
 # TODO Synthetic dataset only, with same distribution, get class counts and use n_samples in generate

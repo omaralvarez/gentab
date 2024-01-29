@@ -1,0 +1,21 @@
+{
+    "task_type": "binary",
+    "name": "car_eval_4",
+    "download": "imbalanced",
+    "save_path": "datasets/car_eval_4",
+    "id": "car_eval_4--id",
+    "y_label": "vgood",
+    "train_size": 0.6,
+    "validation_size": 0.2,
+    "test_size": 0.4,
+    "CTABGAN": {
+        "log_columns": [],
+        "mixed_columns": {}
+    },
+    "CTABGANPlus": {
+        "log_columns": [],
+        "general_columns": [],
+        "non_categorical_columns": [],
+        "mixed_columns": {}
+    }
+}
