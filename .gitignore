@@ -10,6 +10,7 @@ results*.py
 correlation*.py
 lightning_logs/
 tuning/
+catboost_info/
 .scale*
 
 # Byte-compiled / optimized / DLL files
