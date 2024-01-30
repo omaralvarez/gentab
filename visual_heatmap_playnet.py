@@ -101,8 +101,11 @@ for g in gens:
         else:
             row = dataset.get_class_rows(c)
 
+        tolerance = 0.05
         xpoints = row.filter(regex="^#x").values.flatten()
         ypoints = row.filter(regex="^#y").values.flatten()
+        xpoints[np.isclose(xpoints, 0, atol=tolerance)] = 0
+        ypoints[np.isclose(ypoints, 0, atol=tolerance)] = 0
         ids = ~(np.array(xpoints == 0) & np.array(ypoints == 0))
         xpoints = xpoints[ids]
         ypoints = ypoints[ids]

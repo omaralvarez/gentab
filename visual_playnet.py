@@ -20,6 +20,7 @@ from synthtab.utils import console
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle, Circle, Ellipse, Arc
+import numpy as np
 
 
 def preproc_playnet(dataset):
@@ -99,31 +100,33 @@ for g in gens:
         else:
             row = dataset.get_random_class_rows(c, 1)
 
-        xpoints = row.filter(regex="^#x").values.flatten().tolist()
-        ypoints = row.filter(regex="^#y").values.flatten().tolist()
-        vxpoints = row.filter(regex="^#vx").values.flatten().tolist()
-        vypoints = row.filter(regex="^#vy").values.flatten().tolist()
-        ballx = row.filter(regex="^#ball_x").values.flatten().tolist()
-        bally = row.filter(regex="^#ball_y").values.flatten().tolist()
+        xpoints = row.filter(regex="^#x").values.flatten()
+        ypoints = row.filter(regex="^#y").values.flatten()
+        vxpoints = row.filter(regex="^#vx").values.flatten()
+        vypoints = row.filter(regex="^#vy").values.flatten()
+        ballx = row.filter(regex="^#ball_x").values.flatten()
+        bally = row.filter(regex="^#ball_y").values.flatten()
 
-        # Remove undetected points
-        # TODO This is wrong, we need to delete after, do it with numpy like heatmap
-        # We are deleting as we are traversing the array...
-        for k, _ in enumerate(xpoints):
-            if (
-                xpoints[k] == 0.0
-                and ypoints[k] == 0.0
-                and vxpoints[k] == 0.0
-                and vypoints[k] == 0.0
-            ):
-                del xpoints[k]
-                del ypoints[k]
-                del vxpoints[k]
-                del vypoints[k]
-
-        if ballx[0] == 0.0 and bally[0] == 0.0:
-            del ballx[0]
-            del bally[0]
+        tolerance = 0.05
+        xpoints[np.isclose(xpoints, 0, atol=tolerance)] = 0
+        ypoints[np.isclose(ypoints, 0, atol=tolerance)] = 0
+        vxpoints[np.isclose(vxpoints, 0, atol=tolerance)] = 0
+        vypoints[np.isclose(vypoints, 0, atol=tolerance)] = 0
+        ballx[np.isclose(ballx, 0, atol=tolerance)] = 0
+        bally[np.isclose(bally, 0, atol=tolerance)] = 0
+        ids = ~(
+            np.array(xpoints == 0)
+            & np.array(ypoints == 0)
+            & np.array(vxpoints == 0)
+            & np.array(vxpoints == 0)
+        )
+        xpoints = xpoints[ids]
+        ypoints = ypoints[ids]
+        vxpoints = vxpoints[ids]
+        vypoints = vypoints[ids]
+        ids = ~(np.array(ballx == 0) & np.array(bally == 0))
+        ballx = ballx[ids]
+        bally = bally[ids]
 
         # First array horiz. coords., second vertical
         # Middle line
