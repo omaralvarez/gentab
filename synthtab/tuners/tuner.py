@@ -16,7 +16,7 @@ class Tuner:
         min_epochs: int = 300,
         max_epochs: int = 800,
         min_batch: int = 512,
-        max_batch: int = 4196,
+        max_batch: int = 4096,
     ) -> None:
         self.seed = SEED
         self.evaluator = evaluator
@@ -25,8 +25,13 @@ class Tuner:
         self.n_trials = n_trials
         self.min_epochs = min_epochs
         self.max_epochs = max_epochs
-        self.min_batch = min_batch
-        self.max_batch = max_batch
+        self.batch_sizes = [
+            2**i
+            for i in range(
+                int(min_batch).bit_length() - 1, int(max_batch).bit_length() + 1
+            )
+            if 2**i >= min_batch and 2**i <= max_batch
+        ]
         self.folder = "tuning"
 
     def __str__(self) -> str:

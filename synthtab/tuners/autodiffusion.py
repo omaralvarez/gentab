@@ -29,25 +29,23 @@ class AutoDiffusionTuner(Tuner):
 
     def objective(self, trial: optuna.trial.Trial) -> float:
         n_epochs = trial.suggest_int("n_epochs", self.min_epochs, self.max_epochs)
-        batch_size = trial.suggest_int(
-            "batch_size", self.min_batch, self.max_batch, step=2
-        )
+        batch_size = trial.suggest_categorical("batch_size", self.batch_sizes)
         diff_n_epochs = trial.suggest_int("diff_n_epochs", 200, 10000, step=2)
-        threshold = trial.suggest_float("threshold", 0.05, 0.05)
+        threshold = trial.suggest_float("threshold", 0.005, 0.02)
         weight_decay = trial.suggest_float("weight_decay", 1e-7, 1e-5, log=True)
         lr = trial.suggest_float("lr", 2e-5, 2e-3, log=True)
-        hidden_size = trial.suggest_int("hidden_size", 64, 512, step=2)
-        num_layers = trial.suggest_int("num_layers", 2, 8, step=2)
+        hidden_size = trial.suggest_categorical("hidden_size", [64, 128, 256, 512])
+        num_layers = trial.suggest_categorical("num_layers", [2, 4, 8])
         hidden_dims = trial.suggest_categorical(
             "hidden_dims",
             [
                 (128, 256, 512, 256, 128),
                 (256, 512, 1024, 512, 256),
-                (512, 1024, 2048, 1024, 512),
+                # (512, 1024, 2048, 1024, 512),
             ],
         )
         sigma = trial.suggest_int("sigma", 10, 40)
-        T = trial.suggest_int("T", 50, 600, step=2)
+        T = trial.suggest_int("T", 50, 200, step=2)
 
         self.generator = AutoDiffusion(
             self.dataset,

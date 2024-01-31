@@ -33,34 +33,34 @@ class CopulaGANTuner(Tuner):
             ["norm", "beta", "truncnorm", "uniform", "gamma", "gaussian_kde"],
         )
         epochs = trial.suggest_int("epochs", self.min_epochs, self.max_epochs)
-        batch_size_mult = trial.suggest_int(
-            "batch_size_mult", self.min_batch, self.max_batch, step=2
-        )
+        batch_size = trial.suggest_categorical("batch_size", self.batch_sizes)
         discriminator_dim = (
-            trial.suggest_int("disc_dim_in", 32, 512, step=2),
-            trial.suggest_int("disc_dim_out", 32, 512, step=2),
+            trial.suggest_categorical("disc_dim_in", [32, 64, 128, 256, 512]),
+            trial.suggest_categorical("disc_dim_out", [32, 64, 128, 256, 512]),
         )
         discriminator_decay = trial.suggest_float(
             "discriminator_decay", 1e-7, 1e-5, log=True
         )
         discriminator_lr = trial.suggest_float("discriminator_lr", 2e-5, 2e-3, log=True)
-        discriminator_steps = trial.suggest_int("discriminator_steps", 1, 16, step=2)
-        embedding_dim = trial.suggest_int("embedding_dim", 64, 1024, step=2)
+        discriminator_steps = trial.suggest_categorical(
+            "discriminator_steps", [1, 2, 4, 8]
+        )
+        embedding_dim = trial.suggest_categorical("embedding_dim", [64, 128, 256, 512])
         generator_decay = trial.suggest_float("generator_decay", 1e-7, 1e-5, log=True)
         generator_dim = (
-            trial.suggest_int("gen_dims_in", 32, 512, step=2),
-            trial.suggest_int("gen_dims_out", 32, 512, step=2),
+            trial.suggest_categorical("gen_dims_in", [32, 64, 128, 256, 512]),
+            trial.suggest_categorical("gen_dims_out", [32, 64, 128, 256, 512]),
         )
         generator_lr = trial.suggest_float("discriminator_lr", 2e-5, 2e-3, log=True)
 
         log_frequency = trial.suggest_categorical("log_frequency", [True, False])
-        pac = trial.suggest_int("pac", 2, 256, step=2)
+        pac = trial.suggest_categorical("pac", [2, 4, 8, 16, 32])
 
         self.generator = CopulaGAN(
             self.dataset,
             default_distribution=default_distribution,
             epochs=epochs,
-            batch_size=batch_size_mult * pac,
+            batch_size=batch_size,
             discriminator_dim=discriminator_dim,
             discriminator_decay=discriminator_decay,
             discriminator_lr=discriminator_lr,
