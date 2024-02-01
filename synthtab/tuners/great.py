@@ -29,10 +29,8 @@ class GReaTTuner(Tuner):
 
     def objective(self, trial: optuna.trial.Trial) -> float:
         epochs = trial.suggest_int("epochs", self.min_epochs, self.max_epochs)
-        batch_size = trial.suggest_int(
-            "batch_size", self.min_batch, self.max_batch, step=2
-        )
-        temperature = trial.suggest_float("temperature", 0.3, 1.0, log=True)
+        batch_size = trial.suggest_categorical("batch_size", self.batch_sizes)
+        temperature = trial.suggest_float("temperature", 0.3, 1.0)
         k = trial.suggest_int("k", 50, 200, step=2)
 
         self.generator = GReaT(
