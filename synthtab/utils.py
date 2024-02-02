@@ -1,3 +1,5 @@
+from time import perf_counter
+
 from rich.console import Console
 from rich.progress import (
     BarColumn,
@@ -6,7 +8,6 @@ from rich.progress import (
     TextColumn,
     TimeElapsedColumn,
     TimeRemainingColumn,
-    SpinnerColumn,
 )
 
 SPINNER = "aesthetic"
@@ -17,7 +18,7 @@ console = Console()
 
 
 class ProgressBar:
-    def __init__(self, indeterminate=False) -> None:
+    def __init__(self, indeterminate: bool = False) -> None:
         # Define custom progress bar
         if indeterminate:
             self.progress = Progress(
@@ -40,3 +41,20 @@ class ProgressBar:
                 console=console,
                 expand=EXPAND,
             )
+
+
+class Timer:
+    def __init__(self) -> None:
+        self._start = None
+        self._stop = None
+        self.elapsed_s = None
+
+    def start(self) -> None:
+        self._start = perf_counter()
+
+    def stop(self) -> None:
+        self._stop = perf_counter()
+
+    def elapsed(self) -> None:
+        self.elapsed_s = self._stop - self._start
+        console.print("⏳ Elapsed time: {:.2f} s".format(self.elapsed_s))

@@ -1,5 +1,5 @@
 from synthtab import SEED
-from synthtab.utils import console, SPINNER, REFRESH, ProgressBar
+from synthtab.utils import console, SPINNER, REFRESH, ProgressBar, Timer
 
 import pandas as pd
 
@@ -24,6 +24,7 @@ class Generator:
         self.target_counts = self.counts
         # For reproducibility
         self.seed = seed
+        self.timer = Timer()
 
     def __str__(self) -> str:
         return self.__class__.__name__
@@ -135,23 +136,32 @@ class Generator:
 
     # TODO Flag to not train only generate?
     def generate(self, n_samples=None, append=True) -> None:
-
         with ProgressBar(indeterminate=True).progress as p:
+            console.print("🔄 Training with {}...".format(self))
             gen_task = p.add_task(
                 "Preprocessing with {}...".format(self.dataset), total=None
             )
+            self.timer.start()
+
             self.preprocess()
-            # p.start_task()
 
             p.update(gen_task, description="Training with {}...".format(self))
             self.train()
 
+            self.timer.stop()
+            self.timer.elapsed()
+
         console.print("🔄 Generating with {}...".format(self))
+
+        self.timer.start()
 
         # If progress does not look better indent this
         if n_samples is None:
             self.balance()
         else:
             self.resample(n_samples, append)
+
+        self.timer.stop()
+        self.timer.elapsed()
 
         console.print("✅ Generation complete with {}...".format(self))
