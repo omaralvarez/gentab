@@ -48,6 +48,7 @@ class Timer:
         self._start = None
         self._stop = None
         self.elapsed_s = None
+        self.history = []
 
     def start(self) -> None:
         self._start = perf_counter()
@@ -57,4 +58,5 @@ class Timer:
 
     def elapsed(self) -> None:
         self.elapsed_s = self._stop - self._start
+        self.history.append(self.elapsed_s)
         console.print("⏳ Elapsed time: {:.2f} s".format(self.elapsed_s))

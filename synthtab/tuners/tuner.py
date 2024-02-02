@@ -58,15 +58,17 @@ class Tuner:
 
         console.print("Best trial:")
         self.trial = self.study.best_trial
-
         console.print("  Value: {}".format(self.trial.value))
-
         console.print("  Params: ")
         for key, value in self.trial.params.items():
             console.print("    {}: {}".format(key, value))
 
-        Path(self.folder).mkdir(parents=True, exist_ok=True)
+        # Add timing information
+        self.trial.params["train_time"] = self.trial.user_attrs["timing"][0]
+        self.trial.params["gen_time"] = self.trial.user_attrs["timing"][1]
 
+        # Save generator parameters to JSON
+        Path(self.folder).mkdir(parents=True, exist_ok=True)
         path = os.path.join(
             self.folder,
             str(self.dataset).lower()
@@ -76,8 +78,8 @@ class Tuner:
             + str(self.evaluator).lower()
             + ".json",
         )
-
         with open(path, "w") as fp:
             json.dump(self.trial.params, fp, indent=4)
 
+        # Get best dataset object
         self.dataset = self.trial.user_attrs["dataset"]

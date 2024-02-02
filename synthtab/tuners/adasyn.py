@@ -25,6 +25,7 @@ class ADASYNTuner(Tuner):
         self.generator = ADASYN(self.dataset, n_neighbors=n_neighbors)
         self.generator.generate()
 
+        trial.set_user_attr("timing", self.generator.timer.history)
         trial.set_user_attr("dataset", copy.copy(self.dataset))
 
         acc, mcc = self.evaluator.evaluate()

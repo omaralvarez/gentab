@@ -24,6 +24,7 @@ class SMOTETuner(Tuner):
         self.generator = SMOTE(self.dataset, k_neighbors=k_neighbors)
         self.generator.generate()
 
+        trial.set_user_attr("timing", self.generator.timer.history)
         trial.set_user_attr("dataset", self.dataset)
 
         acc, mcc = self.evaluator.evaluate()

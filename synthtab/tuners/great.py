@@ -42,6 +42,7 @@ class GReaTTuner(Tuner):
         )
         self.generator.generate()
 
+        trial.set_user_attr("timing", self.generator.timer.history)
         trial.set_user_attr("dataset", self.dataset)
 
         acc, mcc = self.evaluator.evaluate()
