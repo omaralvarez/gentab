@@ -28,4 +28,5 @@ dependencies:
     - be-great
     - lightning
     - ucimlrepo
+    - humanize
     

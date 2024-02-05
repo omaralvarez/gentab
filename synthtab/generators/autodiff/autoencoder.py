@@ -10,12 +10,10 @@ import matplotlib.pyplot as plt
 
 
 def _make_mlp_layers(num_units):
-    layers = nn.ModuleList(
-        [
-            nn.Linear(in_features, out_features)
-            for in_features, out_features in zip(num_units, num_units[1:])
-        ]
-    )
+    layers = nn.ModuleList([
+        nn.Linear(in_features, out_features)
+        for in_features, out_features in zip(num_units, num_units[1:])
+    ])
     return layers
 
 
@@ -189,7 +187,16 @@ def softmax_with_max(predictions):
 
 
 def train_autoencoder(
-    df, hidden_size, num_layers, lr, weight_decay, n_epochs, batch_size, threshold
+    df,
+    hidden_size,
+    num_layers,
+    lr,
+    weight_decay,
+    n_epochs,
+    batch_size,
+    threshold,
+    progress,
+    task,
 ):
     parser = DataFrameParser().fit(df, threshold)
     data = parser.transform()
@@ -220,7 +227,6 @@ def train_autoencoder(
     batch_size
     all_indices = list(range(data.shape[0]))
 
-    # TODO Progress here
     for epoch in range(n_epochs):
         batch_indices = random.sample(all_indices, batch_size)
 
@@ -240,6 +246,7 @@ def train_autoencoder(
         losses.append(l2_loss.item())
 
         # tqdm_epoch.set_description("Average Loss: {:5f}".format(l2_loss.item()))
+        progress.update(task, completed=epoch + 1)
 
     num_min_values, _ = torch.min(
         data[:, n_bins + n_cats : n_bins + n_cats + n_nums], dim=0

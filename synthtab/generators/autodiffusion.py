@@ -3,7 +3,7 @@ from .autodiff.process_GQ import DataFrameParser, convert_to_table
 from .autodiff.autoencoder import train_autoencoder
 from .autodiff.TabDDPMdiff import train_diffusion
 from .autodiff.diffusion import Euler_Maruyama_sampling
-from synthtab.utils import console, SPINNER, REFRESH
+from synthtab.utils import console, PROG_COLUMNS
 
 import pandas as pd
 
@@ -17,7 +17,7 @@ class AutoDiffusion(Generator):
         dataset,
         threshold=0.01,
         device="cuda",
-        max_tries_per_batch=4096,
+        max_tries_per_batch=8192,
         n_epochs=10000,
         eps=1e-5,
         weight_decay=1e-6,
@@ -55,6 +55,18 @@ class AutoDiffusion(Generator):
         super().preprocess()
 
     def train(self) -> None:
+        # Setup progress
+        self.p.columns = PROG_COLUMNS
+        self.p.update(
+            self.gen_task,
+            total=self.n_epochs,
+            description="Training {} AE...".format(self),
+        )
+        dm_task = self.p.add_task(
+            total=self.diff_n_epochs,
+            description="Training {} DM...".format(self),
+        )
+
         self.ds = train_autoencoder(
             self.data,
             self.hidden_size,
@@ -64,6 +76,8 @@ class AutoDiffusion(Generator):
             self.n_epochs,
             self.batch_size,
             self.threshold,
+            self.p,
+            self.gen_task,
         )
         self.latent_features = self.ds[1].detach()
         self.converted_table_dim = self.latent_features.shape[1]
@@ -80,6 +94,8 @@ class AutoDiffusion(Generator):
             self.diff_n_epochs,
             self.batch_size,
             self.device,
+            self.p,
+            dm_task,
         )
 
     def sample(self) -> pd.DataFrame:

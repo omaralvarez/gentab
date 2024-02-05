@@ -1,7 +1,7 @@
 from . import Generator
 from .tabu.tabula import Tab
 from .tabump.tabula import TabMP
-from synthtab.utils import console
+from synthtab.utils import console, PROG_COLUMNS
 
 import os
 import pandas as pd

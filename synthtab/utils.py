@@ -9,10 +9,28 @@ from rich.progress import (
     TimeElapsedColumn,
     TimeRemainingColumn,
 )
+import humanize
+import datetime as dt
 
 SPINNER = "aesthetic"
 REFRESH = 20
 EXPAND = False
+TRANSIENT = True
+IND_COLUMNS = [  # SpinnerColumn(spinner_name=SPINNER),
+    TextColumn("🔄 [progress.description]{task.description}"),
+    BarColumn(),
+]
+
+PROG_COLUMNS = [
+    TextColumn("🔄 [progress.description]{task.description}"),
+    TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
+    BarColumn(),
+    MofNCompleteColumn(),
+    TextColumn("•"),
+    TimeElapsedColumn(),
+    TextColumn("•"),
+    TimeRemainingColumn(),
+]
 
 console = Console()
 
@@ -22,22 +40,15 @@ class ProgressBar:
         # Define custom progress bar
         if indeterminate:
             self.progress = Progress(
-                # SpinnerColumn(spinner_name=SPINNER),
-                TextColumn("🔄 [progress.description]{task.description}"),
-                BarColumn(),
-                transient=True,
+                *IND_COLUMNS,
+                transient=TRANSIENT,
                 console=console,
                 expand=EXPAND,
             )
         else:
             self.progress = Progress(
-                TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
-                BarColumn(),
-                MofNCompleteColumn(),
-                TextColumn("•"),
-                TimeElapsedColumn(),
-                TextColumn("•"),
-                TimeRemainingColumn(),
+                *PROG_COLUMNS,
+                transient=TRANSIENT,
                 console=console,
                 expand=EXPAND,
             )
@@ -59,4 +70,8 @@ class Timer:
     def elapsed(self) -> None:
         self.elapsed_s = self._stop - self._start
         self.history.append(self.elapsed_s)
-        console.print("⏳ Elapsed time: {:.2f} s".format(self.elapsed_s))
+        console.print(
+            "⏳ Elapsed time: {}".format(
+                humanize.precisedelta(dt.timedelta(seconds=self.elapsed_s))
+            )
+        )

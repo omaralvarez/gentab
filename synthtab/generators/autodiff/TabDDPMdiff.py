@@ -367,6 +367,8 @@ def train_diffusion(
     n_epochs,
     batch_size,
     device,
+    progress,
+    task,
 ):
     rtdl_params = {
         "d_in": latent_features.shape[1],
@@ -387,10 +389,8 @@ def train_diffusion(
         epochs=n_epochs,
     )
 
-    # tqdm_epoch = tqdm.trange(n_epochs)
     losses = []
 
-    # TODO Progress here
     for epoch in range(n_epochs):
         batch_idx = random.choices(
             range(latent_features.shape[0]), k=batch_size
@@ -407,7 +407,9 @@ def train_diffusion(
 
         # Print the training loss over the epoch.
         losses.append(loss.item())
+
         # tqdm_epoch.set_description("Average Loss: {:5f}".format(loss.item()))
+        progress.update(task, completed=epoch + 1)
 
     return ScoreNet
 

@@ -1,6 +1,7 @@
 from . import Generator
 from .ctabgplus.pipeline.data_preparation import DataPrep
 from .ctabgplus.synthesizer.ctabgan_synthesizer import CTABGANSynthesizer
+from synthtab.utils import console, PROG_COLUMNS
 
 import pandas as pd
 import warnings
@@ -52,6 +53,7 @@ class CTABGANPlus(Generator):
         max_tries_per_batch=4096,
     ) -> None:
         super().__init__(dataset, batch_size, max_tries_per_batch)
+        self.epochs = epochs
         self.raw_df = self.dataset.get_single_df()
         self.test_ratio = test_ratio
         self.class_dim = class_dim
@@ -79,7 +81,7 @@ class CTABGANPlus(Generator):
             num_channels=self.num_channels,
             l2scale=self.l2scale,
             batch_size=self.batch_size,
-            epochs=epochs,
+            epochs=self.epochs,
         )
 
     def preprocess(self) -> None:
@@ -96,6 +98,10 @@ class CTABGANPlus(Generator):
         )
 
     def train(self) -> None:
+        # Setup progress
+        self.p.columns = PROG_COLUMNS
+        self.p.update(self.gen_task, total=self.epochs)
+
         self.synthesizer.fit(
             train_data=self.data_prep.df,
             categorical=self.data_prep.column_types["categorical"],
@@ -103,6 +109,8 @@ class CTABGANPlus(Generator):
             general=self.data_prep.column_types["general"],
             non_categorical=self.data_prep.column_types["non_categorical"],
             type=self.problem_type,
+            progress=self.p,
+            task=self.gen_task,
         )
 
     def sample(self) -> pd.DataFrame:

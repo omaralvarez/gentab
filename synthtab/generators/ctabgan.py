@@ -1,7 +1,7 @@
 from . import Generator
 from .ctabg.pipeline.data_preparation import DataPrep
 from .ctabg.synthesizer.ctabgan_synthesizer import CTABGANSynthesizer
-from synthtab.utils import console
+from synthtab.utils import console, PROG_COLUMNS
 
 import pandas as pd
 import warnings
@@ -48,6 +48,7 @@ class CTABGAN(Generator):
     ) -> None:
         super().__init__(dataset, batch_size, max_tries_per_batch)
         # TODO something here makes the nex generator crash when calling set split results KeyError: '#play'
+        self.epochs = epochs
         self.raw_df = self.dataset.get_single_df()
         self.test_ratio = test_ratio
         self.class_dim = class_dim
@@ -73,7 +74,7 @@ class CTABGAN(Generator):
             num_channels=self.num_channels,
             l2scale=self.l2scale,
             batch_size=self.batch_size,
-            epochs=epochs,
+            epochs=self.epochs,
         )
 
     def preprocess(self) -> None:
@@ -88,11 +89,18 @@ class CTABGAN(Generator):
         )
 
     def train(self) -> None:
+        # Setup progress
+        self.p.columns = PROG_COLUMNS
+        self.p.update(self.gen_task, total=self.epochs)
+
+        # Train
         self.synthesizer.fit(
             train_data=self.data_prep.df,
             categorical=self.data_prep.column_types["categorical"],
             mixed=self.data_prep.column_types["mixed"],
             type=self.problem_type,
+            progress=self.p,
+            task=self.gen_task,
         )
 
     def sample(self) -> pd.DataFrame:

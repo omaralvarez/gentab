@@ -1,5 +1,6 @@
+import time
 from synthtab import SEED
-from synthtab.utils import console, SPINNER, REFRESH, ProgressBar, Timer
+from synthtab.utils import console, ProgressBar, Timer
 
 import pandas as pd
 
@@ -45,7 +46,6 @@ class Generator:
         self.dataset.load_from_disk(self, tuner)
 
     def resample(self, n_samples, append) -> None:
-        # TODO On run after ctabgan it has 0 count it is modifying
         n_samples = n_samples.copy()
 
         if append:
@@ -137,21 +137,22 @@ class Generator:
     # TODO Flag to not train only generate?
     def generate(self, n_samples=None, append=True) -> None:
         with ProgressBar(indeterminate=True).progress as p:
-            console.print("🔄 Training with {}...".format(self))
-            gen_task = p.add_task(
-                "Preprocessing with {}...".format(self.dataset), total=None
-            )
+            self.p = p
+
             self.timer.start()
 
+            self.gen_task = self.p.add_task(
+                "Preprocessing with {}...".format(self.dataset), total=None
+            )
             self.preprocess()
 
-            p.update(gen_task, description="Training with {}...".format(self))
+            self.p.update(self.gen_task, description="Training with {}...".format(self))
             self.train()
+
+            console.print("✅ Training complete with {}...".format(self))
 
             self.timer.stop()
             self.timer.elapsed()
-
-        console.print("🔄 Generating with {}...".format(self))
 
         self.timer.start()
 
@@ -161,7 +162,7 @@ class Generator:
         else:
             self.resample(n_samples, append)
 
+        console.print("✅ Generation complete with {}...".format(self))
+
         self.timer.stop()
         self.timer.elapsed()
-
-        console.print("✅ Generation complete with {}...".format(self))
