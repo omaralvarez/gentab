@@ -56,6 +56,7 @@ class Generator:
         total_samples = sum(n_samples.values())
 
         with ProgressBar().progress as p:
+            self.p = p
             gen_task = p.add_task(
                 "Generating with {}...".format(self), total=total_samples
             )
@@ -98,6 +99,7 @@ class Generator:
         self.counts = self.target_counts
 
         with ProgressBar().progress as p:
+            self.p = p
             gen_task = p.add_task(
                 "Generating with {}...".format(self), total=total_samples
             )

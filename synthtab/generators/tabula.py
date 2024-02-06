@@ -103,11 +103,17 @@ class Tabula(Generator):
         return super().preprocess()
 
     def train(self) -> None:
+        # Setup progress
+        self.p.columns = PROG_COLUMNS
+        self.p.update(self.gen_task, total=self.epochs)
+
         if self.trained_model is None:
             self.model.fit(
                 data=self.data,
                 conditional_col=self.dataset.config["y_label"],
                 resume_from_checkpoint=self.resume_from_checkpoint,
+                progress=self.p,
+                task=self.gen_task,
             )
             torch.save(
                 self.model.model.state_dict(),
@@ -120,6 +126,10 @@ class Tabula(Generator):
             )
 
     def sample(self) -> pd.DataFrame:
+        sample_task = self.p.add_task(
+            total=self.n_samples,
+            description="Generating {} batch...".format(self),
+        )
         gen = self.model.sample(
             n_samples=self.n_samples,
             start_col=self.start_col,
@@ -129,6 +139,9 @@ class Tabula(Generator):
             max_length=self.max_length,
             device=self.device,
             max_tries=self.max_tries_per_batch,
+            progress=self.p,
+            task=sample_task,
         )
+        self.p.update(sample_task, visible=False)
 
         return gen

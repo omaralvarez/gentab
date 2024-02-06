@@ -16,6 +16,8 @@ from transformers import (
     AutoModelForCausalLM,
     TrainingArguments,
     AutoConfig,
+    TrainerCallback,
+    logging,
 )
 
 from .tabula_dataset import TabulaDataset, TabulaDataCollator
@@ -28,6 +30,22 @@ from .tabula_utils import (
     _convert_tokens_to_text,
     _convert_text_to_tabular_data,
 )
+
+logging.set_verbosity_error()
+
+
+class MyCallback(TrainerCallback):
+    "A callback to track progress on epoch end"
+
+    def __init__(self, progress, task) -> None:
+        super().__init__()
+        self.progress = progress
+        self.task = task
+        self.epoch = 1
+
+    def on_epoch_end(self, args, state, control, **kwargs):
+        self.progress.update(self.task, completed=self.epoch)
+        self.epoch += 1
 
 
 class TabMP:
@@ -58,6 +76,7 @@ class TabMP:
         experiment_dir: str = "trainer_tabula",
         epochs: int = 100,
         batch_size: int = 8,
+        categorical_columns: list = [],
         **train_kwargs,
     ):
         """Initializes Tabula.
@@ -83,6 +102,7 @@ class TabMP:
         self.epochs = epochs
         self.batch_size = batch_size
         self.train_hyperparameters = train_kwargs
+        self.categorical_columns = categorical_columns
 
         # Needed for the sampling process
         self.columns = None
@@ -97,6 +117,8 @@ class TabMP:
         column_names: tp.Optional[tp.List[str]] = None,
         conditional_col: tp.Optional[str] = None,
         resume_from_checkpoint: tp.Union[bool, str] = False,
+        progress=None,
+        task=None,
     ) -> TabulaTrainer:
         """Fine-tune Tabula using tabular data.
 
@@ -133,7 +155,6 @@ class TabMP:
         self._update_conditional_information(df, conditional_col)
 
         # Convert DataFrame into HuggingFace dataset object
-        logging.info("Convert data into HuggingFace dataset object...")
         tabula_ds = TabulaDataset.from_pandas(df)
         tabula_ds.set_tokenizer(self.tokenizer)
 
@@ -142,7 +163,6 @@ class TabMP:
         # tabula_ds.set_token_list_length(self.token_list_length)
 
         # Set training hyperparameters
-        logging.info("Create Tabula Trainer...")
         training_args = TrainingArguments(
             self.experiment_dir,
             num_train_epochs=self.epochs,
@@ -157,9 +177,9 @@ class TabMP:
             tokenizer=self.tokenizer,
             data_collator=data_collator,
         )
+        tabula_trainer.add_callback(MyCallback(progress, task))
 
         # Start training
-        logging.info("Start training...")
         tabula_trainer.train(resume_from_checkpoint=resume_from_checkpoint)
         return tabula_trainer
 
@@ -173,6 +193,8 @@ class TabMP:
         max_length: int = 100,
         device: str = "cuda",
         max_tries: int = 1338,
+        progress=None,
+        task=None,
     ) -> pd.DataFrame:
         """Generate synthetic tabular data samples
 
@@ -204,41 +226,44 @@ class TabMP:
         df_gen = pd.DataFrame(columns=self.columns)
 
         # Start generation process
-        with tqdm(total=n_samples) as pbar:
-            already_generated = 0
-            tries = 0
-            while n_samples > df_gen.shape[0] and tries < max_tries:
-                start_tokens = tabula_start.get_start_tokens(k)
-                start_tokens = torch.tensor(start_tokens).to(device)
 
-                # Generate tokens
-                tokens = self.model.generate(
-                    input_ids=start_tokens,
-                    max_length=max_length,
-                    do_sample=True,
-                    temperature=temperature,
-                    pad_token_id=50256,
-                )
+        already_generated = 0
+        tries = 0
+        while n_samples > df_gen.shape[0] and tries < max_tries:
+            start_tokens = tabula_start.get_start_tokens(k)
+            start_tokens = torch.tensor(start_tokens).to(device)
 
-                df_gen = _convert_tokens_to_dataframe(
-                    tokens, self.tokenizer, self.token_list_length, self.columns, df_gen
-                )
+            # Generate tokens
+            tokens = self.model.generate(
+                input_ids=start_tokens,
+                max_length=max_length,
+                do_sample=True,
+                temperature=temperature,
+                pad_token_id=50256,
+            )
 
-                # Remove rows with flawed numerical values
-                for i_num_cols in self.num_cols:
-                    df_gen = df_gen[
-                        pd.to_numeric(df_gen[i_num_cols], errors="coerce").notnull()
-                    ]
+            df_gen = _convert_tokens_to_dataframe(
+                tokens, self.tokenizer, self.token_list_length, self.columns, df_gen
+            )
 
-                df_gen[self.num_cols] = df_gen[self.num_cols].astype(float)
+            # Remove rows with flawed numerical values
+            for i_num_cols in self.num_cols:
+                df_gen = df_gen[
+                    pd.to_numeric(df_gen[i_num_cols], errors="coerce").notnull()
+                ]
 
-                # Remove rows with missing values
-                df_gen = df_gen.drop(df_gen[df_gen.isna().any(axis=1)].index)
+            df_gen[self.num_cols] = df_gen[self.num_cols].astype(float)
 
-                # Update process bar
-                pbar.update(df_gen.shape[0] - already_generated)
-                already_generated = df_gen.shape[0]
-                tries += 1
+            # Remove rows with missing values
+            df_gen = df_gen.drop(df_gen[df_gen.isna().any(axis=1)].index)
+
+            # Update process bar
+            already_generated = df_gen.shape[0]
+
+            # Update process bar
+            progress.update(task, completed=min(already_generated, n_samples))
+
+            tries += 1
 
         if tries == max_tries:
             raise RuntimeError(
