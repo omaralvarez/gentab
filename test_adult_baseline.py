@@ -22,7 +22,7 @@ dataset = Dataset(config)
 dataset.merge_classes({"<=50K": ["<=50K."], ">50K": [">50K."]})
 # TODO TypeError: Categorical is not ordered for operation min
 # you can use .as_ordered() to change the Categorical to an ordered one
-# dataset.reduce_mem()
+dataset.reduce_mem()
 
 # console.print(dataset.class_counts(), dataset.row_count())
 # generator = ROS(dataset)
@@ -97,33 +97,33 @@ dataset.merge_classes({"<=50K": ["<=50K."], ">50K": [">50K."]})
 # console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 # dataset.save_to_disk(generator)
 
-console.print(dataset.class_counts(), dataset.row_count())
-generator = GReaT(
-    dataset,
-    epochs=15,
-    max_length=2000,
-    temperature=0.6,
-    batch_size=32,
-    max_tries_per_batch=4096,
-    n_samples=8192,
-)
-generator.generate()
-console.print(dataset.generated_class_counts(), dataset.generated_row_count())
-dataset.save_to_disk(generator)
+# console.print(dataset.class_counts(), dataset.row_count())
+# generator = GReaT(
+#     dataset,
+#     epochs=15,
+#     max_length=2000,
+#     temperature=0.6,
+#     batch_size=32,
+#     max_tries_per_batch=4096,
+#     n_samples=8192,
+# )
+# generator.generate()
+# console.print(dataset.generated_class_counts(), dataset.generated_row_count())
+# dataset.save_to_disk(generator)
 
-console.print(dataset.class_counts(), dataset.row_count())
-generator = Tabula(
-    dataset,
-    epochs=15,
-    max_length=1024,
-    temperature=0.6,
-    batch_size=32,
-    max_tries_per_batch=4096,
-    n_samples=8192,
-)
-generator.generate()
-console.print(dataset.generated_class_counts(), dataset.generated_row_count())
-dataset.save_to_disk(generator)
+# console.print(dataset.class_counts(), dataset.row_count())
+# generator = Tabula(
+#     dataset,
+#     epochs=15,
+#     max_length=1024,
+#     temperature=0.6,
+#     batch_size=32,
+#     max_tries_per_batch=4096,
+#     n_samples=8192,
+# )
+# generator.generate()
+# console.print(dataset.generated_class_counts(), dataset.generated_row_count())
+# dataset.save_to_disk(generator)
 
 # TODO DCR
 # TODO Tabsyn

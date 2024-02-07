@@ -276,7 +276,7 @@ class Dataset:
         for col in df.columns:
             col_type = self.X[col].dtype
 
-            if col_type != object:
+            if col_type != object and col_type != "category":
                 c_min = self.X[col].min()
                 c_max = self.X[col].max()
                 if str(col_type)[:3] == "int":
