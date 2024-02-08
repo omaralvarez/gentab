@@ -20,8 +20,6 @@ config = Config("configs/adult.json")
 
 dataset = Dataset(config)
 dataset.merge_classes({"<=50K": ["<=50K."], ">50K": [">50K."]})
-# TODO TypeError: Categorical is not ordered for operation min
-# you can use .as_ordered() to change the Categorical to an ordered one
 dataset.reduce_mem()
 
 # console.print(dataset.class_counts(), dataset.row_count())

@@ -136,25 +136,27 @@ class Generator:
 
         self.dataset.set_split_result(data_gen)
 
-    # TODO Flag to not train only generate?
-    def generate(self, n_samples=None, append=True) -> None:
-        with ProgressBar(indeterminate=True).progress as p:
-            self.p = p
+    def generate(self, n_samples=None, append=True, train=True) -> None:
+        if train:
+            with ProgressBar(indeterminate=True).progress as p:
+                self.p = p
 
-            self.timer.start()
+                self.timer.start()
 
-            self.gen_task = self.p.add_task(
-                "Preprocessing with {}...".format(self.dataset), total=None
-            )
-            self.preprocess()
+                self.gen_task = self.p.add_task(
+                    "Preprocessing with {}...".format(self.dataset), total=None
+                )
+                self.preprocess()
 
-            self.p.update(self.gen_task, description="Training with {}...".format(self))
-            self.train()
+                self.p.update(
+                    self.gen_task, description="Training with {}...".format(self)
+                )
+                self.train()
 
-            console.print("✅ Training complete with {}...".format(self))
+                console.print("✅ Training complete with {}...".format(self))
 
-            self.timer.stop()
-            self.timer.elapsed()
+                self.timer.stop()
+                self.timer.elapsed()
 
         self.timer.start()
 
