@@ -2,6 +2,7 @@ from synthtab.utils import console, ProgressBar
 from synthtab import SEED
 
 import pandas as pd
+import dask.dataframe as dd
 import numpy as np
 import torch
 from typing import Any, Literal, Optional, Union, cast, Tuple, Dict, List
@@ -321,7 +322,7 @@ class Dataset:
         console.print("💾 Memory usage of dataframe is {:.2f} MB...".format(start_mem))
 
         with ProgressBar(indeterminate=True).progress as p:
-            gen_task = p.add_task("Reducing memory usage...", total=None)
+            p.add_task("Reducing memory usage...", total=None)
 
             self.reduce_mem_df(self.X)
             self.reduce_mem_df(self.X_test)
@@ -344,7 +345,7 @@ class Dataset:
         console.print("💾 Memory usage of dataframe is {:.2f} MB...".format(start_mem))
 
         with ProgressBar(indeterminate=True).progress as p:
-            gen_task = p.add_task("Reducing memory usage...", total=None)
+            p.add_task("Reducing memory usage...", total=None)
 
             self.reduce_mem_df(self.X_gen)
 
@@ -358,7 +359,7 @@ class Dataset:
             )
         )
 
-    def get_correlation(self) -> pd.Series:
+    def get_single_encoded_data(self):
         X_real = self.encode_categories(self.X)
         X_gen = self.encode_categories(self.X_gen)
 
@@ -368,7 +369,43 @@ class Dataset:
         real_data = pd.concat([X_real, y_real], axis=1)
         gen_data = pd.concat([X_gen, y_gen], axis=1)
 
-        corr = (real_data.corr() - gen_data.corr()).abs()
+        return real_data, gen_data
 
-        # return (corr - corr.min()) / (corr.max() - corr.min())
-        return corr
+    def get_correlation(self) -> pd.Series:
+        real_data, gen_data = self.get_single_encoded_data()
+
+        return (real_data.corr() - gen_data.corr()).abs()
+
+    def distance_closest_record(self):
+        with ProgressBar(indeterminate=True).progress as p:
+            p.add_task("Computing DCR...", total=None)
+
+            real_data, gen_data = self.get_single_encoded_data()
+
+            # Convert DataFrames to Dask DataFrames
+            real_ddf = dd.from_pandas(
+                real_data, npartitions=5
+            )  # Adjust npartitions based on your available memory
+            gen_ddf = dd.from_pandas(
+                gen_data, npartitions=5
+            )  # Adjust npartitions based on your available memory
+
+            # Function to compute the minimum L2 distance for each row in syn_df with respect to real_df
+            def compute_min_l2_distance(row, real_array):
+                distance_array = np.sqrt(((row.values - real_array) ** 2).sum(axis=1))
+                return np.min(distance_array)
+
+            # Calculate the minimum L2 distance for each row in syn_df with respect to real_df
+            real_array = real_ddf.compute().values
+            gen_ddf["Min_L2_Distance"] = gen_ddf.map_partitions(
+                lambda part: part.apply(
+                    compute_min_l2_distance, axis=1, args=(real_array,)
+                ),
+                meta=("Min_L2_Distance", "f8"),
+            )
+
+            # Convert the Dask DataFrame to a Pandas DataFrame
+            gen_df_result = gen_ddf.compute()
+            min_distances = gen_df_result["Min_L2_Distance"]
+
+        return min_distances
