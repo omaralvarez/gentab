@@ -83,11 +83,10 @@ for c in configs:
         generator.load_from_disk()
 
         Min_L2_Dist = dataset.distance_closest_record()
-        console.print(Min_L2_Dist)
         empty_mean.append(np.mean(Min_L2_Dist))
 
-        DCR_mean[g[1]] = np.mean(empty_mean)
-        DCR_var[g[1]] = np.std(empty_mean)
+        DCR_mean.insert(c[2], g[1], np.mean(empty_mean))
+        DCR_var.insert(c[2], g[1], np.std(empty_mean))
 
-console.print(DCR_mean)
-console.print(DCR_var)
+        console.print(DCR_mean)
+        console.print(DCR_var)

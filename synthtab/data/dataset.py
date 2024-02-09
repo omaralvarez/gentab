@@ -399,7 +399,6 @@ class Dataset:
 
             # Calculate the minimum L2 distance for each row in syn_df with respect to real_df
             real_array = real_ddf.compute().values
-            console.print(real_array)
             gen_ddf["Min_L2_Distance"] = gen_ddf.map_partitions(
                 lambda part: part.apply(
                     compute_min_l2_distance, axis=1, args=(real_array,)
@@ -409,7 +408,6 @@ class Dataset:
 
             # Convert the Dask DataFrame to a Pandas DataFrame
             gen_df_result = gen_ddf.compute()
-            console.print(gen_df_result)
             min_distances = gen_df_result["Min_L2_Distance"]
 
         return min_distances
