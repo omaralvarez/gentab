@@ -43,6 +43,7 @@ def preproc_playnet(dataset):
 
 def preproc_adult(dataset):
     dataset.merge_classes({"<=50K": ["<=50K."], ">50K": [">50K."]})
+    dataset.reduce_mem()
 
     return dataset
 
