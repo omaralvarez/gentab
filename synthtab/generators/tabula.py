@@ -59,7 +59,9 @@ class Tabula(Generator):
     ) -> None:
         super().__init__(dataset, batch_size, max_tries_per_batch)
         self.data = self.dataset.get_single_df()
-        self.categorical_columns = self.categorical_columns if encode_categories else []
+        self.categorical_columns = (
+            self.config["categorical_columns"] if encode_categories else []
+        )
         self.llm = llm
         self.experiment_dir = experiment_dir
         self.resume_from_checkpoint = resume_from_checkpoint
