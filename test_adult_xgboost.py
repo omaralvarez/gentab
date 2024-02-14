@@ -150,7 +150,9 @@ generator = Tabula(
     batch_size=32,
     max_tries_per_batch=4096,
     n_samples=8192,
+    encode_categories=True,
 )
+generator.generate()
 evaluator = XGBoost(generator)
 tuner = TabulaTuner(evaluator, trials, min_epochs=15, max_epochs=30)
 tuner.tune()
