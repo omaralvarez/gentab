@@ -44,6 +44,13 @@ class Dataset:
     def __str__(self) -> str:
         return self.config["name"]
 
+    def reset_indexes(self) -> None:
+        # Reset indexes
+        self.X.reset_index(drop=True, inplace=True)
+        self.X_test.reset_index(drop=True, inplace=True)
+        self.y.reset_index(drop=True, inplace=True)
+        self.y_test.reset_index(drop=True, inplace=True)
+
     def download_imb(self) -> None:
         data = fetch_datasets(
             filter_data=(self.config["name"],),
@@ -64,6 +71,8 @@ class Dataset:
             random_state=SEED,
             stratify=labels,
         )
+
+        self.reset_indexes()
 
         self.config["binary_columns"] = self.X.columns.values.tolist()
         self.config["categorical_columns"] = []
@@ -98,6 +107,8 @@ class Dataset:
             random_state=SEED,
             stratify=uci.data.targets,
         )
+
+        self.reset_indexes()
 
     def save_to_disk(self, generator, tuner="") -> None:
         with ProgressBar(indeterminate=True).progress as p:
@@ -356,7 +367,7 @@ class Dataset:
             "💾 Memory usage after optimization: {:.2f} MB...".format(end_mem)
         )
         console.print(
-            "✅ Memory usage reduced by {:.1f}%...".format(
+            "💾 Memory usage reduced by {:.1f}%...".format(
                 100 * (start_mem - end_mem) / start_mem
             )
         )
@@ -409,5 +420,7 @@ class Dataset:
             # Convert the Dask DataFrame to a Pandas DataFrame
             gen_df_result = gen_ddf.compute()
             min_distances = gen_df_result["Min_L2_Distance"]
+
+        console.print("✅ DCR computation complete...")
 
         return min_distances

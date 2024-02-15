@@ -48,8 +48,14 @@ def preproc_adult(dataset):
     return dataset
 
 
+def preproc_car(dataset):
+    return dataset
+
+
 configs = [
+    ("configs/car_evaluation_cr.json", preproc_car, "Car Evaluation"),
     ("configs/playnet_cr.json", preproc_playnet, "PlayNet"),
+    ("configs/adult_cr.json", preproc_adult, "Adult"),
 ]
 
 gens = [
@@ -66,8 +72,7 @@ gens = [
 ]
 
 
-DCR_mean = pd.DataFrame()
-DCR_var = pd.DataFrame()
+DCR = pd.DataFrame()
 
 for c in configs:
     config = Config(c[0])
@@ -77,16 +82,33 @@ for c in configs:
     first = True
 
     for g in gens:
-        empty_mean = []  # this goes for all datasets and a single model
-
         generator = g[0](dataset)
-        generator.load_from_disk()
+        try:
+            generator.load_from_disk()
 
-        Min_L2_Dist = dataset.distance_closest_record()
-        empty_mean.append(np.mean(Min_L2_Dist))
+            min_l2_dist = dataset.distance_closest_record()
+            DCR.loc[c[2], g[1]] = np.mean(min_l2_dist)
+        except FileNotFoundError:
+            DCR.loc[c[2], g[1]] = float("inf")
 
-        DCR_mean.insert(c[2], g[1], np.mean(empty_mean))
-        DCR_var.insert(c[2], g[1], np.std(empty_mean))
+console.print(DCR)
 
-        console.print(DCR_mean)
-        console.print(DCR_var)
+DCR_mean = DCR.mean()
+min = DCR_mean.min()
+
+round = 2
+lines = []
+for index, row in DCR_mean.items():
+    if min == row:
+        line = (
+            index + " & " + "\\textbf{{{:.{prec}f}}}".format(row, prec=round) + " \\\\"
+        )
+    elif row != float("inf"):
+        line = index + " & " + "{:.{prec}f}".format(row, prec=round) + " \\\\"
+    else:
+        line = index + " & -" + " \\\\"
+
+    lines.append(line)
+
+for line in lines:
+    console.print(line)
