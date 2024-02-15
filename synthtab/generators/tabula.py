@@ -42,7 +42,7 @@ class Tabula(Generator):
         experiment_dir: str = "trainer_tabula",
         epochs: int = 100,
         batch_size: int = 8,
-        max_tries_per_batch: int = 512,
+        max_tries_per_batch: int = 1338,
         resume_from_checkpoint: tp.Union[bool, str] = False,
         encode_categories: bool = False,  # Reduce token length using int categories
         # Generation options

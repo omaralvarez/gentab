@@ -148,13 +148,13 @@ generator = Tabula(
     max_length=1024,
     temperature=0.6,
     batch_size=32,
-    max_tries_per_batch=4096,
+    max_tries_per_batch=16384,
     n_samples=8192,
-    encode_categories=True,
 )
-generator.generate()
 evaluator = XGBoost(generator)
-tuner = TabulaTuner(evaluator, trials, min_epochs=15, max_epochs=30)
+tuner = TabulaTuner(
+    evaluator, trials, min_epochs=15, max_epochs=30, max_tries_per_batch=16384
+)
 tuner.tune()
 tuner.save_to_disk()
 console.print(dataset.generated_class_counts(), dataset.generated_row_count())

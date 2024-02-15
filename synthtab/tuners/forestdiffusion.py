@@ -14,6 +14,7 @@ class ForestDiffusionTuner(Tuner):
         *args,
         min_batch: int = 512,
         max_batch: int = 16384,
+        max_tries_per_batch: int = 8192,
         **kwargs,
     ) -> None:
         super().__init__(
@@ -21,6 +22,7 @@ class ForestDiffusionTuner(Tuner):
             trials,
             min_batch=min_batch,
             max_batch=max_batch,
+            max_tries_per_batch=max_tries_per_batch,
         )
 
     def objective(self, trial: optuna.trial.Trial) -> float:
@@ -64,6 +66,7 @@ class ForestDiffusionTuner(Tuner):
             beta_min=beta_min,
             beta_max=beta_max,
             n_batch=batch_size,
+            max_tries_per_batch=self.max_tries_per_batch,
         )
         self.generator.generate()
 

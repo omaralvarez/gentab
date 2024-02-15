@@ -16,6 +16,7 @@ class GReaTTuner(Tuner):
         max_epochs: int = 800,
         min_batch: int = 4,
         max_batch: int = 8,
+        max_tries_per_batch: int = 8192,
         **kwargs,
     ) -> None:
         super().__init__(
@@ -25,6 +26,7 @@ class GReaTTuner(Tuner):
             max_epochs=max_epochs,
             min_batch=min_batch,
             max_batch=max_batch,
+            max_tries_per_batch=max_tries_per_batch,
         )
 
     def objective(self, trial: optuna.trial.Trial) -> float:
@@ -39,6 +41,7 @@ class GReaTTuner(Tuner):
             batch_size=batch_size,
             temperature=temperature,
             k=k,
+            max_tries_per_batch=self.max_tries_per_batch,
         )
         self.generator.generate()
 

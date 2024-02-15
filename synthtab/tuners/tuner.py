@@ -17,6 +17,7 @@ class Tuner:
         max_epochs: int = 800,
         min_batch: int = 512,
         max_batch: int = 4096,
+        max_tries_per_batch: int = 8192,
     ) -> None:
         self.seed = SEED
         self.evaluator = evaluator
@@ -32,6 +33,7 @@ class Tuner:
             )
             if 2**i >= min_batch and 2**i <= max_batch
         ]
+        self.max_tries_per_batch = max_tries_per_batch
         self.folder = "tuning"
 
     def __str__(self) -> str:

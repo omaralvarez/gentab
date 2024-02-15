@@ -35,6 +35,7 @@ from .tabula_utils import (
 )
 
 logging.set_verbosity_error()
+os.environ["TRANSFORMERS_VERBOSITY"] = "error"
 
 
 class MyCallback(TrainerCallback):

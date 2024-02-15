@@ -16,6 +16,7 @@ class TVAETuner(Tuner):
         max_epochs: int = 800,
         min_batch: int = 512,
         max_batch: int = 8192,
+        max_tries_per_batch: int = 8192,
         **kwargs,
     ) -> None:
         super().__init__(
@@ -25,6 +26,7 @@ class TVAETuner(Tuner):
             max_epochs=max_epochs,
             min_batch=min_batch,
             max_batch=max_batch,
+            max_tries_per_batch=max_tries_per_batch,
         )
 
     def objective(self, trial: optuna.trial.Trial) -> float:
@@ -53,6 +55,7 @@ class TVAETuner(Tuner):
             l2scale=l2scale,
             loss_factor=loss_factor,
             pac=pac,
+            max_tries_per_batch=self.max_tries_per_batch,
         )
         self.generator.generate()
 

@@ -16,6 +16,7 @@ class TabulaTuner(Tuner):
         max_epochs: int = 800,
         min_batch: int = 4,
         max_batch: int = 8,
+        max_tries_per_batch: int = 8192,
         **kwargs,
     ) -> None:
         super().__init__(
@@ -25,6 +26,7 @@ class TabulaTuner(Tuner):
             max_epochs=max_epochs,
             min_batch=min_batch,
             max_batch=max_batch,
+            max_tries_per_batch=max_tries_per_batch,
         )
 
     def objective(self, trial: optuna.trial.Trial) -> float:
@@ -35,9 +37,13 @@ class TabulaTuner(Tuner):
         encode_categories = trial.suggest_categorical(
             "encode_categories", [False, True]
         )
-        middle_padding = trial.suggest_categorical("middle_padding", [False, True])
+        # TODO Debug middle padding.
+        middle_padding = trial.suggest_categorical("middle_padding", [False])
         random_initialization = trial.suggest_categorical(
             "random_initialization", [False, True]
+        )
+        console.print(
+            temperature, k, encode_categories, middle_padding, random_initialization
         )
 
         self.generator = Tabula(
@@ -49,6 +55,7 @@ class TabulaTuner(Tuner):
             batch_size=batch_size,
             temperature=temperature,
             k=k,
+            max_tries_per_batch=self.max_tries_per_batch,
         )
         self.generator.generate()
 
