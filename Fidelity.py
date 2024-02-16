@@ -76,7 +76,8 @@ gens = [
 ]
 
 
-DCR = pd.DataFrame()
+jensen_shannon = pd.DataFrame()
+wasserstein = pd.DataFrame()
 
 for c in configs:
     config = Config(c[0])
@@ -89,29 +90,25 @@ for c in configs:
         try:
             generator.load_from_disk()
 
-            min_l2_dist = dataset.distance_closest_record()
-            DCR.loc[c[2], g[1]] = np.mean(min_l2_dist)
+            if len(dataset.get_categories()):
+                js_dists = dataset.jensen_shannon_distance()
+                jensen_shannon.loc[c[2], g[1]] = js_dists.mean()
+
+            if len(dataset.get_continuous()):
+                ws_dists = dataset.wasserstein_distance()
+                wasserstein.loc[c[2], g[1]] = ws_dists.mean()
+
         except FileNotFoundError:
-            DCR.loc[c[2], g[1]] = float("inf")
+            jensen_shannon.loc[c[2], g[1]] = float("inf")
+            wasserstein.loc[c[2], g[1]] = float("inf")
 
-console.print(DCR)
+console.print(jensen_shannon)
+console.print(wasserstein)
 
-DCR_mean = DCR.mean()
-min = DCR_mean.min()
+js_mean = jensen_shannon.mean()
+js_min = js_mean.min()
+ws_mean = wasserstein.mean()
+ws_min = ws_mean.min()
 
-round = 2
-lines = []
-for index, row in DCR_mean.items():
-    if min == row:
-        line = (
-            index + " & " + "\\textbf{{{:.{prec}f}}}".format(row, prec=round) + " \\\\"
-        )
-    elif row != float("inf"):
-        line = index + " & " + "{:.{prec}f}".format(row, prec=round) + " \\\\"
-    else:
-        line = index + " & -" + " \\\\"
-
-    lines.append(line)
-
-for line in lines:
-    console.print(line)
+console.print(js_mean)
+console.print(ws_mean)

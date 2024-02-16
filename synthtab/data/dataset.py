@@ -1,17 +1,20 @@
 from synthtab.utils import console, ProgressBar
 from synthtab import SEED
 
+import os
+from pathlib import Path
+from typing import Any, Literal, Optional, Union, cast, Tuple, Dict, List
+
 import pandas as pd
 import dask.dataframe as dd
 import numpy as np
 import torch
-from typing import Any, Literal, Optional, Union, cast, Tuple, Dict, List
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder
 from sklearn.model_selection import train_test_split
+from scipy.stats import wasserstein_distance
+from scipy.spatial.distance import jensenshannon
 from imblearn.datasets import fetch_datasets
 from ucimlrepo import fetch_ucirepo
-import os
-from pathlib import Path
 
 
 class Dataset:
@@ -37,7 +40,7 @@ class Dataset:
                     self.download_imb()
 
             self.get_label_encoders()
-            self.get_categories()
+            self.compute_categories()
 
         console.print("✅ Dataset loaded...")
 
@@ -152,12 +155,18 @@ class Dataset:
 
         console.print("✅ {} dataset loaded...".format(generator))
 
-    def get_categories(self) -> None:
+    def compute_categories(self) -> None:
         self.cats = self.config["categorical_columns"] + self.config["binary_columns"]
         self.X_cats = self.X[self.cats].copy()
         self.X_cats[self.cats] = self.X_cats[self.cats].apply(
             lambda col: pd.Categorical(col)
         )
+
+    def get_categories(self) -> list[str]:
+        return self.cats
+
+    def get_continuous(self) -> list[str]:
+        return self.X.columns.difference(self.cats).values.tolist()
 
     def encode_categories(self, df: pd.DataFrame) -> pd.DataFrame:
         if self.config.exists("download") and self.config["download"] == "imbalanced":
@@ -207,6 +216,9 @@ class Dataset:
 
     def num_features(self) -> int:
         return len(self.X.columns)
+
+    def get_feature_names(self) -> list[str]:
+        return self.X.columns.values.tolist()
 
     def class_names(self) -> list[str]:
         return self.y[self.config["y_label"]].unique().tolist()
@@ -424,3 +436,37 @@ class Dataset:
         console.print("✅ DCR computation complete...")
 
         return min_distances
+
+    def jensen_shannon_distance(self):
+        with ProgressBar(indeterminate=True).progress as p:
+            p.add_task("Computing Jensen Shannon Distance...", total=None)
+
+            real_data, gen_data = self.get_single_encoded_data()
+            real_data = real_data[self.get_categories()]
+            gen_data = gen_data[self.get_categories()]
+
+            distances = real_data.apply(lambda x: jensenshannon(x, gen_data[x.name]))
+
+            # console.print(distances)
+
+        console.print("✅ Jensen Shannon computation complete...")
+
+        return distances
+
+    def wasserstein_distance(self):
+        with ProgressBar(indeterminate=True).progress as p:
+            p.add_task("Computing Wasserstein Distance...", total=None)
+
+            real_data, gen_data = self.get_single_encoded_data()
+            real_data = real_data[self.get_continuous()]
+            gen_data = gen_data[self.get_continuous()]
+
+            distances = real_data.apply(
+                lambda x: wasserstein_distance(x, gen_data[x.name])
+            )
+
+            # console.print(distances)
+
+        console.print("✅ Wasserstein computation complete...")
+
+        return distances
