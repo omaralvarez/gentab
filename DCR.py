@@ -97,19 +97,29 @@ for c in configs:
 console.print(DCR)
 
 DCR_mean = DCR.mean()
-min = DCR_mean.min()
+
+console.print(DCR_mean)
+
+DCR_ranks = DCR.rank(ascending=True, axis=1)
+console.print(DCR_ranks)
+DCR_mean_rank = DCR_ranks.mean()
+max = DCR_mean_rank.max()
+console.print(DCR_mean_rank)
+
+# TODO Make the ones that do not have dataset 1st so they do not appear good overall,
+# more dist is good in this metric
 
 round = 2
 lines = []
-for index, row in DCR_mean.items():
-    if min == row:
+for index, row in DCR_mean_rank.items():
+    if max == row:
         line = (
             index + " & " + "\\textbf{{{:.{prec}f}}}".format(row, prec=round) + " \\\\"
         )
     elif row != float("inf"):
         line = index + " & " + "{:.{prec}f}".format(row, prec=round) + " \\\\"
     else:
-        line = index + " & -" + " \\\\"
+        line = index + " & - \\\\"
 
     lines.append(line)
 
