@@ -31,4 +31,5 @@ dependencies:
     - humanize
     - dask
     - dython
+    - skorch
     
