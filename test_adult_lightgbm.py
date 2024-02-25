@@ -109,21 +109,21 @@ trials = 10
 # tuner.save_to_disk()
 # console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 
-console.print(dataset.class_counts(), dataset.row_count())
-generator = AutoDiffusion(dataset)
-evaluator = LightGBM(generator)
-tuner = AutoDiffusionTuner(evaluator, trials)
-tuner.tune()
-tuner.save_to_disk()
-console.print(dataset.generated_class_counts(), dataset.generated_row_count())
+# console.print(dataset.class_counts(), dataset.row_count())
+# generator = AutoDiffusion(dataset)
+# evaluator = LightGBM(generator)
+# tuner = AutoDiffusionTuner(evaluator, trials)
+# tuner.tune()
+# tuner.save_to_disk()
+# console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 
-console.print(dataset.class_counts(), dataset.row_count())
-generator = ForestDiffusion(dataset, n_jobs=1, duplicate_K=4, n_estimators=100)
-evaluator = LightGBM(generator)
-tuner = ForestDiffusionTuner(evaluator, trials)
-tuner.tune()
-tuner.save_to_disk()
-console.print(dataset.generated_class_counts(), dataset.generated_row_count())
+# console.print(dataset.class_counts(), dataset.row_count())
+# generator = ForestDiffusion(dataset, n_jobs=1, duplicate_K=4, n_estimators=100)
+# evaluator = LightGBM(generator)
+# tuner = ForestDiffusionTuner(evaluator, trials)
+# tuner.tune()
+# tuner.save_to_disk()
+# console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 
 console.print(dataset.class_counts(), dataset.row_count())
 generator = GReaT(
@@ -136,7 +136,9 @@ generator = GReaT(
     n_samples=8192,
 )
 evaluator = LightGBM(generator)
-tuner = GReaTTuner(evaluator, trials)
+tuner = GReaTTuner(
+    evaluator, trials, min_epochs=15, max_epochs=30, max_tries_per_batch=16384
+)
 tuner.tune()
 tuner.save_to_disk()
 console.print(dataset.generated_class_counts(), dataset.generated_row_count())
@@ -152,7 +154,9 @@ generator = Tabula(
     n_samples=8192,
 )
 evaluator = LightGBM(generator)
-tuner = TabulaTuner(evaluator, trials)
+tuner = TabulaTuner(
+    evaluator, trials, min_epochs=15, max_epochs=30, max_tries_per_batch=16384
+)
 tuner.tune()
 tuner.save_to_disk()
 console.print(dataset.generated_class_counts(), dataset.generated_row_count())
