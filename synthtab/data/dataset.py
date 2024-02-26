@@ -13,6 +13,7 @@ from sklearn.preprocessing import LabelEncoder, OneHotEncoder
 from sklearn.model_selection import train_test_split
 from scipy.stats import wasserstein_distance
 from scipy.spatial.distance import jensenshannon
+from dython.nominal import theils_u
 from imblearn.datasets import fetch_datasets
 from ucimlrepo import fetch_ucirepo
 
@@ -166,7 +167,9 @@ class Dataset:
         return self.cats
 
     def get_continuous(self) -> list[str]:
-        return self.X.columns.difference(self.cats).values.tolist()
+        return self.X.columns.difference(
+            self.cats + [self.config["y_label"]]
+        ).values.tolist()
 
     def encode_categories(self, df: pd.DataFrame) -> pd.DataFrame:
         if self.config.exists("download") and self.config["download"] == "imbalanced":
@@ -396,10 +399,104 @@ class Dataset:
 
         return real_data, gen_data
 
-    def get_correlation(self) -> pd.Series:
+    def theils_u_mat(self, df):
+        # Compute Theil's U-statistics between each pair of columns
+        cate_columns = df.shape[1]
+        theils_u_mat = np.zeros((cate_columns, cate_columns))
+
+        for i in range(cate_columns):
+            for j in range(cate_columns):
+                theils_u_mat[i, j] = theils_u(df.iloc[:, i], df.iloc[:, j])
+
+        return theils_u_mat
+
+    # See the post https://towardsdatascience.com/the-search-for-categorical-correlation-a1cf7f1888c9
+    def correlation_ratio(self, categories, measurements):
+        fcat, _ = pd.factorize(categories)
+        cat_num = np.max(fcat) + 1
+        y_avg_array = np.zeros(cat_num)
+        n_array = np.zeros(cat_num)
+        for i in range(0, cat_num):
+            cat_measures = measurements[np.argwhere(fcat == i).flatten()]
+            n_array[i] = len(cat_measures)
+            y_avg_array[i] = np.average(cat_measures)
+        y_total_avg = np.sum(np.multiply(y_avg_array, n_array)) / np.sum(n_array)
+        numerator = np.sum(
+            np.multiply(n_array, np.power(np.subtract(y_avg_array, y_total_avg), 2))
+        )
+        denominator = np.sum(np.power(np.subtract(measurements, y_total_avg), 2))
+        if numerator == 0:
+            eta = 0.0
+        else:
+            eta = numerator / denominator
+        return eta
+
+    def ratio_mat(self, df, continuous_columns, categorical_columns):
+        rat_mat = pd.DataFrame(index=continuous_columns, columns=categorical_columns)
+
+        if len(categorical_columns) == 0 or len(continuous_columns) == 0:
+            return np.zeros(1)
+        else:
+            for cat_col in categorical_columns:
+                for cont_col in continuous_columns:
+                    rat_mat[cat_col][cont_col] = self.correlation_ratio(
+                        df[cat_col], df[cont_col]
+                    )
+        return rat_mat.values
+
+    def fillNa_cont(self, df):
+        for col in df.columns:
+            mean_values = df[col].mean()
+            df[col].fillna(mean_values, inplace=True)
+        return df
+
+    def fillNa_cate(self, df):
+        for col in df.columns:
+            mode_values = df[col].mode()[0]
+            df[col].fillna(mode_values, inplace=True)
+        return df
+
+    def compute_correlations(self, df):
+        num_mat = pd.DataFrame(df[self.get_continuous()])
+        cat_mat = pd.DataFrame(df[self.get_categories()])
+
+        num_mat = self.fillNa_cont(num_mat)
+        cat_mat = self.fillNa_cate(cat_mat)
+
+        pearson_sub_matrix = np.corrcoef(num_mat, rowvar=False)
+        theils_u_matrix = self.theils_u_mat(cat_mat)
+        correl_ratio_mat = self.ratio_mat(
+            df, self.get_continuous(), self.get_categories()
+        )
+
+        return (pearson_sub_matrix, theils_u_matrix, correl_ratio_mat)
+
+    def get_correlations(self):
+        with ProgressBar(indeterminate=True).progress as p:
+            p.add_task(
+                "Computing Pearson Correlation, Theil's U, and Correlation Ratio...",
+                total=None,
+            )
+            real_data, gen_data = self.get_single_encoded_data()
+            real_pear, real_theils, real_ratio = self.compute_correlations(real_data)
+            gen_pear, gen_theils, gen_ratio = self.compute_correlations(gen_data)
+
+        console.print(
+            "✅ Pearson Correlation, Theil's U, and Correlation Ratio computation complete..."
+        )
+
+        return (
+            np.linalg.norm(real_pear - gen_pear),
+            np.linalg.norm(real_theils - gen_theils),
+            np.linalg.norm(real_ratio - gen_ratio),
+        )
+
+    def get_pearson_correlation(self) -> pd.Series:
         real_data, gen_data = self.get_single_encoded_data()
 
-        return (real_data.corr() - gen_data.corr()).abs()
+        return (
+            real_data.corr(method="pearson") - gen_data.corr(method="pearson")
+        ).abs()
 
     def distance_closest_record(self):
         with ProgressBar(indeterminate=True).progress as p:

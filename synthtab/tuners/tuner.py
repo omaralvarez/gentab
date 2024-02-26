@@ -18,6 +18,7 @@ class Tuner:
         min_batch: int = 512,
         max_batch: int = 4096,
         max_tries_per_batch: int = 8192,
+        timeout: int = None,
     ) -> None:
         self.seed = SEED
         self.evaluator = evaluator
@@ -35,6 +36,8 @@ class Tuner:
         ]
         self.max_tries_per_batch = max_tries_per_batch
         self.folder = "tuning"
+        self.timeout = timeout
+        # TODO Add timeout to all tuners
 
     def __str__(self) -> str:
         return self.__class__.__name__
@@ -54,7 +57,9 @@ class Tuner:
             sampler=optuna.samplers.TPESampler(seed=self.seed),
         )
         # TODO Test n_jobs = -1
-        self.study.optimize(self.objective, n_trials=self.n_trials)
+        self.study.optimize(
+            self.objective, n_trials=self.n_trials, timeout=self.timeout
+        )
 
         console.print("Number of finished trials: {}".format(len(self.study.trials)))
 

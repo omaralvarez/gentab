@@ -15,6 +15,7 @@ class ForestDiffusionTuner(Tuner):
         min_batch: int = 512,
         max_batch: int = 16384,
         max_tries_per_batch: int = 8192,
+        timeout: int = None,
         **kwargs,
     ) -> None:
         super().__init__(
@@ -23,10 +24,11 @@ class ForestDiffusionTuner(Tuner):
             min_batch=min_batch,
             max_batch=max_batch,
             max_tries_per_batch=max_tries_per_batch,
+            timeout=timeout,
         )
 
     def objective(self, trial: optuna.trial.Trial) -> float:
-        batch_size = trial.suggest_categorical("batch_size", self.batch_sizes)
+        # batch_size = trial.suggest_categorical("batch_size", self.batch_sizes)
         n_t = trial.suggest_int("n_t", 20, 80)
         model = trial.suggest_categorical(
             "model", ["xgboost", "random_forest", "lgbm", "catboost"]
@@ -65,7 +67,7 @@ class ForestDiffusionTuner(Tuner):
             eps=eps,
             beta_min=beta_min,
             beta_max=beta_max,
-            n_batch=batch_size,
+            # n_batch=batch_size,
             max_tries_per_batch=self.max_tries_per_batch,
         )
         self.generator.generate()
