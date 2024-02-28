@@ -15,6 +15,7 @@ class LightGBM(Evaluator):
         self.model = lgb.LGBMClassifier(
             *args,
             random_state=self.seed,
+            verbosity=0,
             **kwargs,
         )
         self.callbacks = [lgb.log_evaluation(period=0)]

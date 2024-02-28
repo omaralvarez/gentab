@@ -246,7 +246,7 @@ class Dataset:
 
     def set_split_result(self, data) -> None:
         self.X_gen = data.loc[:, data.columns != self.config["y_label"]]
-        self.y_gen = data[self.config["y_label"]]
+        self.y_gen = data[[self.config["y_label"]]]
 
     def get_random_class_rows(self, cls: str, n: int):
         compliant_rows = self.y[self.y[self.config["y_label"]] == cls]
@@ -544,8 +544,6 @@ class Dataset:
 
             distances = real_data.apply(lambda x: jensenshannon(x, gen_data[x.name]))
 
-            # console.print(distances)
-
         console.print("✅ Jensen Shannon computation complete...")
 
         return distances
@@ -561,8 +559,6 @@ class Dataset:
             distances = real_data.apply(
                 lambda x: wasserstein_distance(x, gen_data[x.name])
             )
-
-            # console.print(distances)
 
         console.print("✅ Wasserstein computation complete...")
 

@@ -3,5 +3,4 @@ from .lightgbm import *  # noqa
 from .knn import *  # noqa
 from .xgboost import *  # noqa
 from .mlp import *  # noqa
-from .mlpgorish import *  # noqa
 from .catboost import *  # noqa

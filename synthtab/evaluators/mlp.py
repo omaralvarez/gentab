@@ -1,145 +1,216 @@
-from torchmetrics.classification import MultilabelAccuracy, MultilabelMatthewsCorrCoef
 from . import Evaluator
 from synthtab.utils import console, SPINNER, REFRESH
 
-from typing_extensions import Self
-import os
-import pandas as pd
-import numpy as np
+from types import ModuleType
+from typing import Type
+from typing_extensions import List, Union, Callable, Self
+
 import torch
 import torch.nn as nn
-from torch.utils.data import random_split, DataLoader, Dataset
-import lightning as pl
-from lightning.pytorch.tuner import Tuner
+import torch.nn.functional as F
+import torch.optim
+from torch.optim import AdamW
+from torch.nn import CrossEntropyLoss
+from torch import Tensor
+from sklearn.metrics import accuracy_score
+from skorch.classifier import NeuralNetClassifier
+from skorch.callbacks import EarlyStopping, EpochScoring
+from skorch.helper import predefined_split
 
 
-class TabularDataset(Dataset):
-    def __init__(self, X: pd.DataFrame, y: np.ndarray) -> None:
-        self.X = torch.tensor(X.to_numpy(), dtype=torch.float32)
-        self.y = torch.tensor(y)
-
-    def __len__(self):
-        return len(self.X)
-
-    def __getitem__(self, idx):
-        return self.X[idx], self.y[idx]
+def reglu(x: Tensor) -> Tensor:
+    """The ReGLU activation function from [1].
+    References:
+        [1] Noam Shazeer, "GLU Variants Improve Transformer", 2020
+    """
+    assert x.shape[-1] % 2 == 0
+    a, b = x.chunk(2, dim=-1)
+    return a * F.relu(b)
 
 
-class TabularDataModule(pl.LightningDataModule):
+def geglu(x: Tensor) -> Tensor:
+    """The GEGLU activation function from [1].
+    References:
+        [1] Noam Shazeer, "GLU Variants Improve Transformer", 2020
+    """
+    assert x.shape[-1] % 2 == 0
+    a, b = x.chunk(2, dim=-1)
+    return a * F.gelu(b)
+
+
+class ReGLU(nn.Module):
+    """The ReGLU activation function from [shazeer2020glu].
+
+    Examples:
+        .. testcode::
+
+            module = ReGLU()
+            x = torch.randn(3, 4)
+            assert module(x).shape == (3, 2)
+
+    References:
+        * [shazeer2020glu] Noam Shazeer, "GLU Variants Improve Transformer", 2020
+    """
+
+    def forward(self, x: Tensor) -> Tensor:
+        return reglu(x)
+
+
+class GEGLU(nn.Module):
+    """The GEGLU activation function from [shazeer2020glu].
+
+    Examples:
+        .. testcode::
+
+            module = GEGLU()
+            x = torch.randn(3, 4)
+            assert module(x).shape == (3, 2)
+
+    References:
+        * [shazeer2020glu] Noam Shazeer, "GLU Variants Improve Transformer", 2020
+    """
+
+    def forward(self, x: Tensor) -> Tensor:
+        return geglu(x)
+
+
+def _make_nn_module(module_type: ModuleType, *args) -> nn.Module:
+    return (
+        (
+            ReGLU()
+            if module_type == "ReGLU"
+            else GEGLU() if module_type == "GEGLU" else getattr(nn, module_type)(*args)
+        )
+        if isinstance(module_type, str)
+        else module_type(*args)
+    )
+
+
+class MLPGorish(nn.Module):
+    """The MLP model used in [gorishniy2021revisiting].
+
+    The following scheme describes the architecture:
+
+    .. code-block:: text
+
+          MLP: (in) -> Block -> ... -> Block -> Linear -> (out)
+        Block: (in) -> Linear -> Activation -> Dropout -> (out)
+
+    Examples:
+        .. testcode::
+
+            x = torch.randn(4, 2)
+            module = MLPGorish.make_baseline(x.shape[1], [3, 5], 0.1, 1)
+            assert module(x).shape == (len(x), 1)
+
+    References:
+        * [gorishniy2021revisiting] Yury Gorishniy, Ivan Rubachev, Valentin Khrulkov, Artem Babenko, "Revisiting Deep Learning Models for Tabular Data", 2021
+    """
+
+    class Block(nn.Module):
+        """The main building block of `MLP`."""
+
+        def __init__(
+            self,
+            *,
+            d_in: int,
+            d_out: int,
+            bias: bool,
+            activation: ModuleType,
+            dropout: float,
+        ) -> None:
+            super().__init__()
+            self.linear = nn.Linear(d_in, d_out, bias)
+            self.activation = _make_nn_module(activation)
+            self.dropout = nn.Dropout(dropout)
+
+        def forward(self, x: Tensor) -> Tensor:
+            return self.dropout(self.activation(self.linear(x)))
+
     def __init__(
         self,
-        X: pd.DataFrame,
-        y: pd.DataFrame,
-        # X_test: pd.DataFrame,
-        # y_test: pd.DataFrame,
-        batch_size: int = 8192,
-        seed: int = 42,
-    ):
+        *,
+        d_in: int,
+        d_layers: List[int],
+        dropouts: Union[float, List[float]],
+        activation: Union[str, Callable[[], nn.Module]],
+        d_out: int,
+    ) -> None:
+        """
+        Note:
+            `make_baseline` is the recommended constructor.
+        """
         super().__init__()
-        self.X = X
-        self.y = y
-        # self.X_test = X_test
-        # self.y_test = y_test
-        self.batch_size = batch_size
-        self.seed = seed
+        if isinstance(dropouts, float):
+            dropouts = [dropouts] * len(d_layers)
+        assert len(d_layers) == len(dropouts)
+        assert activation not in ["ReGLU", "GEGLU"]
 
-    def setup(self, stage: str):
-        if stage == "fit" or stage is None:
-            train = TabularDataset(self.X, self.y)
-            dataset_size = len(train)
-            train_set_size = int(dataset_size * 0.9)
-            valid_set_size = dataset_size - train_set_size
+        self.blocks = nn.ModuleList(
+            [
+                MLPGorish.Block(
+                    d_in=d_layers[i - 1] if i else d_in,
+                    d_out=d,
+                    bias=True,
+                    activation=activation,
+                    dropout=dropout,
+                )
+                for i, (d, dropout) in enumerate(zip(d_layers, dropouts))
+            ]
+        )
+        self.head = nn.Linear(d_layers[-1] if d_layers else d_in, d_out)
 
-            self.train, self.val = random_split(
-                train,
-                [train_set_size, valid_set_size],
-                generator=torch.Generator().manual_seed(self.seed),
+    @classmethod
+    def make_baseline(
+        cls: Type["MLP"],
+        d_in: int,
+        d_layers: List[int],
+        dropout: float,
+        d_out: int,
+    ) -> "MLPGorish":
+        """Create a "baseline" `MLP`.
+
+        This variation of MLP was used in [gorishniy2021revisiting]. Features:
+
+        * :code:`Activation` = :code:`ReLU`
+        * all linear layers except for the first one and the last one are of the same dimension
+        * the dropout rate is the same for all dropout layers
+
+        Args:
+            d_in: the input size
+            d_layers: the dimensions of the linear layers. If there are more than two
+                layers, then all of them except for the first and the last ones must
+                have the same dimension. Valid examples: :code:`[]`, :code:`[8]`,
+                :code:`[8, 16]`, :code:`[2, 2, 2, 2]`, :code:`[1, 2, 2, 4]`. Invalid
+                example: :code:`[1, 2, 3, 4]`.
+            dropout: the dropout rate for all hidden layers
+            d_out: the output size
+        Returns:
+            MLP
+
+        References:
+            * [gorishniy2021revisiting] Yury Gorishniy, Ivan Rubachev, Valentin Khrulkov, Artem Babenko, "Revisiting Deep Learning Models for Tabular Data", 2021
+        """
+        assert isinstance(dropout, float)
+        if len(d_layers) > 2:
+            assert len(set(d_layers[1:-1])) == 1, (
+                "if d_layers contains more than two elements, then"
+                " all elements except for the first and the last ones must be equal."
             )
-
-        # if stage == "test" or stage is None:
-        #     self.test = TabularDataset(self.X_test, self.y_test)
-
-        if stage == "predict" or stage is None:
-            self.predict = TabularDataset(self.X, self.y)
-
-    def train_dataloader(self):
-        return DataLoader(
-            self.train,
-            batch_size=self.batch_size,
-            num_workers=os.cpu_count() // 4,
-            pin_memory=True,
-            # persistent_workers=True,
-        )
-        # return DataLoader(self.train, batch_size=self.batch_size)
-
-    def val_dataloader(self):
-        return DataLoader(
-            self.val,
-            batch_size=self.batch_size,
-            num_workers=os.cpu_count() // 4,
-            pin_memory=True,
-            # persistent_workers=True,
+        return MLPGorish(
+            d_in=d_in,
+            d_layers=d_layers,  # type: ignore
+            dropouts=dropout,
+            activation="ReLU",
+            d_out=d_out,
         )
 
-    # def test_dataloader(self):
-    #     return DataLoader(self.test, batch_size=self.batch_size)
-
-    def predict_dataloader(self):
-        return DataLoader(
-            self.predict,
-            batch_size=self.batch_size,
-            num_workers=os.cpu_count() // 4,
-            pin_memory=True,
-            # persistent_workers=True,
-        )
-
-
-class LightningMLP(pl.LightningModule):
-    def __init__(self, num_features, num_classes):
-        super().__init__()
-        self.layers = nn.Sequential(
-            nn.Linear(num_features, 256),
-            nn.ReLU(),
-            nn.Linear(256, 64),
-            nn.ReLU(),
-            nn.Linear(64, 32),
-            nn.ReLU(),
-            nn.Linear(32, num_classes),
-        )
-        self.ce = nn.CrossEntropyLoss()
-        self.acc = MultilabelAccuracy(num_labels=num_classes)
-        self.mcc = MultilabelMatthewsCorrCoef(num_labels=num_classes)
-
-    def forward(self, x):
-        return self.layers(x)
-
-    def training_step(self, batch, batch_idx):
-        x, y = batch
-
-        x = x.view(x.size(0), -1)
-        y_hat = self.layers(x)
-
-        loss = self.ce(y_hat, y)
-
-        self.log_dict({"loss": loss, "acc": self.acc(y_hat, y), "mcc": self.mcc})
-
-        return loss
-
-    # def test_step(self, batch, batch_idx):
-    #     x, y = batch
-    #     x = x.view(x.size(0), -1)
-    #     y_hat = self.layers(x)
-    #     loss = self.ce(y_hat, y)
-    #     return loss
-
-    def predict_step(self, batch, batch_idx):
-        x, y = batch
-        pred = torch.argmax(self(x), dim=1)
-        return pred
-
-    def configure_optimizers(self):
-        optimizer = torch.optim.Adam(self.parameters(), lr=1e-4)
-        return optimizer
+    def forward(self, x: Tensor) -> Tensor:
+        x = x.float()
+        for block in self.blocks:
+            x = block(x)
+        x = self.head(x)
+        return x
 
 
 class MLPClassifier:
@@ -149,62 +220,66 @@ class MLPClassifier:
         num_classes,
         *args,
         epochs: int = 800,
+        layers: List[int] = [128, 128],
+        dropout: float = 0.1,
         batch_size: int = 8192,
         seed: int = 42,
+        lr: float = 1e-5,
+        weight_decay: float = 1e-6,
+        device: str = "cuda",
+        # TODO Common device for all
         **kwargs,
     ) -> None:
+        self.model = MLPGorish.make_baseline(
+            input_features, layers, dropout, num_classes
+        )
         self.batch_size = batch_size
+        self.lr = lr
+        self.weigth_decay = weight_decay
+        self.epochs = epochs
+        self.device = device
         self.seed = seed
 
-        torch.set_float32_matmul_precision("medium")
-
-        self.model = LightningMLP(input_features, num_classes)
-        self.trainer = pl.Trainer(
-            devices=1,
-            accelerator="auto",
-            deterministic=True,
-            max_epochs=epochs,
-        )
+        self.acc = accuracy_score
+        self.es = EarlyStopping(monitor="train_loss", patience=16)
 
     def fit(self, X, y) -> Self:
-        self.datamodule = TabularDataModule(
-            X,
-            y,
+
+        self.net = NeuralNetClassifier(
+            self.model,
+            criterion=CrossEntropyLoss,
+            optimizer=AdamW,
+            lr=self.lr,
+            optimizer__weight_decay=self.weigth_decay,
             batch_size=self.batch_size,
-            seed=self.seed,
+            max_epochs=self.epochs,
+            train_split=None,
+            iterator_train__shuffle=True,
+            device=self.device,
+            callbacks=[self.es, EpochScoring(self.acc, lower_is_better=False)],
+            verbose=0,
         )
 
-        # self.tuner = Tuner(self.trainer)
-        # self.batch_size = self.tuner.scale_batch_size(
-        #     self.model, mode="power", datamodule=self.datamodule
-        # )
-
-        self.trainer.fit(self.model, self.datamodule)
+        self.net.fit(X=X.to_numpy(), y=y)
 
         return self
 
     def predict(self, X):
-        predictions = self.trainer.predict(
-            self.model,
-            TabularDataModule(
-                X,
-                torch.zeros(len(X.index)),
-                batch_size=self.batch_size,
-                seed=self.seed,
-            ),
-        )
+        predictions = self.net.predict_proba(X.to_numpy())
 
-        return torch.cat(predictions).numpy()
+        # Keep original 2D array and get pred. class
+        return predictions.argmax(axis=1, keepdims=True)
 
 
-# TODO Improve robustness...
 class MLP(Evaluator):
     def __init__(
         self,
         generator,
         *args,
-        epochs: int = 800,
-        batch_size: int = 32768,
+        layers: List[int] = [128, 128],
+        dropout: float = 0.1,
+        epochs: int = 1000,
+        batch_size: int = 1024,
         **kwargs,
     ) -> None:
         super().__init__(generator)
@@ -212,6 +287,8 @@ class MLP(Evaluator):
             self.dataset.num_features(),
             self.dataset.num_classes(),
             *args,
+            layers,
+            dropout,
             epochs=epochs,
             batch_size=batch_size,
             seed=self.seed,
