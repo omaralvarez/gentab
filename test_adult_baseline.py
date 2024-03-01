@@ -20,7 +20,8 @@ config = Config("configs/adult.json")
 
 dataset = Dataset(config)
 dataset.merge_classes({"<=50K": ["<=50K."], ">50K": [">50K."]})
-dataset.reduce_mem()
+# TODO Problem with reduce_mem() and TVAE and possibly more
+# dataset.reduce_mem()
 
 # console.print(dataset.class_counts(), dataset.row_count())
 # generator = ROS(dataset)
@@ -41,11 +42,11 @@ dataset.reduce_mem()
 # dataset.save_to_disk(generator)
 # console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 
-# console.print(dataset.class_counts(), dataset.row_count())
-# generator = TVAE(dataset)
-# generator.generate()
-# dataset.save_to_disk(generator)
-# console.print(dataset.generated_class_counts(), dataset.generated_row_count())
+console.print(dataset.class_counts(), dataset.row_count())
+generator = TVAE(dataset)
+generator.generate()
+dataset.save_to_disk(generator)
+console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 
 # console.print(dataset.class_counts(), dataset.row_count())
 # generator = CTGAN(dataset)
@@ -123,5 +124,4 @@ dataset.reduce_mem()
 # console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 # dataset.save_to_disk(generator)
 
-# TODO DCR
 # TODO Tabsyn
