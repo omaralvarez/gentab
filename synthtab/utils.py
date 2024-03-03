@@ -75,3 +75,6 @@ class Timer:
                 humanize.precisedelta(dt.timedelta(seconds=self.elapsed_s))
             )
         )
+
+    def clear_history(self):
+        self.history.clear()

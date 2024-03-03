@@ -170,3 +170,8 @@ class Generator:
 
         self.timer.stop()
         self.timer.elapsed()
+
+    def benchmark(self):
+        self.generate()
+
+        return self.timer.history

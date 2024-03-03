@@ -90,3 +90,17 @@ class Tuner:
 
         # Get best dataset object
         self.dataset = self.trial.user_attrs["dataset"]
+
+    def get_tuning_info(self):
+        # Load data from JSON
+        path = os.path.join(
+            self.folder,
+            str(self.dataset).lower()
+            + "_"
+            + str(self.generator).lower()
+            + "_"
+            + str(self.evaluator).lower()
+            + ".json",
+        )
+        with open(path, "r") as fp:
+            return json.load(fp)

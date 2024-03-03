@@ -33,18 +33,18 @@ class GReaT(Generator):
         dataset,
         llm: str = "distilgpt2",
         experiment_dir: str = "trainer_great",
-        epochs: int = 100,
-        batch_size: int = 8,
-        max_tries_per_batch: int = 1338,
+        epochs: int = 15,
+        batch_size: int = 32,
+        max_tries_per_batch: int = 4096,
         efficient_finetuning: str = "",
         start_col: tp.Optional[str] = "",
         start_col_dist: tp.Optional[tp.Union[dict, list]] = None,
-        temperature: float = 0.7,
+        temperature: float = 0.6,
         k: int = 100,
         max_length: int = 1024,
         drop_nan: bool = False,
         device: str = "cuda",
-        n_samples: int = 1338,
+        n_samples: int = 8192,
     ) -> None:
         super().__init__(dataset, batch_size, max_tries_per_batch)
         self.data = self.dataset.get_single_df()
