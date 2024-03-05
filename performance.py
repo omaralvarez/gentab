@@ -31,8 +31,28 @@ from synthtab.tuners import (
 from synthtab.data import Config, Dataset
 from synthtab.utils import console
 
+from pathlib import Path
+import os
+import json
+
 import pandas as pd
 import numpy as np
+
+
+def timing_to_disk(timing, folder, dataset, generator):
+    # Save generator parameters to JSON
+    Path(folder).mkdir(parents=True, exist_ok=True)
+    path = os.path.join(
+        folder,
+        str(dataset).lower()
+        + "_"
+        + str(generator).lower()
+        + "_"
+        + "baseline"
+        + ".json",
+    )
+    with open(path, "w") as fp:
+        json.dump({"train_time": timing[0], "gen_time": timing[1]}, fp, indent=4)
 
 
 def preproc_adult(dataset):
@@ -51,7 +71,7 @@ gens = [
     # (ADASYN, "ADASYN \cite{he2008adasyn}", ADASYNTuner),
     (TVAE, "TVAE \cite{xu2019modeling}", TVAETuner),
     (CTGAN, "CTGAN \cite{xu2019modeling}", CTGANTuner),
-    (GaussianCopula, "GaussianCopula \cite{patki2016synthetic}", GaussianCopulaTuner),
+    # (GaussianCopula, "GaussianCopula \cite{patki2016synthetic}", GaussianCopulaTuner),
     (CopulaGAN, "CopulaGAN \cite{xu2019modeling}", CopulaGANTuner),
     (CTABGAN, "CTAB-GAN \cite{zhao2021ctab}", CTABGANTuner),
     (CTABGANPlus, "CTAB-GAN+ \cite{zhao2022ctab}", CTABGANPlusTuner),
@@ -88,6 +108,7 @@ for c in configs:
             timing_tuned.loc[g[1], "Sample"] = tuned["gen_time"]
 
             baseline = generator.benchmark()
+            timing_to_disk(baseline, tuner.folder, dataset, generator)
             timing_baseline.loc[g[1], "Fit"] = baseline[0]
             timing_baseline.loc[g[1], "Sample"] = baseline[1]
 
@@ -126,6 +147,62 @@ for (index, bl), (_, tn) in zip(timing_baseline.iterrows(), timing_tuned.iterrow
         line += "\\textbf{{{:.{prec}f}}}".format(tn["Fit"], prec=round) + " & "
     elif tn["Fit"] != 0.0:
         line += "{:.{prec}f}".format(tn["Fit"], prec=round) + " & "
+    else:
+        line += " & - & "
+
+    if min_tn.loc["Sample"] == tn["Sample"]:
+        line += "\\textbf{{{:.{prec}f}}}".format(tn["Sample"], prec=round) + " \\\\"
+    elif tn["Sample"] != 0.0:
+        line += "{:.{prec}f}".format(tn["Sample"], prec=round) + " \\\\"
+    else:
+        line += " - \\\\"
+
+    lines.append(line)
+
+for line in lines:
+    console.print(line)
+
+
+timing_baseline_hours = (timing_baseline / 60 / 60).round(2)
+timing_tuned_hours = (timing_tuned / 60 / 60).round(2)
+
+console.print(timing_baseline_hours)
+console.print(timing_tuned_hours)
+
+min_bl_hours = timing_baseline_hours.min()
+min_tn_hours = timing_tuned_hours.min()
+
+
+lines = []
+for (index, bl), (_, tn), (_, blh), (_, tnh) in zip(
+    timing_baseline.iterrows(),
+    timing_tuned.iterrows(),
+    timing_baseline_hours.iterrows(),
+    timing_tuned_hours.iterrows(),
+):
+    if min_bl_hours.loc["Fit"] == blh["Fit"]:
+        line = (
+            index
+            + " & "
+            + "\\textbf{{{:.{prec}f}}}".format(blh["Fit"], prec=round)
+            + " & "
+        )
+    elif blh["Fit"] != 0.0:
+        line = index + " & " + "{:.{prec}f}".format(blh["Fit"], prec=round) + " & "
+    else:
+        line = index + " & - & "
+
+    if min_bl.loc["Sample"] == bl["Sample"]:
+        line += "\\textbf{{{:.{prec}f}}}".format(bl["Sample"], prec=round) + " & "
+    elif bl["Sample"] != 0.0:
+        line += "{:.{prec}f}".format(bl["Sample"], prec=round) + " & "
+    else:
+        line += " & - & "
+
+    if min_tn_hours.loc["Fit"] == tnh["Fit"]:
+        line += "\\textbf{{{:.{prec}f}}}".format(tnh["Fit"], prec=round) + " & "
+    elif tnh["Fit"] != 0.0:
+        line += "{:.{prec}f}".format(tnh["Fit"], prec=round) + " & "
     else:
         line += " & - & "
 

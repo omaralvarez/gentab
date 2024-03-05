@@ -24,7 +24,7 @@ class ForestDiffusion(Generator):
         reg_alpha=0.0,
         subsample=1.0,  # xgboost hyperparameters
         num_leaves=31,  # lgbm hyperparameters
-        duplicate_K=100,  # number of different noise sample per real data sample
+        duplicate_K=4,  # number of different noise sample per real data sample
         true_min_max_values=None,  # Vector of form [[min_x, min_y], [max_x, max_y]]; If  provided, we use these values as the min/max for each variables when using clipping
         gpu_hist=False,  # using GPU or not with xgboost
         eps=1e-3,

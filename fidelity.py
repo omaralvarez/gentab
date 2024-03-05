@@ -63,18 +63,17 @@ configs = [
 ]
 
 gens = [
-    (TVAE, "TVAE"),
-    (CTGAN, "CTGAN"),
-    (GaussianCopula, "Gaussian Copula"),
-    (CopulaGAN, "Copula GAN"),
-    (CTABGAN, "CTAB-GAN"),
-    (CTABGANPlus, "CTAB-GAN+"),
-    (AutoDiffusion, "AutoDiffusion"),
-    (ForestDiffusion, "ForestDiffusion"),
-    (Tabula, "Tabula"),
-    (GReaT, "GReaT"),
+    (TVAE, "TVAE \cite{xu2019modeling}"),
+    (CTGAN, "CTGAN \cite{xu2019modeling}"),
+    (GaussianCopula, "GaussianCopula \cite{patki2016synthetic}"),
+    (CopulaGAN, "CopulaGAN \cite{xu2019modeling}"),
+    (CTABGAN, "CTAB-GAN \cite{zhao2021ctab}"),
+    (CTABGANPlus, "CTAB-GAN+ \cite{zhao2022ctab}"),
+    (AutoDiffusion, "AutoDiffusion \cite{suh2023autodiff}"),
+    (ForestDiffusion, "ForestDiffusion \cite{jolicoeur2023generating}"),
+    (GReaT, "GReaT \cite{borisov2022language}"),
+    (Tabula, "Tabula \cite{zhao2023tabula}"),
 ]
-
 
 jensen_shannon = pd.DataFrame()
 wasserstein = pd.DataFrame()
@@ -116,6 +115,8 @@ for c in configs:
             theils.loc[c[2], g[1]] = 0.0
             ratio.loc[c[2], g[1]] = 0.0
 
+round = 2
+
 console.print("Jensen Shannon: \n", jensen_shannon)
 console.print("Wasserstein: \n", wasserstein)
 
@@ -124,9 +125,9 @@ ws_ranks = wasserstein.rank(ascending=True, axis=1)
 console.print("Jensen Shannon: \n", js_ranks)
 console.print("Wasserstein \n", ws_ranks)
 
-js_mean = js_ranks.mean()
+js_mean = js_ranks.mean().round(round)
 js_min = js_mean.min()
-ws_mean = ws_ranks.mean()
+ws_mean = ws_ranks.mean().round(round)
 ws_min = ws_mean.min()
 
 console.print(js_mean)
@@ -136,18 +137,17 @@ console.print("Pearson: \n", pearson)
 console.print("Theils: \n", theils)
 console.print("Ratio: \n", ratio)
 
-ps_mean = pearson.mean()
+ps_mean = pearson.mean().round(round)
 ps_min = ps_mean.min()
-tu_mean = theils.mean()
+tu_mean = theils.mean().round(round)
 tu_min = tu_mean.min()
-rt_mean = ratio.mean()
+rt_mean = ratio.mean().round(round)
 rt_min = rt_mean.min()
 
 console.print(ps_mean)
 console.print(tu_mean)
 console.print(rt_mean)
 
-round = 2
 lines = []
 for (index, js), (_, ws), (_, ps), (_, tu), (_, rt) in zip(
     js_mean.items(), ws_mean.items(), ps_mean.items(), tu_mean.items(), rt_mean.items()
