@@ -6,7 +6,7 @@ data.tar
 config.toml
 .sample.csv.temp
 model_playnet.pt
-results*.py
+results_*.py
 correlation*.py
 lightning_logs/
 tuning/
