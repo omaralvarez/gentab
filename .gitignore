@@ -7,7 +7,7 @@ config.toml
 .sample.csv.temp
 model_playnet.pt
 results_*.py
-correlation*.py
+correlation_*.py
 lightning_logs/
 tuning/
 catboost_info/
