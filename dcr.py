@@ -63,18 +63,17 @@ configs = [
 ]
 
 gens = [
-    (TVAE, "TVAE"),
-    (CTGAN, "CTGAN"),
-    (GaussianCopula, "Gaussian Copula"),
-    (CopulaGAN, "Copula GAN"),
-    (CTABGAN, "CTAB-GAN"),
-    (CTABGANPlus, "CTAB-GAN+"),
-    (AutoDiffusion, "AutoDiffusion"),
-    (ForestDiffusion, "ForestDiffusion"),
-    (Tabula, "Tabula"),
-    (GReaT, "GReaT"),
+    (TVAE, "TVAE \cite{xu2019modeling}"),
+    (CTGAN, "CTGAN \cite{xu2019modeling}"),
+    (GaussianCopula, "GaussianCopula \cite{patki2016synthetic}"),
+    (CopulaGAN, "CopulaGAN \cite{xu2019modeling}"),
+    (CTABGAN, "CTAB-GAN \cite{zhao2021ctab}"),
+    (CTABGANPlus, "CTAB-GAN+ \cite{zhao2022ctab}"),
+    (AutoDiffusion, "AutoDiffusion \cite{suh2023autodiff}"),
+    (ForestDiffusion, "ForestDiffusion \cite{jolicoeur2023generating}"),
+    (GReaT, "GReaT \cite{borisov2022language}"),
+    (Tabula, "Tabula \cite{zhao2023tabula}"),
 ]
-
 
 DCR = pd.DataFrame()
 
@@ -94,6 +93,8 @@ for c in configs:
         except FileNotFoundError:
             DCR.loc[c[2], g[1]] = float("inf")
 
+round = 2
+
 console.print(DCR)
 
 DCR_mean = DCR.mean()
@@ -102,14 +103,13 @@ console.print(DCR_mean)
 
 DCR_ranks = DCR.rank(ascending=True, axis=1)
 console.print(DCR_ranks)
-DCR_mean_rank = DCR_ranks.mean()
+DCR_mean_rank = DCR_ranks.mean().round(round)
 max = DCR_mean_rank.max()
 console.print(DCR_mean_rank)
 
 # TODO Make the ones that do not have dataset 1st so they do not appear good overall,
 # more dist is good in this metric
 
-round = 2
 lines = []
 for index, row in DCR_mean_rank.items():
     if max == row:
