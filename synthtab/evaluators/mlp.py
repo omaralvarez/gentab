@@ -230,9 +230,10 @@ class MLPClassifier:
         # TODO Common device for all
         **kwargs,
     ) -> None:
-        self.model = MLPGorish.make_baseline(
-            input_features, layers, dropout, num_classes
-        )
+        self.input_features = input_features
+        self.layers = layers
+        self.dropout = dropout
+        self.num_classes = num_classes
         self.batch_size = batch_size
         self.lr = lr
         self.weigth_decay = weight_decay
@@ -244,7 +245,9 @@ class MLPClassifier:
         self.es = EarlyStopping(monitor="train_loss", patience=16)
 
     def fit(self, X, y) -> Self:
-
+        self.model = MLPGorish.make_baseline(
+            self.input_features, self.layers, self.dropout, self.num_classes
+        )
         self.net = NeuralNetClassifier(
             self.model,
             criterion=CrossEntropyLoss,
