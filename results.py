@@ -192,42 +192,42 @@ configs = [
 ]
 
 gens = [
-    # (SMOTE, "SMOTE \cite{chawla2002smote}", "SMOTE"),
-    # (ADASYN, "ADASYN \cite{he2008adasyn}", "ADASYN"),
-    # (TVAE, "TVAE \cite{xu2019modeling}", "TVAE"),
-    # (CTGAN, "CTGAN \cite{xu2019modeling}", "CTGAN"),
-    # (GaussianCopula, "GaussianCopula \cite{patki2016synthetic}", "GaussianCopula"),
-    # (CopulaGAN, "CopulaGAN \cite{xu2019modeling}", "CopulaGAN"),
-    # (CTABGAN, "CTAB-GAN \cite{zhao2021ctab}", "CTAB-GAN"),
-    # (CTABGANPlus, "CTAB-GAN+ \cite{zhao2022ctab}", "CTAB-GAN+"),
+    (SMOTE, "SMOTE \cite{chawla2002smote}", "SMOTE"),
+    (ADASYN, "ADASYN \cite{he2008adasyn}", "ADASYN"),
+    (TVAE, "TVAE \cite{xu2019modeling}", "TVAE"),
+    (CTGAN, "CTGAN \cite{xu2019modeling}", "CTGAN"),
+    (GaussianCopula, "GaussianCopula \cite{patki2016synthetic}", "GaussianCopula"),
+    (CopulaGAN, "CopulaGAN \cite{xu2019modeling}", "CopulaGAN"),
+    (CTABGAN, "CTAB-GAN \cite{zhao2021ctab}", "CTAB-GAN"),
+    (CTABGANPlus, "CTAB-GAN+ \cite{zhao2022ctab}", "CTAB-GAN+"),
     (AutoDiffusion, "AutoDiffusion \cite{suh2023autodiff}", "AutoDiffusion"),
-    # (
-    #     ForestDiffusion,
-    #     "ForestDiffusion \cite{jolicoeur2023generating}",
-    #     "ForestDiffusion",
-    # ),
-    # (Tabula, "Tabula \cite{zhao2023tabula}", "Tabula"),
-    # (GReaT, "GReaT \cite{borisov2022language}", "GReaT"),
+    (
+        ForestDiffusion,
+        "ForestDiffusion \cite{jolicoeur2023generating}",
+        "ForestDiffusion",
+    ),
+    (GReaT, "GReaT \cite{borisov2022language}", "GReaT"),
+    (Tabula, "Tabula \cite{zhao2023tabula}", "Tabula"),
 ]
 
 evals = [
-    # (
-    #     LightGBM,
-    #     "\multirow{" + str(len(gens)) + "}{*}{LightGBM \cite{ke2017lightgbm}}",
-    #     "LightGBM",
-    # ),
-    # (
-    #     CatBoost,
-    #     "\multirow{"
-    #     + str(len(gens))
-    #     + "}{*}{CatBoost \cite{prokhorenkova2018catboost}}",
-    #     "CatBoost",
-    # ),
-    # (
-    #     XGBoost,
-    #     "\multirow{" + str(len(gens)) + "}{*}{XGBoost \cite{chen2016xgboost}}",
-    #     "XGBoost",
-    # ),
+    (
+        LightGBM,
+        "\multirow{" + str(len(gens)) + "}{*}{LightGBM \cite{ke2017lightgbm}}",
+        "LightGBM",
+    ),
+    (
+        CatBoost,
+        "\multirow{"
+        + str(len(gens))
+        + "}{*}{CatBoost \cite{prokhorenkova2018catboost}}",
+        "CatBoost",
+    ),
+    (
+        XGBoost,
+        "\multirow{" + str(len(gens)) + "}{*}{XGBoost \cite{chen2016xgboost}}",
+        "XGBoost",
+    ),
     (
         MLP,
         "\multirow{" + str(len(gens)) + "}{*}{MLP \cite{gorishniy2021revisiting}}",
