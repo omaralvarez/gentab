@@ -20,28 +20,26 @@ config = Config("configs/playnet.json")
 
 dataset = Dataset(config)
 console.print(dataset.class_counts(), dataset.row_count())
-dataset.reduce_size({
-    "left_attack": 0.97,
-    "right_attack": 0.97,
-    "right_transition": 0.9,
-    "left_transition": 0.9,
-    "time_out": 0.8,
-    "left_penal": 0.5,
-    "right_penal": 0.5,
-})
-dataset.merge_classes({
-    "attack": ["left_attack", "right_attack"],
-    "transition": ["left_transition", "right_transition"],
-    "penalty": ["left_penal", "right_penal"],
-})
+dataset.reduce_size(
+    {
+        "left_attack": 0.97,
+        "right_attack": 0.97,
+        "right_transition": 0.9,
+        "left_transition": 0.9,
+        "time_out": 0.8,
+        "left_penal": 0.5,
+        "right_penal": 0.5,
+    }
+)
+dataset.merge_classes(
+    {
+        "attack": ["left_attack", "right_attack"],
+        "transition": ["left_transition", "right_transition"],
+        "penalty": ["left_penal", "right_penal"],
+    }
+)
 console.print(dataset.class_counts(), dataset.row_count())
 dataset.reduce_mem()
-
-console.print(dataset.class_counts(), dataset.row_count())
-generator = ROS(dataset)
-generator.generate()
-dataset.save_to_disk(generator)
-console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 
 console.print(dataset.class_counts(), dataset.row_count())
 generator = SMOTE(dataset)
@@ -51,7 +49,6 @@ console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 
 console.print(dataset.class_counts(), dataset.row_count())
 generator = ADASYN(dataset, sampling_strategy="minority")
-# generator.generate({"right_transition": 83, "time_out": 153})
 generator.generate()
 dataset.save_to_disk(generator)
 console.print(dataset.generated_class_counts(), dataset.generated_row_count())
