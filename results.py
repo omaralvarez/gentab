@@ -206,8 +206,8 @@ gens = [
         "ForestDiffusion \cite{jolicoeur2023generating}",
         "ForestDiffusion",
     ),
-    (Tabula, "Tabula \cite{zhao2023tabula}", "Tabula"),
     (GReaT, "GReaT \cite{borisov2022language}", "GReaT"),
+    (Tabula, "Tabula \cite{zhao2023tabula}", "Tabula"),
 ]
 
 evals = [

@@ -151,7 +151,8 @@ for c in configs:
 
         i += 1
 
-    fig.colorbar(ims[0], cax=grid.cbar_axes[0], orientation="vertical")
+    cb = fig.colorbar(ims[0], cax=grid.cbar_axes[0], orientation="vertical")
+    cb.outline.set_visible(False)
 
     plt.savefig(
         "figures/Correlation" + c[2] + ".pdf", format="pdf", bbox_inches="tight"
