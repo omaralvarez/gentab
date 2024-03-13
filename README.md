@@ -13,7 +13,7 @@
 	</a>
 </p>
 
-# tably
+# Tably
 
 Synthetic Tabular Data Generation Library
 
