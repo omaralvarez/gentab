@@ -13,7 +13,7 @@
 	</a>
 </p>
 
-# synthtab
+# tably
 
 Synthetic Tabular Data Generation Library
 
@@ -31,10 +31,10 @@ This Python library specializes in the generation of synthetic tabular data. It 
 
 ## Install
 
-The `synthtab` library is available using pip. We recommend using a virtual environment to avoid conflicts with other software on your machine.
+The `tably` library is available using pip. We recommend using a virtual environment to avoid conflicts with other software on your machine.
 
 ``` bash
-pip install synthtab
+pip install tably
 ```
 
 ## Available Generators
@@ -92,9 +92,9 @@ Below is the list of the generators currently available in the library.
 ## Example
 
 ``` python
-from synthtab.generators import AutoDiffusion
-from synthtab.data import Config, Dataset
-from synthtab.utils import console
+from tably.generators import AutoDiffusion
+from tably.data import Config, Dataset
+from tably.utils import console
 
 from sklearn import svm
 
