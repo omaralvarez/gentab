@@ -24,20 +24,24 @@ import numpy as np
 
 
 def preproc_playnet(dataset):
-    dataset.reduce_size({
-        "left_attack": 0.97,
-        "right_attack": 0.97,
-        "right_transition": 0.9,
-        "left_transition": 0.9,
-        "time_out": 0.8,
-        "left_penal": 0.5,
-        "right_penal": 0.5,
-    })
-    dataset.merge_classes({
-        "attack": ["left_attack", "right_attack"],
-        "transition": ["left_transition", "right_transition"],
-        "penalty": ["left_penal", "right_penal"],
-    })
+    dataset.reduce_size(
+        {
+            "left_attack": 0.97,
+            "right_attack": 0.97,
+            "right_transition": 0.9,
+            "left_transition": 0.9,
+            "time_out": 0.8,
+            "left_penal": 0.5,
+            "right_penal": 0.5,
+        }
+    )
+    dataset.merge_classes(
+        {
+            "attack": ["left_attack", "right_attack"],
+            "transition": ["left_transition", "right_transition"],
+            "penalty": ["left_penal", "right_penal"],
+        }
+    )
     dataset.reduce_mem()
 
     return dataset
@@ -53,8 +57,8 @@ gens = [
     (CTABGANPlus, "CTAB-GAN+"),
     (AutoDiffusion, "AutoDiffusion"),
     (ForestDiffusion, "ForestDiffusion"),
-    (Tabula, "Tabula"),
     (GReaT, "GReaT"),
+    (Tabula, "Tabula"),
 ]
 
 config = Config("configs/playnet_cr.json")
@@ -79,7 +83,7 @@ for g in gens:
 
         # Set labels
         if i == 0:
-            ax.set_title(c, fontsize=19)
+            ax.set_title("timeout" if c == "time_out" else c, fontsize=19)
         if j == 0:
             if g[0] is not None:
                 ax.set_ylabel(g[1], fontsize=18)

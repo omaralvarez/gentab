@@ -17,6 +17,7 @@ from synthtab.generators import (
 from synthtab.data import Config, Dataset
 from synthtab.utils import console
 
+import matplotlib as mpl
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle, Circle, Ellipse, Arc
@@ -25,20 +26,24 @@ from scipy.stats import kde
 
 
 def preproc_playnet(dataset):
-    dataset.reduce_size({
-        "left_attack": 0.97,
-        "right_attack": 0.97,
-        "right_transition": 0.9,
-        "left_transition": 0.9,
-        "time_out": 0.8,
-        "left_penal": 0.5,
-        "right_penal": 0.5,
-    })
-    dataset.merge_classes({
-        "attack": ["left_attack", "right_attack"],
-        "transition": ["left_transition", "right_transition"],
-        "penalty": ["left_penal", "right_penal"],
-    })
+    dataset.reduce_size(
+        {
+            "left_attack": 0.97,
+            "right_attack": 0.97,
+            "right_transition": 0.9,
+            "left_transition": 0.9,
+            "time_out": 0.8,
+            "left_penal": 0.5,
+            "right_penal": 0.5,
+        }
+    )
+    dataset.merge_classes(
+        {
+            "attack": ["left_attack", "right_attack"],
+            "transition": ["left_transition", "right_transition"],
+            "penalty": ["left_penal", "right_penal"],
+        }
+    )
     dataset.reduce_mem()
 
     return dataset
@@ -54,8 +59,8 @@ gens = [
     (CTABGANPlus, "CTAB-GAN+"),
     (AutoDiffusion, "AutoDiffusion"),
     (ForestDiffusion, "ForestDiffusion"),
-    (Tabula, "Tabula"),
     (GReaT, "GReaT"),
+    (Tabula, "Tabula"),
 ]
 
 config = Config("configs/playnet_cr.json")
@@ -67,7 +72,7 @@ fig = plt.figure(figsize=(40, 30))
 fig.subplots_adjust(wspace=0.25, hspace=0.125)
 
 axs, ims = [], []
-
+maxcnt = 0
 i = 0
 for g in gens:
     if g[0] is not None:
@@ -80,7 +85,7 @@ for g in gens:
 
         # Set labels
         if i == 0:
-            ax.set_title(c, fontsize=19)
+            ax.set_title("timeout" if c == "time_out" else c, fontsize=19)
         if j == 0:
             if g[0] is not None:
                 ax.set_ylabel(g[1], fontsize=18)
@@ -125,6 +130,7 @@ for g in gens:
             0 : 1 : nbins * 1j,
         ]
         zi = k(np.vstack([xi.flatten(), yi.flatten()]))
+        maxcnt = zi.max() if zi.max() > maxcnt else maxcnt
         # Make the plot
         ax.pcolormesh(xi, yi, zi.reshape(xi.shape), shading="auto", cmap="Greens")
         # Middle line
@@ -167,5 +173,18 @@ for g in gens:
         j += 1
 
     i += 1
+
+cmap = mpl.cm.Greens
+norm = mpl.colors.Normalize(vmin=0, vmax=round(maxcnt))
+cb = fig.colorbar(
+    mpl.cm.ScalarMappable(norm=norm, cmap=cmap),
+    ax=axs,
+    orientation="vertical",
+    fraction=0.1,
+    aspect=60,
+    pad=0.025,
+)
+cb.ax.tick_params(labelsize=20)
+cb.outline.set_visible(False)
 
 plt.savefig("figures/HeatmapPlaynet.pdf", format="pdf", bbox_inches="tight")
