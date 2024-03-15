@@ -13,9 +13,10 @@ class ADASYNTuner(Tuner):
         evaluator: Evaluator,
         trials: int,
         *args,
+        timeout: int = None,
         **kwargs,
     ) -> None:
-        super().__init__(evaluator, trials)
+        super().__init__(evaluator, trials, timeout=timeout)
 
     def objective(self, trial: optuna.trial.Trial) -> float:
         n_neighbors = trial.suggest_int(

@@ -17,6 +17,7 @@ class CTABGANTuner(Tuner):
         min_batch: int = 512,
         max_batch: int = 16384,
         max_tries_per_batch: int = 8192,
+        timeout: int = None,
         **kwargs,
     ) -> None:
         super().__init__(
@@ -27,6 +28,7 @@ class CTABGANTuner(Tuner):
             min_batch=min_batch,
             max_batch=max_batch,
             max_tries_per_batch=max_tries_per_batch,
+            timeout=timeout,
         )
 
     def objective(self, trial: optuna.trial.Trial) -> float:

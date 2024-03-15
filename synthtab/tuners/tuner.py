@@ -37,7 +37,6 @@ class Tuner:
         self.max_tries_per_batch = max_tries_per_batch
         self.folder = "tuning"
         self.timeout = timeout
-        # TODO Add timeout to all tuners
 
     def __str__(self) -> str:
         return self.__class__.__name__

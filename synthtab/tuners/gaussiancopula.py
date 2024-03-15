@@ -13,9 +13,12 @@ class GaussianCopulaTuner(Tuner):
         trials: int,
         *args,
         max_tries_per_batch: int = 8192,
+        timeout: int = None,
         **kwargs,
     ) -> None:
-        super().__init__(evaluator, trials, max_tries_per_batch=max_tries_per_batch)
+        super().__init__(
+            evaluator, trials, max_tries_per_batch=max_tries_per_batch, timeout=timeout
+        )
 
     def objective(self, trial: optuna.trial.Trial) -> float:
         default_distribution = trial.suggest_categorical(
