@@ -91,7 +91,7 @@ for c in configs:
             min_l2_dist = dataset.distance_closest_record()
             DCR.loc[c[2], g[1]] = np.mean(min_l2_dist)
         except FileNotFoundError:
-            DCR.loc[c[2], g[1]] = float("inf")
+            DCR.loc[c[2], g[1]] = 0.0
 
 round = 2
 
@@ -106,9 +106,6 @@ console.print(DCR_ranks)
 DCR_mean_rank = DCR_ranks.mean().round(round)
 max = DCR_mean_rank.max()
 console.print(DCR_mean_rank)
-
-# TODO Make the ones that do not have dataset 1st so they do not appear good overall,
-# more dist is good in this metric
 
 lines = []
 for index, row in DCR_mean_rank.items():
