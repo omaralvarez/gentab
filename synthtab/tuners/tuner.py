@@ -56,7 +56,7 @@ class Tuner:
             direction="maximize",
             sampler=optuna.samplers.TPESampler(seed=self.seed),
         )
-        # TODO Test n_jobs = -1
+
         self.study.optimize(
             self.objective, n_trials=self.n_trials, timeout=self.timeout
         )

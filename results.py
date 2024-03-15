@@ -56,7 +56,7 @@ def preproc_car_eval_4(dataset):
 
 
 def evaluate_metrics(g, generator, e, df):
-    evaluator = e[0](generator)  # TODO njobs -1
+    evaluator = e[0](generator)
     evaluator.evaluate()
 
     df.loc[g[2]] = (
@@ -73,7 +73,6 @@ def evaluate_metrics(g, generator, e, df):
     return evaluator
 
 
-# TODO Without tuned dataset it does not error out
 def get_metrics(dataset, gens, evals, metrics):
     results = []
 

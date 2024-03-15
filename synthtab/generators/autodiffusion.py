@@ -7,9 +7,6 @@ from synthtab.utils import console, PROG_COLUMNS
 
 import pandas as pd
 
-# TODO (1) Stasy-AutoDiff : process_edited.py + diffusion.py + autoencoder.py
-#      (2) Tab-AutoDiff : proccess_GQ.py + TabDDPMdiff.py + autoencoder.py
-
 
 class AutoDiffusion(Generator):
     def __init__(
