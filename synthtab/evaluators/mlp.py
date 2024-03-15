@@ -1,5 +1,5 @@
 from . import Evaluator
-from synthtab.utils import console, SPINNER, REFRESH
+from synthtab.utils import console, SPINNER, REFRESH, DEVICE
 
 from types import ModuleType
 from typing import Type
@@ -226,7 +226,7 @@ class MLPClassifier:
         seed: int = 42,
         lr: float = 1e-5,
         weight_decay: float = 1e-6,
-        device: str = "cuda",
+        device: str = DEVICE,
         # TODO Common device for all
         **kwargs,
     ) -> None:

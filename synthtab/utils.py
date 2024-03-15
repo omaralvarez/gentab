@@ -12,6 +12,7 @@ from rich.progress import (
 import humanize
 import datetime as dt
 
+DEVICE = "cuda"
 SPINNER = "aesthetic"
 REFRESH = 20
 EXPAND = False

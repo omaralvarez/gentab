@@ -3,7 +3,7 @@ from .autodiff.process_GQ import DataFrameParser, convert_to_table
 from .autodiff.autoencoder import train_autoencoder
 from .autodiff.TabDDPMdiff import train_diffusion
 from .autodiff.diffusion import Euler_Maruyama_sampling
-from synthtab.utils import console, PROG_COLUMNS
+from synthtab.utils import console, PROG_COLUMNS, DEVICE
 
 import pandas as pd
 
@@ -13,7 +13,7 @@ class AutoDiffusion(Generator):
         self,
         dataset,
         threshold=0.01,
-        device="cuda",
+        device=DEVICE,
         max_tries_per_batch=8192,
         n_epochs=10000,
         eps=1e-5,

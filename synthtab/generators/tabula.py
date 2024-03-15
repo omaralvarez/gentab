@@ -1,7 +1,7 @@
 from . import Generator
 from .tabu.tabula import Tab
 from .tabump.tabula import TabMP
-from synthtab.utils import console, PROG_COLUMNS
+from synthtab.utils import console, PROG_COLUMNS, DEVICE
 
 import os
 import pandas as pd
@@ -51,7 +51,7 @@ class Tabula(Generator):
         temperature: float = 0.6,
         k: int = 100,
         max_length: int = 1024,
-        device: str = "cuda",
+        device: str = DEVICE,
         trained_model: str = None,
         n_samples: int = 8192,
         middle_padding: bool = False,

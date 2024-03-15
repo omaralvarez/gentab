@@ -1,5 +1,5 @@
 from . import Generator
-from synthtab.utils import console, SPINNER, REFRESH
+from synthtab.utils import console, DEVICE
 
 from sdv.metadata import SingleTableMetadata
 from sdv.single_table import CTGANSynthesizer
@@ -27,7 +27,7 @@ class CTGAN(Generator):
         # https://github.com/sdv-dev/SDV/issues/1231 batch_size needs to be multiple of pac
         pac=10,
         log_frequency=True,
-        cuda=True,
+        cuda=True if DEVICE == "cuda" else False,
         max_tries_per_batch=4096,
     ) -> None:
         super().__init__(dataset)

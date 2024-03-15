@@ -1,5 +1,5 @@
 from . import Generator
-from synthtab.utils import console
+from synthtab.utils import console, DEVICE
 
 from be_great import GReaT as GR
 import pandas as pd
@@ -43,7 +43,7 @@ class GReaT(Generator):
         k: int = 100,
         max_length: int = 1024,
         drop_nan: bool = False,
-        device: str = "cuda",
+        device: str = DEVICE,
         n_samples: int = 8192,
     ) -> None:
         super().__init__(dataset, batch_size, max_tries_per_batch)

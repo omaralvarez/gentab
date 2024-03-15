@@ -1,5 +1,5 @@
 from . import Generator
-from synthtab.utils import console, SPINNER, REFRESH
+from synthtab.utils import console
 
 from sdv.metadata import SingleTableMetadata
 from sdv.single_table import GaussianCopulaSynthesizer

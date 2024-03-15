@@ -1,5 +1,5 @@
 from . import Generator
-from synthtab.utils import console, SPINNER, REFRESH
+from synthtab.utils import console
 
 import pandas as pd
 from imblearn.over_sampling import RandomOverSampler

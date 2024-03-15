@@ -1,5 +1,5 @@
 from . import Generator
-from synthtab.utils import console, SPINNER, REFRESH
+from synthtab.utils import console, DEVICE
 
 import pandas as pd
 from sdv.metadata import SingleTableMetadata
@@ -27,7 +27,7 @@ class CopulaGAN(Generator):
         generator_lr=2e-4,
         # https://github.com/sdv-dev/SDV/issues/1231 batch_size needs to be multiple of pac
         pac=10,
-        cuda=True,
+        cuda=True if DEVICE == "cuda" else False,
         locales=["en_US"],
         numerical_distributions=None,
         default_distribution="beta",

@@ -39,7 +39,6 @@ class TabulaTuner(Tuner):
         encode_categories = trial.suggest_categorical(
             "encode_categories", [False, True]
         )
-        # TODO Debug middle padding.
         middle_padding = trial.suggest_categorical("middle_padding", [False])
         random_initialization = trial.suggest_categorical(
             "random_initialization", [False, True]
