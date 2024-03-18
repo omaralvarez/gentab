@@ -149,11 +149,13 @@ dataset.merge_classes({
 })
 dataset.reduce_mem()
 
-trials = 10
-
 generator = AutoDiffusion(dataset)
+
 evaluator = LightGBM(generator)
-tuner = AutoDiffusionTuner(evaluator, trials)
+
+trials = 10
+time = 60 * 60 * 8
+tuner = AutoDiffusionTuner(evaluator, trials, timeout=time)
 tuner.tune()
 tuner.save_to_disk()
 ```
