@@ -43,9 +43,6 @@ class TabulaTuner(Tuner):
         random_initialization = trial.suggest_categorical(
             "random_initialization", [False, True]
         )
-        console.print(
-            temperature, k, encode_categories, middle_padding, random_initialization
-        )
 
         self.generator = Tabula(
             self.dataset,

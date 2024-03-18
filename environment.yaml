@@ -23,7 +23,7 @@ dependencies:
     - imbalanced-learn
     - sdv
     - ForestDiffusion
-    - transformers[torch]==4.22.1
+    - transformers
     - datasets
     - be-great
     - lightning
