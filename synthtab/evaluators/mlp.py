@@ -227,7 +227,6 @@ class MLPClassifier:
         lr: float = 1e-5,
         weight_decay: float = 1e-6,
         device: str = DEVICE,
-        # TODO Common device for all
         **kwargs,
     ) -> None:
         self.input_features = input_features
@@ -240,7 +239,6 @@ class MLPClassifier:
         self.epochs = epochs
         self.device = device
         self.seed = seed
-
         self.acc = accuracy_score
         self.es = EarlyStopping(monitor="train_loss", patience=16)
 

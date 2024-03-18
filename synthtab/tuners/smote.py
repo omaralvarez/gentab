@@ -28,6 +28,6 @@ class SMOTETuner(Tuner):
         trial.set_user_attr("timing", self.generator.timer.history)
         trial.set_user_attr("dataset", self.dataset)
 
-        acc, mcc = self.evaluator.evaluate()
+        acc, mcc = self.evaluator.evaluate(validation=True)
 
         return mcc

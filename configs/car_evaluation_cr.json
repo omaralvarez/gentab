@@ -6,8 +6,8 @@
     "id": "car_evaluation--id",
     "y_label": "class",
     "train_size": 0.6,
-    "validation_size": 0.1,
-    "test_size": 0.4,
+    "val_size": 0.05,
+    "test_size": 0.35,
     "categorical_columns": [
         "buying",
         "maint",

@@ -6,8 +6,8 @@
     "id": "car_eval_4--id",
     "y_label": "vgood",
     "train_size": 0.6,
-    "validation_size": 0.2,
-    "test_size": 0.4,
+    "val_size": 0.05,
+    "test_size": 0.35,
     "CTABGAN": {
         "log_columns": [],
         "mixed_columns": {}

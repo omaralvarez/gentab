@@ -30,10 +30,7 @@ class Dataset:
             )
 
             if not self.config.exists("download"):
-                self.X = pd.read_csv(self.config["path_X"])
-                self.y = pd.read_csv(self.config["path_y"])
-                self.X_test = pd.read_csv(self.config["path_X_test"])
-                self.y_test = pd.read_csv(self.config["path_y_test"])
+                self.load_path()
             else:
                 if self.config["download"] == "ucimlrepo":
                     self.download_uci()
@@ -51,9 +48,25 @@ class Dataset:
     def reset_indexes(self) -> None:
         # Reset indexes
         self.X.reset_index(drop=True, inplace=True)
+        self.X_val.reset_index(drop=True, inplace=True)
         self.X_test.reset_index(drop=True, inplace=True)
         self.y.reset_index(drop=True, inplace=True)
+        self.y_val.reset_index(drop=True, inplace=True)
         self.y_test.reset_index(drop=True, inplace=True)
+
+    def load_path(self) -> None:
+        self.X = pd.read_csv(self.config["path_X"])
+        self.y = pd.read_csv(self.config["path_y"])
+        self.X_test = pd.read_csv(self.config["path_X_test"])
+        self.y_test = pd.read_csv(self.config["path_y_test"])
+
+        self.X, self.X_val, self.y, self.y_val = train_test_split(
+            self.X,
+            self.y,
+            test_size=self.config["val_size"],
+            random_state=SEED,
+            stratify=self.y,
+        )
 
     def download_imb(self) -> None:
         data = fetch_datasets(
@@ -71,7 +84,15 @@ class Dataset:
         self.X, self.X_test, self.y, self.y_test = train_test_split(
             features,
             labels,
-            test_size=self.config["test_size"],
+            test_size=1 - self.config["train_size"],
+            random_state=SEED,
+            stratify=labels,
+        )
+        self.X_val, self.X_test, self.y_val, self.y_test = train_test_split(
+            self.X_test,
+            self.y_test,
+            test_size=self.config["test_size"]
+            / (self.config["test_size"] + self.config["val_size"]),
             random_state=SEED,
             stratify=labels,
         )
@@ -82,24 +103,10 @@ class Dataset:
         self.config["categorical_columns"] = []
         self.config["integer_columns"] = []
 
-        # train_ratio = 0.75
-        # validation_ratio = 0.15
-        # test_ratio = 0.10
-
-        # # train is now 75% of the entire data set
-        # x_train, x_test, y_train, y_test = train_test_split(dataX, dataY, test_size=1 - train_ratio)
-
-        # # test is now 10% of the initial data set
-        # # validation is now 15% of the initial data set
-        # x_val, x_test, y_val, y_test = train_test_split(x_test, y_test, test_size=test_ratio/(test_ratio + validation_ratio))
-
-        # print(x_train, x_val, x_test)
-
     def download_uci(self) -> None:
         uci = fetch_ucirepo(name=self.config["name"])
 
         # metadata
-        # console.print(uci.metadata)
         console.print(uci.variables)
 
         uci.data.features.fillna("Missing", inplace=True)
@@ -107,7 +114,15 @@ class Dataset:
         self.X, self.X_test, self.y, self.y_test = train_test_split(
             uci.data.features,
             uci.data.targets,
-            test_size=self.config["test_size"],
+            test_size=1 - self.config["train_size"],
+            random_state=SEED,
+            stratify=uci.data.targets,
+        )
+        self.X_val, self.X_test, self.y_val, self.y_test = train_test_split(
+            self.X_test,
+            self.y_test,
+            test_size=self.config["test_size"]
+            / (self.config["test_size"] + self.config["val_size"]),
             random_state=SEED,
             stratify=uci.data.targets,
         )
@@ -198,6 +213,7 @@ class Dataset:
     def merge_classes(self, merge: dict[str, list[str]]) -> None:
         for cls, labs in merge.items():
             self.y[self.y[self.config["y_label"]].isin(labs)] = cls
+            self.y_val[self.y_val[self.config["y_label"]].isin(labs)] = cls
             self.y_test[self.y_test[self.config["y_label"]].isin(labs)] = cls
 
         self.get_label_encoders()
@@ -241,6 +257,7 @@ class Dataset:
     def generated_row_count(self) -> int:
         return len(self.X_gen.index)
 
+    # TODO Maybe here val?
     def get_single_df(self) -> pd.DataFrame:
         return pd.concat([self.X, self.y], axis=1)
 
@@ -346,16 +363,25 @@ class Dataset:
         """iterate through all the columns of a dataframe and modify the data type
         to reduce memory usage.
         """
-        start_mem = self.memory_usage_mb(self.X) + self.memory_usage_mb(self.X_test)
+        start_mem = (
+            self.memory_usage_mb(self.X)
+            + self.memory_usage_mb(self.X_val)
+            + self.memory_usage_mb(self.X_test)
+        )
         console.print("💾 Memory usage of dataframe is {:.2f} MB...".format(start_mem))
 
         with ProgressBar(indeterminate=True).progress as p:
             p.add_task("Reducing memory usage...", total=None)
 
             self.reduce_mem_df(self.X)
+            self.reduce_mem_df(self.X_val)
             self.reduce_mem_df(self.X_test)
 
-        end_mem = self.memory_usage_mb(self.X) + self.memory_usage_mb(self.X_test)
+        end_mem = (
+            self.memory_usage_mb(self.X)
+            + self.memory_usage_mb(self.X_val)
+            + self.memory_usage_mb(self.X_test)
+        )
         console.print(
             "💾 Memory usage after optimization: {:.2f} MB...".format(end_mem)
         )

@@ -8,6 +8,7 @@
     "save_path": "datasets/playnet_cr",
     "id": "playnet--id",
     "y_label": "#play",
+    "val_size": 0.05,
     "categorical_columns": [],
     "binary_columns": [],
     "integer_columns": [],

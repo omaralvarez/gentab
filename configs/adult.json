@@ -5,8 +5,8 @@
     "save_path": "datasets/adult",
     "id": "adult--id",
     "y_label": "income",
-    "train_size": 0.8,
-    "validation_size": 0.1,
+    "train_size": 0.75,
+    "val_size": 0.05,
     "test_size": 0.2,
     "categorical_columns": [
         "workclass",
