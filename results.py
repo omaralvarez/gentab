@@ -1,5 +1,5 @@
-from synthtab.evaluators import KNN, LightGBM, CatBoost, XGBoost, MLP
-from synthtab.generators import (
+from tabgen.evaluators import KNN, LightGBM, CatBoost, XGBoost, MLP
+from tabgen.generators import (
     ROS,
     SMOTE,
     ADASYN,
@@ -14,8 +14,8 @@ from synthtab.generators import (
     Tabula,
     GReaT,
 )
-from synthtab.data import Config, Dataset
-from synthtab.utils import console
+from tabgen.data import Config, Dataset
+from tabgen.utils import console
 
 import pandas as pd
 from functools import reduce

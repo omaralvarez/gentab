@@ -1,5 +1,5 @@
-from synthtab.evaluators import CatBoost, LightGBM, XGBoost, MLP
-from synthtab.generators import (
+from tabgen.evaluators import CatBoost, LightGBM, XGBoost, MLP
+from tabgen.generators import (
     ROS,
     SMOTE,
     ADASYN,
@@ -14,7 +14,7 @@ from synthtab.generators import (
     Tabula,
     GReaT,
 )
-from synthtab.tuners import (
+from tabgen.tuners import (
     SMOTETuner,
     ADASYNTuner,
     TVAETuner,
@@ -28,8 +28,8 @@ from synthtab.tuners import (
     TabulaTuner,
     GReaTTuner,
 )
-from synthtab.data import Config, Dataset
-from synthtab.utils import console
+from tabgen.data import Config, Dataset
+from tabgen.utils import console
 
 from pathlib import Path
 import os

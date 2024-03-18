@@ -1,4 +1,4 @@
-from synthtab.generators import (
+from tabgen.generators import (
     ROS,
     SMOTE,
     ADASYN,
@@ -13,8 +13,8 @@ from synthtab.generators import (
     Tabula,
     GReaT,
 )
-from synthtab.evaluators import KNN, LightGBM, XGBoost, MLP
-from synthtab.tuners import (
+from tabgen.evaluators import KNN, LightGBM, XGBoost, MLP
+from tabgen.tuners import (
     SMOTETuner,
     ADASYNTuner,
     TVAETuner,
@@ -29,8 +29,8 @@ from synthtab.tuners import (
     GReaTTuner,
 )
 
-from synthtab.data import Config, Dataset
-from synthtab.utils import console
+from tabgen.data import Config, Dataset
+from tabgen.utils import console
 
 config = Config("configs/adult.json")
 
@@ -39,21 +39,21 @@ dataset.merge_classes({"<=50K": ["<=50K."], ">50K": [">50K."]})
 
 trials = 10
 
-console.print(dataset.class_counts(), dataset.row_count())
-generator = SMOTE(dataset)
-evaluator = XGBoost(generator)
-tuner = SMOTETuner(evaluator, trials)
-tuner.tune()
-tuner.save_to_disk()
-console.print(dataset.generated_class_counts(), dataset.generated_row_count())
+# console.print(dataset.class_counts(), dataset.row_count())
+# generator = SMOTE(dataset)
+# evaluator = XGBoost(generator)
+# tuner = SMOTETuner(evaluator, trials)
+# tuner.tune()
+# tuner.save_to_disk()
+# console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 
-console.print(dataset.class_counts(), dataset.row_count())
-generator = ADASYN(dataset, sampling_strategy="minority")
-evaluator = XGBoost(generator)
-tuner = ADASYNTuner(evaluator, trials)
-tuner.tune()
-tuner.save_to_disk()
-console.print(dataset.generated_class_counts(), dataset.generated_row_count())
+# console.print(dataset.class_counts(), dataset.row_count())
+# generator = ADASYN(dataset, sampling_strategy="minority")
+# evaluator = XGBoost(generator)
+# tuner = ADASYNTuner(evaluator, trials)
+# tuner.tune()
+# tuner.save_to_disk()
+# console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 
 console.print(dataset.class_counts(), dataset.row_count())
 generator = TVAE(dataset)

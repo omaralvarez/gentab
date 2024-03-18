@@ -1,4 +1,4 @@
-from synthtab.generators import (
+from tabgen.generators import (
     SMOTE,
     ADASYN,
     TVAE,
@@ -12,8 +12,8 @@ from synthtab.generators import (
     Tabula,
     GReaT,
 )
-from synthtab.evaluators import KNN, LightGBM, XGBoost, MLP
-from synthtab.tuners import (
+from tabgen.evaluators import KNN, LightGBM, XGBoost, MLP
+from tabgen.tuners import (
     SMOTETuner,
     ADASYNTuner,
     TVAETuner,
@@ -28,25 +28,29 @@ from synthtab.tuners import (
     GReaTTuner,
 )
 
-from synthtab.data import Config, Dataset
-from synthtab.utils import console
+from tabgen.data import Config, Dataset
+from tabgen.utils import console
 
 
 def preproc_playnet(dataset):
-    dataset.reduce_size({
-        "left_attack": 0.97,
-        "right_attack": 0.97,
-        "right_transition": 0.9,
-        "left_transition": 0.9,
-        "time_out": 0.8,
-        "left_penal": 0.5,
-        "right_penal": 0.5,
-    })
-    dataset.merge_classes({
-        "attack": ["left_attack", "right_attack"],
-        "transition": ["left_transition", "right_transition"],
-        "penalty": ["left_penal", "right_penal"],
-    })
+    dataset.reduce_size(
+        {
+            "left_attack": 0.97,
+            "right_attack": 0.97,
+            "right_transition": 0.9,
+            "left_transition": 0.9,
+            "time_out": 0.8,
+            "left_penal": 0.5,
+            "right_penal": 0.5,
+        }
+    )
+    dataset.merge_classes(
+        {
+            "attack": ["left_attack", "right_attack"],
+            "transition": ["left_transition", "right_transition"],
+            "penalty": ["left_penal", "right_penal"],
+        }
+    )
     dataset.reduce_mem()
 
     return dataset

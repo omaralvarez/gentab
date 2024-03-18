@@ -1,4 +1,4 @@
-from synthtab.generators import (
+from tabgen.generators import (
     ROS,
     SMOTE,
     ADASYN,
@@ -13,8 +13,8 @@ from synthtab.generators import (
     Tabula,
     GReaT,
 )
-from synthtab.data import Config, Dataset
-from synthtab.utils import console
+from tabgen.data import Config, Dataset
+from tabgen.utils import console
 
 config = Config("configs/playnet.json")
 
