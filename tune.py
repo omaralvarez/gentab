@@ -1,4 +1,4 @@
-from tabgen.generators import (
+from gentab.generators import (
     SMOTE,
     ADASYN,
     TVAE,
@@ -12,8 +12,8 @@ from tabgen.generators import (
     Tabula,
     GReaT,
 )
-from tabgen.evaluators import KNN, LightGBM, XGBoost, MLP
-from tabgen.tuners import (
+from gentab.evaluators import KNN, LightGBM, XGBoost, MLP
+from gentab.tuners import (
     SMOTETuner,
     ADASYNTuner,
     TVAETuner,
@@ -28,8 +28,8 @@ from tabgen.tuners import (
     GReaTTuner,
 )
 
-from tabgen.data import Config, Dataset
-from tabgen.utils import console
+from gentab.data import Config, Dataset
+from gentab.utils import console
 
 
 def preproc_playnet(dataset):

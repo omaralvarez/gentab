@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "tabgen"
+name = "gentab"
 version = "0.1.0"
 authors = [
   { name="Omar A. Mures", email="omar.alvarez@udc.es" },
@@ -27,5 +27,5 @@ dependencies = [
 dev = ["black"]
 
 [project.urls]
-Homepage = "https://github.com/omaralvarez/tabgen"
-Issues = "https://github.com/omaralvarez/tabgen/issues"
+Homepage = "https://github.com/omaralvarez/gentab"
+Issues = "https://github.com/omaralvarez/gentab/issues"

@@ -1,5 +1,5 @@
-from tabgen.evaluators import CatBoost, LightGBM, XGBoost, MLP
-from tabgen.generators import (
+from gentab.evaluators import CatBoost, LightGBM, XGBoost, MLP
+from gentab.generators import (
     ROS,
     SMOTE,
     ADASYN,
@@ -14,7 +14,7 @@ from tabgen.generators import (
     Tabula,
     GReaT,
 )
-from tabgen.tuners import (
+from gentab.tuners import (
     SMOTETuner,
     ADASYNTuner,
     TVAETuner,
@@ -28,8 +28,8 @@ from tabgen.tuners import (
     TabulaTuner,
     GReaTTuner,
 )
-from tabgen.data import Config, Dataset
-from tabgen.utils import console
+from gentab.data import Config, Dataset
+from gentab.utils import console
 
 from pathlib import Path
 import os

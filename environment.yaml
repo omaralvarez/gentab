@@ -1,4 +1,4 @@
-name: tabgen
+name: gentab
 channels:
   - pytorch
   - nvidia

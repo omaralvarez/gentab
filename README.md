@@ -13,7 +13,7 @@
 	</a>
 </p>
 
-# Tably
+# GenTab
 
 Synthetic Tabular Data Generation Library
 
@@ -31,10 +31,10 @@ This Python library specializes in the generation of synthetic tabular data. It 
 
 ## Install
 
-The `tably` library is available using pip. We recommend using a virtual environment to avoid conflicts with other software on your machine.
+The `gentab` library is available using pip. We recommend using a virtual environment to avoid conflicts with other software on your machine.
 
 ``` bash
-pip install tably
+pip install gentab
 ```
 
 ## Available Generators
@@ -89,35 +89,71 @@ Below is the list of the generators currently available in the library.
 | Copula GAN      | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)]() | [link](https://ieeexplore.ieee.org/abstract/document/7796926) [link](https://arxiv.org/abs/1907.00503)
 | AutoDiffusion      | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)]() | [link](https://arxiv.org/abs/2310.15479)
 
-## Example
+## Examples
+
+### Generation
 
 ``` python
-from tably.generators import AutoDiffusion
-from tably.data import Config, Dataset
-from tably.utils import console
+from gentab.generators import AutoDiffusion
+from gentab.evaluators import MLP
+from gentab.data import Config, Dataset
+from gentab.utils import console
 
-from sklearn import svm
-
-config = Config("datasets/playnet/info.json")
+config = Config("configs/playnet.json")
 
 dataset = Dataset(config)
-dataset.reduce_size({
-    "left_attack": 0.65,
-    "right_attack": 0.65,
-    "right_transition": 0.65,
-    "left_transition": 0.65,
-    "time_out": 0.65,
-})
+dataset.reduce_size(
+    {
+        "left_attack": 0.97,
+        "right_attack": 0.97,
+        "right_transition": 0.9,
+        "left_transition": 0.9,
+        "time_out": 0.8,
+        "left_penal": 0.5,
+        "right_penal": 0.5,
+    }
+)
+dataset.merge_classes(
+    {
+        "attack": ["left_attack", "right_attack"],
+        "transition": ["left_transition", "right_transition"],
+        "penalty": ["left_penal", "right_penal"],
+    }
+)
+dataset.reduce_mem()
+
+console.print(dataset.class_counts(), dataset.row_count())
+generator = AutoDiffusion(dataset)
+generator.generate()
+console.print(dataset.generated_class_counts(), dataset.generated_row_count())
+
+evaluator = MLP(generator)
+evaluator.evaluate()
+
+dataset.save_to_disk(generator)
+```
+
+### Tuning
+
+``` python
+from gentab.generators import AutoDiffusion
+from gentab.evaluators import LightGBM
+from gentab.tuners import AutoDiffusionTuner
+from gentab.data import Config, Dataset
+
+config = Config("configs/adult.json")
+
+dataset = Dataset(config)
 dataset.merge_classes({
-    "attack": ["left_attack", "right_attack"],
-    "transition": ["left_transition", "right_transition"],
-    "penalty": ["left_penal", "right_penal"],
+    "<=50K": ["<=50K."], ">50K": [">50K."]
 })
 dataset.reduce_mem()
 
+trials = 10
+
 generator = AutoDiffusion(dataset)
-generator.generate()
-generator.evaluate(svm.SVM(gamma=0.001, C=100.0))
-generator.save_to_disk()
-console.print(dataset.generated_class_counts())
+evaluator = LightGBM(generator)
+tuner = AutoDiffusionTuner(evaluator, trials)
+tuner.tune()
+tuner.save_to_disk()
 ```
