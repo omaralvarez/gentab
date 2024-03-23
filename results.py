@@ -185,28 +185,28 @@ def get_latex(averages, maxs, gens):
 
 
 configs = [
-    # ("configs/playnet.json", preproc_playnet, "PlayNet"),
+    ("configs/playnet.json", preproc_playnet, "PlayNet"),
     ("configs/adult.json", preproc_adult, "Adult"),
-    # ("configs/car_eval_4.json", preproc_car_eval_4, "Car Evaluation"),
+    ("configs/car_eval_4.json", preproc_car_eval_4, "Car Evaluation"),
 ]
 
 gens = [
-    # (SMOTE, "SMOTE \cite{chawla2002smote}", "SMOTE"),
-    # (ADASYN, "ADASYN \cite{he2008adasyn}", "ADASYN"),
-    # (TVAE, "TVAE \cite{xu2019modeling}", "TVAE"),
-    # (CTGAN, "CTGAN \cite{xu2019modeling}", "CTGAN"),
+    (SMOTE, "SMOTE \cite{chawla2002smote}", "SMOTE"),
+    (ADASYN, "ADASYN \cite{he2008adasyn}", "ADASYN"),
+    (TVAE, "TVAE \cite{xu2019modeling}", "TVAE"),
+    (CTGAN, "CTGAN \cite{xu2019modeling}", "CTGAN"),
     (GaussianCopula, "GaussianCopula \cite{patki2016synthetic}", "GaussianCopula"),
-    # (CopulaGAN, "CopulaGAN \cite{xu2019modeling}", "CopulaGAN"),
-    # (CTABGAN, "CTAB-GAN \cite{zhao2021ctab}", "CTAB-GAN"),
-    # (CTABGANPlus, "CTAB-GAN+ \cite{zhao2022ctab}", "CTAB-GAN+"),
-    # (AutoDiffusion, "AutoDiffusion \cite{suh2023autodiff}", "AutoDiffusion"),
-    # (
-    #     ForestDiffusion,
-    #     "ForestDiffusion \cite{jolicoeur2023generating}",
-    #     "ForestDiffusion",
-    # ),
-    # (GReaT, "GReaT \cite{borisov2022language}", "GReaT"),
-    # (Tabula, "Tabula \cite{zhao2023tabula}", "Tabula"),
+    (CopulaGAN, "CopulaGAN \cite{xu2019modeling}", "CopulaGAN"),
+    (CTABGAN, "CTAB-GAN \cite{zhao2021ctab}", "CTAB-GAN"),
+    (CTABGANPlus, "CTAB-GAN+ \cite{zhao2022ctab}", "CTAB-GAN+"),
+    (AutoDiffusion, "AutoDiffusion \cite{suh2023autodiff}", "AutoDiffusion"),
+    (
+        ForestDiffusion,
+        "ForestDiffusion \cite{jolicoeur2023generating}",
+        "ForestDiffusion",
+    ),
+    (GReaT, "GReaT \cite{borisov2022language}", "GReaT"),
+    (Tabula, "Tabula \cite{zhao2023tabula}", "Tabula"),
 ]
 
 evals = [
