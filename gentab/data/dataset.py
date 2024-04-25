@@ -19,8 +19,9 @@ from ucimlrepo import fetch_ucirepo
 
 
 class Dataset:
-    def __init__(self, config) -> None:
+    def __init__(self, config, cache_path="datasets") -> None:
         self.config = config
+        self.cache_path = cache_path
         self.X_gen = None
         self.y_gen = None
 
@@ -69,9 +70,11 @@ class Dataset:
         )
 
     def download_imb(self) -> None:
+        Path(self.cache_path).mkdir(parents=True, exist_ok=True)
+
         data = fetch_datasets(
             filter_data=(self.config["name"],),
-            data_home=self.config["save_path"],
+            data_home=self.cache_path,
             random_state=SEED,
         )[self.config["name"]]
 
@@ -104,19 +107,38 @@ class Dataset:
         self.config["integer_columns"] = []
 
     def download_uci(self) -> None:
-        uci = fetch_ucirepo(name=self.config["name"])
+        Path(os.path.join(self.cache_path, "uci")).mkdir(parents=True, exist_ok=True)
 
-        # metadata
-        console.print(uci.variables)
+        path_features = os.path.join(
+            self.cache_path, "uci", self.config["name"] + "_features.csv"
+        )
+        path_targets = os.path.join(
+            self.cache_path, "uci", self.config["name"] + "_targets.csv"
+        )
 
-        uci.data.features.fillna("Missing", inplace=True)
+        if Path(path_features).is_file() and Path(path_targets).is_file():
+            features = pd.read_csv(path_features)
+            targets = pd.read_csv(path_targets)
+        else:
+            uci = fetch_ucirepo(name=self.config["name"])
+
+            # metadata
+            console.print(uci.variables)
+
+            uci.data.features.fillna("Missing", inplace=True)
+
+            uci.data.features.to_csv(path_features, index=False)
+            uci.data.targets.to_csv(path_targets, index=False)
+
+            features = uci.data.features
+            targets = uci.data.targets
 
         self.X, self.X_test, self.y, self.y_test = train_test_split(
-            uci.data.features,
-            uci.data.targets,
+            features,
+            targets,
             test_size=1 - self.config["train_size"],
             random_state=SEED,
-            stratify=uci.data.targets,
+            stratify=targets,
         )
         self.X_val, self.X_test, self.y_val, self.y_test = train_test_split(
             self.X_test,

@@ -16,7 +16,7 @@ from gentab.generators import (
 from gentab.data import Config, Dataset
 from gentab.utils import console
 
-config = Config("datasets/car_eval_4/info.json")
+config = Config("configs/car_eval_4.json")
 
 dataset = Dataset(config)
 
