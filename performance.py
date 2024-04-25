@@ -67,11 +67,11 @@ configs = [
 ]
 
 gens = [
-    # (SMOTE, "SMOTE \cite{chawla2002smote}", SMOTETuner),
-    # (ADASYN, "ADASYN \cite{he2008adasyn}", ADASYNTuner),
+    (SMOTE, "SMOTE \cite{chawla2002smote}", SMOTETuner),
+    (ADASYN, "ADASYN \cite{he2008adasyn}", ADASYNTuner),
     (TVAE, "TVAE \cite{xu2019modeling}", TVAETuner),
     (CTGAN, "CTGAN \cite{xu2019modeling}", CTGANTuner),
-    # (GaussianCopula, "GaussianCopula \cite{patki2016synthetic}", GaussianCopulaTuner),
+    (GaussianCopula, "GaussianCopula \cite{patki2016synthetic}", GaussianCopulaTuner),
     (CopulaGAN, "CopulaGAN \cite{xu2019modeling}", CopulaGANTuner),
     (CTABGAN, "CTAB-GAN \cite{zhao2021ctab}", CTABGANTuner),
     (CTABGANPlus, "CTAB-GAN+ \cite{zhao2022ctab}", CTABGANPlusTuner),

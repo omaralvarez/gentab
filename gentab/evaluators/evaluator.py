@@ -10,10 +10,11 @@ from sklearn.metrics import (
 
 
 class Evaluator:
-    def __init__(self, generator) -> None:
+    def __init__(self, generator, round=2) -> None:
         self.seed = SEED
         self.generator = generator
         self.dataset = generator.dataset
+        self.round = round
         self.accuracy = None
         self.macro = None
         self.weighted = None
@@ -84,9 +85,13 @@ class Evaluator:
                 )
 
             console.print(
-                "🎯 {} Accuracy: {}".format(generator, round(self.accuracy * 100, 1))
+                "🎯 {} Accuracy: {}".format(
+                    generator, round(self.accuracy * 100, self.round - 1)
+                )
             )
-            console.print("🎯 {} MCC: {}".format(generator, round(self.mcc, 2)))
+            console.print(
+                "🎯 {} MCC: {}".format(generator, round(self.mcc, self.round))
+            )
 
         console.print(
             "✅ Evaluation complete with {} for {} in {}...".format(

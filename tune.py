@@ -12,7 +12,7 @@ from gentab.generators import (
     Tabula,
     GReaT,
 )
-from gentab.evaluators import KNN, LightGBM, XGBoost, MLP
+from gentab.evaluators import LightGBM, XGBoost, CatBoost, MLP
 from gentab.tuners import (
     SMOTETuner,
     ADASYNTuner,
@@ -79,9 +79,9 @@ def tune_and_save(dataset, gen, eval, tun):
 trials = 10
 
 configs = [
-    # ("configs/playnet.json", preproc_playnet, "PlayNet"),
+    ("configs/playnet.json", preproc_playnet, "PlayNet"),
     ("configs/adult.json", preproc_adult, "Adult"),
-    # ("configs/car_eval_4.json", preproc_car_eval_4, "Car Evaluation"),
+    ("configs/car_eval_4.json", preproc_car_eval_4, "Car Evaluation"),
 ]
 
 gens = [
@@ -95,15 +95,15 @@ gens = [
     (CTABGANPlus, "CTAB-GAN+", CTABGANPlusTuner),
     (AutoDiffusion, "AutoDiffusion", AutoDiffusionTuner),
     (ForestDiffusion, "ForestDiffusion", ForestDiffusionTuner),
-    (Tabula, "Tabula", TabulaTuner),
     (GReaT, "GReaT", GReaTTuner),
+    (Tabula, "Tabula", TabulaTuner),
 ]
 
 evals = [
-    (KNN, "KNN"),
     (LightGBM, "LightGBM"),
     (XGBoost, "XGBoost"),
-    # (MLP, "MLP"),
+    (CatBoost, "CatBoost"),
+    (MLP, "MLP"),
 ]
 
 for c in configs:

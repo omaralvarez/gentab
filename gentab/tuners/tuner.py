@@ -5,6 +5,8 @@ from gentab import SEED
 from pathlib import Path
 import json
 import os
+import copy
+
 import optuna
 
 
@@ -41,11 +43,18 @@ class Tuner:
     def __str__(self) -> str:
         return self.__class__.__name__
 
+    def store_data(self, trial: optuna.trial.Trial) -> None:
+        trial.set_user_attr("timing", self.generator.timer.history)
+        trial.set_user_attr("dataset", copy.deepcopy(self.dataset))
+
     def objective(self, trial: optuna.trial.Trial) -> float:
         pass
 
     def save_to_disk(self):
         self.dataset.save_to_disk(self.generator, self.evaluator)
+
+    def load_from_disk(self):
+        self.dataset.load_from_disk(self.generator, self.evaluator)
 
     def tune(self) -> None:
         # pruner: optuna.pruners.BasePruner(optuna.pruners.NopPruner())

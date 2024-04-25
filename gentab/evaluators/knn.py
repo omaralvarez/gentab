@@ -11,7 +11,7 @@ class KNN(Evaluator):
         *args,
         **kwargs,
     ) -> None:
-        super().__init__(generator)
+        super().__init__(generator, **kwargs)
         self.model = KNeighborsClassifier(
             *args,
             **kwargs,

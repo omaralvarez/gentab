@@ -11,7 +11,7 @@ class CatBoost(Evaluator):
         *args,
         **kwargs,
     ) -> None:
-        super().__init__(generator)
+        super().__init__(generator, **kwargs)
 
         self.model = CatBoostClassifier(
             *args,

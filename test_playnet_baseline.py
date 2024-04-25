@@ -13,6 +13,7 @@ from gentab.generators import (
     Tabula,
     GReaT,
 )
+from gentab.evaluators import MLP
 from gentab.data import Config, Dataset
 from gentab.utils import console
 

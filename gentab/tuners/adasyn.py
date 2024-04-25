@@ -4,7 +4,6 @@ from gentab.evaluators import Evaluator
 from gentab.utils import console, SPINNER, REFRESH
 
 import optuna
-import copy
 
 
 class ADASYNTuner(Tuner):
@@ -26,8 +25,7 @@ class ADASYNTuner(Tuner):
         self.generator = ADASYN(self.dataset, n_neighbors=n_neighbors)
         self.generator.generate()
 
-        trial.set_user_attr("timing", self.generator.timer.history)
-        trial.set_user_attr("dataset", copy.copy(self.dataset))
+        self.store_data(trial)
 
         acc, mcc = self.evaluator.evaluate(validation=True)
 

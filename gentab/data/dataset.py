@@ -169,7 +169,7 @@ class Dataset:
                 os.path.join(path, "y_gen_" + str(generator) + ".csv")
             )
 
-        console.print("✅ {} dataset loaded...".format(generator))
+        console.print("✅ {} dataset loaded from {}...".format(generator, path))
 
     def compute_categories(self) -> None:
         self.cats = self.config["categorical_columns"] + self.config["binary_columns"]

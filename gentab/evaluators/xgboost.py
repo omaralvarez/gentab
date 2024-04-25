@@ -11,7 +11,7 @@ class XGBoost(Evaluator):
         *args,
         **kwargs,
     ) -> None:
-        super().__init__(generator)
+        super().__init__(generator, **kwargs)
         self.model = XGBClassifier(
             *args,
             verbosity=0,

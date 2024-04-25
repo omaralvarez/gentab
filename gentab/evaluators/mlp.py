@@ -283,7 +283,7 @@ class MLP(Evaluator):
         batch_size: int = 1024,
         **kwargs,
     ) -> None:
-        super().__init__(generator)
+        super().__init__(generator, **kwargs)
         self.model = MLPClassifier(
             self.dataset.num_features(),
             self.dataset.num_classes(),

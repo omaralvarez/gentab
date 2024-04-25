@@ -159,3 +159,37 @@ tuner = AutoDiffusionTuner(evaluator, trials, timeout=time)
 tuner.tune()
 tuner.save_to_disk()
 ```
+
+### Loading Stored Synthetic Datasets
+
+``` python
+from gentab.generators import AutoDiffusion
+from gentab.evaluators import LightGBM
+from gentab.tuners import AutoDiffusionTuner
+from gentab.data import Config, Dataset
+
+config = Config("configs/adult.json")
+
+dataset = Dataset(config)
+dataset.merge_classes({
+    "<=50K": ["<=50K."], ">50K": [">50K."]
+})
+dataset.reduce_mem()
+
+# Load previously saved dataset...
+generator = AutoDiffusion(dataset)
+generator.load_from_disk()
+
+# Do work with previously generated but not tuned dataset...
+evaluator = LightGBM(generator)
+evaluator.evaluate()
+evaluator.evaluate_baseline()
+
+# Load previously tuned and saved dataset...
+tuner = AutoDiffusionTuner(evaluator, 0)
+tuner.load_from_disk()
+
+# Do work with previously tuned dataset...
+evaluator.evaluate()
+evaluator.evaluate_baseline()
+```
