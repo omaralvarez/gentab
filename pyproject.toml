@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "gentab"
-version = "0.1.1"
+version = "0.1.2"
 authors = [
   { name="Omar A. Mures", email="omar.alvarez@udc.es" },
 ]
