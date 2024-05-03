@@ -45,14 +45,13 @@ Below is the list of the generators currently available in the library.
 
 |               Model                  |                                                                                    Example                                                                                    |                     Paper                    |
 |:--------------------------------------:|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|:--------------------------------------------:|
-| Random Over-Sampling      | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)]() | [link](https://link.springer.com/article/10.1007/s10618-012-0295-5)
-| SMOTE                   | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)]() |            [link](https://arxiv.org/abs/1106.1813)                                  |                                                                            |
-| ADASYN      | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)]() | [link](https://ieeexplore.ieee.org/document/4633969)
+| SMOTE                   | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1-rg7tSR1llSMs9HhVVIDsgFmDELDVjma?usp=sharing) |            [link](https://arxiv.org/abs/1106.1813)                                  |                                                                            |
+| ADASYN      | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1JYfrozyK1ilvKcMUO_w2mwiJHq46Vqi9?usp=sharing) | [link](https://ieeexplore.ieee.org/document/4633969)
 
 ### PDF
 |               Model                  |                                                                                    Example                                                                                    |                     Paper                    |
 |:--------------------------------------:|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|:--------------------------------------------:|
-| Gaussian Copula      | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)]() | [link](https://ieeexplore.ieee.org/abstract/document/7796926)
+| Gaussian Copula      | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1EvBAc4i1zXZu8BTxe_IDYJFoP4tNswlD?usp=sharing) | [link](https://ieeexplore.ieee.org/abstract/document/7796926)
 
 
 ### AE
