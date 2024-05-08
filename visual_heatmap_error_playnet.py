@@ -24,6 +24,37 @@ import numpy as np
 from scipy.stats import kde
 
 
+def cmap_map(function, cmap):
+    """Applies function (which should operate on vectors of shape 3: [r, g, b]), on colormap cmap.
+    This routine will break any discontinuous points in a colormap.
+    """
+    cdict = cmap._segmentdata
+    step_dict = {}
+    # Firt get the list of points where the segments start or end
+    for key in ("red", "green", "blue"):
+        step_dict[key] = list(map(lambda x: x[0], cdict[key]))
+    step_list = sum(step_dict.values(), [])
+    step_list = np.array(list(set(step_list)))
+    # Then compute the LUT, and apply the function to the LUT
+    reduced_cmap = lambda step: np.array(cmap(step)[0:3])
+    old_LUT = np.array(list(map(reduced_cmap, step_list)))
+    new_LUT = np.array(list(map(function, old_LUT)))
+    # Now try to make a minimal segment definition of the new LUT
+    cdict = {}
+    for i, key in enumerate(["red", "green", "blue"]):
+        this_cdict = {}
+        for j, step in enumerate(step_list):
+            if step in step_dict[key]:
+                this_cdict[step] = new_LUT[j, i]
+            elif new_LUT[j, i] != old_LUT[j, i]:
+                this_cdict[step] = new_LUT[j, i]
+        colorvector = list(map(lambda x: x + (x[1],), this_cdict.items()))
+        colorvector.sort()
+        cdict[key] = colorvector
+
+    return mpl.colors.LinearSegmentedColormap("colormap", cdict, 1024)
+
+
 def preproc_playnet(dataset):
     dataset.reduce_size(
         {
@@ -49,7 +80,7 @@ def preproc_playnet(dataset):
 
 
 gens = [
-    (None, "Baseline"),
+    # (None, "Baseline"),
     (TVAE, "TVAE"),
     (CTGAN, "CTGAN"),
     (GaussianCopula, "Gaussian Copula"),
@@ -70,8 +101,43 @@ gs = gridspec.GridSpec(len(gens), dataset.num_classes())
 fig = plt.figure(figsize=(40, 30))
 fig.subplots_adjust(wspace=0.25, hspace=0.125)
 
+data = []
+class_names = dataset.class_names()
+for c in class_names:
+    row = dataset.get_class_rows(c)
+
+    tolerance = 0.05
+    xpoints = row.filter(regex="^#x").values.flatten()
+    ypoints = row.filter(regex="^#y").values.flatten()
+    xpoints[np.isclose(xpoints, 0, atol=tolerance)] = 0
+    ypoints[np.isclose(ypoints, 0, atol=tolerance)] = 0
+    ids = ~(np.array(xpoints == 0) & np.array(ypoints == 0))
+    xpoints = xpoints[ids]
+    ypoints = ypoints[ids]
+    # First array horiz. coords., second vertical
+    # Player position heatmap
+    # ax.hist2d(
+    #     xpoints,
+    #     ypoints,
+    #     # bins=[np.arange(0, 1.0, 0.08), np.arange(0.0, 1.0, 0.08)],
+    #     cmap="Greens",
+    # )
+    # Evaluate a gaussian kde on a regular grid of nbins x nbins over data extents
+    nbins = 20
+    k = kde.gaussian_kde([xpoints, ypoints])
+    xi, yi = np.mgrid[
+        0 : 1 : nbins * 1j,
+        0 : 1 : nbins * 1j,
+    ]
+    zi = k(np.vstack([xi.flatten(), yi.flatten()]))
+    zi = (zi - zi.min()) / (zi.max() - zi.min())
+    data.append(zi)
+
+# cmap = cmap_map(lambda x: x + 0.1, mpl.cm.coolwarm)
+cmap = mpl.cm.Greens
+
 axs, ims = [], []
-maxcnt = 0
+maxdist = 0
 i = 0
 for g in gens:
     if g[0] is not None:
@@ -79,7 +145,7 @@ for g in gens:
         generator.load_from_disk()
 
     j = 0
-    for c in dataset.class_names():
+    for c in class_names:
         ax = fig.add_subplot(gs[i, j])
 
         # Set labels
@@ -100,10 +166,7 @@ for g in gens:
         ax.get_yaxis().set_ticks([])
 
         # Get positions
-        if g[0] is not None:
-            row = generator.dataset.get_gen_class_rows(c)
-        else:
-            row = dataset.get_class_rows(c)
+        row = generator.dataset.get_gen_class_rows(c)
 
         tolerance = 0.05
         xpoints = row.filter(regex="^#x").values.flatten()
@@ -129,9 +192,12 @@ for g in gens:
             0 : 1 : nbins * 1j,
         ]
         zi = k(np.vstack([xi.flatten(), yi.flatten()]))
-        maxcnt = zi.max() if zi.max() > maxcnt else maxcnt
+        zi = (zi - zi.min()) / (zi.max() - zi.min())
+        dist = np.abs(zi - data[j])
+        maxdist = dist.max() if dist.max() > maxdist else maxdist
+
         # Make the plot
-        ax.pcolormesh(xi, yi, zi.reshape(xi.shape), shading="auto", cmap="Greens")
+        ax.pcolormesh(xi, yi, dist.reshape(xi.shape), shading="auto", cmap=cmap)
         # Middle line
         ax.plot([0.5, 0.5], [0.0, 1.0], color="black")
         # Center circle
@@ -173,8 +239,8 @@ for g in gens:
 
     i += 1
 
-cmap = mpl.cm.Greens
-norm = mpl.colors.Normalize(vmin=0, vmax=round(maxcnt))
+# cmap = mpl.cm.jet
+norm = mpl.colors.Normalize(vmin=0, vmax=round(maxdist))
 cb = fig.colorbar(
     mpl.cm.ScalarMappable(norm=norm, cmap=cmap),
     ax=axs,
@@ -186,4 +252,4 @@ cb = fig.colorbar(
 cb.ax.tick_params(labelsize=20)
 cb.outline.set_visible(False)
 
-plt.savefig("figures/HeatmapPlaynet.pdf", format="pdf", bbox_inches="tight")
+plt.savefig("figures/HeatmapErrorPlaynet.pdf", format="pdf", bbox_inches="tight")

@@ -1,5 +1,4 @@
 from gentab.generators import (
-    ROS,
     SMOTE,
     ADASYN,
     TVAE,

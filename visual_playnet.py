@@ -1,6 +1,5 @@
 from gentab.evaluators import KNN, LightGBM, XGBoost, MLP
 from gentab.generators import (
-    ROS,
     SMOTE,
     ADASYN,
     TVAE,
@@ -166,7 +165,7 @@ for g in gens:
         # Player positions
         ax.plot(xpoints, ypoints, "o")
         # Ball
-        ax.plot(ballx, bally, "o", color="magenta")
+        # ax.plot(ballx, bally, "o", color="magenta")
         # Speeds
         ax.quiver(
             xpoints,

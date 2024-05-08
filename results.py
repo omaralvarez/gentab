@@ -1,6 +1,5 @@
 from gentab.evaluators import KNN, LightGBM, CatBoost, XGBoost, MLP
 from gentab.generators import (
-    ROS,
     SMOTE,
     ADASYN,
     TVAE,
