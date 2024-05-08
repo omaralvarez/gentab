@@ -58,35 +58,35 @@ Below is the list of the generators currently available in the library.
 
 |               Model                  |                                                                                    Example                                                                                    |                     Paper                    |
 |:--------------------------------------:|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|:--------------------------------------------:|
-| TVAE      | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)]() | [link](https://arxiv.org/abs/1907.00503)
+| TVAE      | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1GJqa9extrsLoNrCQIPUCe9sn5OjqkwgT?usp=sharing) | [link](https://arxiv.org/abs/1907.00503)
 
 ### GAN
 
 |               Model                  |                                                                                    Example                                                                                    |                     Paper                    |
 |:--------------------------------------:|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|:--------------------------------------------:|
-| CTGAN      | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)]() | [link](https://arxiv.org/abs/1907.00503)
-| CTAB-GAN      | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)]() | [link](https://proceedings.mlr.press/v157/zhao21a.html)
-| CTAB-GAN+      | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)]() |  [link](https://arxiv.org/abs/2204.00401)
+| CTGAN      | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1BpwgH8xMG247m6c9WJM_MDxRoQYUaYKB?usp=sharing) | [link](https://arxiv.org/abs/1907.00503)
+| CTAB-GAN      | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1WRRH0iPJpS9ORji2-k0F425zF2qVMM6z?usp=sharing) | [link](https://proceedings.mlr.press/v157/zhao21a.html)
+| CTAB-GAN+      | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1M4fZh27ammDWlsnMzYdpb80y9akKY00-?usp=sharing) |  [link](https://arxiv.org/abs/2204.00401)
 
 ### Diffusion
 
 |               Model                  |                                                                                    Example                                                                                    |                     Paper                    |
 |:--------------------------------------:|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|:--------------------------------------------:|
-| ForestDiffusion      | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)]() | [link](https://arxiv.org/abs/2309.09968)
+| ForestDiffusion      | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/16la5HFEzyPkhEVurXsbp7MzVxqjqlNGH?usp=sharing) | [link](https://arxiv.org/abs/2309.09968)
 
 ### LLM
 
 |               Model                  |                                                                                    Example                                                                                    |                     Paper                    |
 |:--------------------------------------:|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|:--------------------------------------------:|
-| GReaT      | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)]() | [link](https://arxiv.org/abs/2210.06280)
-| Tabula      | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)]() | [link](https://arxiv.org/abs/2310.12746)
+| GReaT      | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1wLcf8r-AQV5OEvxrBEB9wwgIk2QwQyiu?usp=sharing) | [link](https://arxiv.org/abs/2210.06280)
+| Tabula      | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1OmA2oIKiCzhy7rpnG0Tt_abnSEpNymPf?usp=sharing) | [link](https://arxiv.org/abs/2310.12746)
 
 ### Hybrid
 
 |               Model                  |                                                                                    Example                                                                                    |                     Papers                    |
 |:--------------------------------------:|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|:--------------------------------------------:|
-| Copula GAN      | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)]() | [link](https://ieeexplore.ieee.org/abstract/document/7796926) [link](https://arxiv.org/abs/1907.00503)
-| AutoDiffusion      | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)]() | [link](https://arxiv.org/abs/2310.15479)
+| Copula GAN      | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1Rh0y1lV06GMUY8iwQk7vkUWejuY4omTC?usp=sharing) | [link](https://ieeexplore.ieee.org/abstract/document/7796926) [link](https://arxiv.org/abs/1907.00503)
+| AutoDiffusion      | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1OOLa7zNPhncCow2V_D1kWdBO9ILF3HxF?usp=sharing) | [link](https://arxiv.org/abs/2310.15479)
 
 ## Examples
 
