@@ -140,8 +140,6 @@ class Dataset:
 
         self.reset_indexes()
 
-        print(self.y)
-
     def download_uci(self) -> None:
         Path(os.path.join(self.cache_path, "uci")).mkdir(parents=True, exist_ok=True)
 
@@ -280,7 +278,6 @@ class Dataset:
         self.label_encoder = LabelEncoder()
         self.label_encoder.fit(self.y)
         self.label_encoder_ohe = OneHotEncoder(sparse_output=False)
-        print(self.y)
         self.label_encoder_ohe.fit(self.y)
 
     def encode_labels(self, df: pd.DataFrame) -> pd.DataFrame:
