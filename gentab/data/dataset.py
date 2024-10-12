@@ -9,6 +9,7 @@ import pandas as pd
 import dask.dataframe as dd
 import numpy as np
 import torch
+import sklearn.datasets
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder
 from sklearn.model_selection import train_test_split
 from scipy.stats import wasserstein_distance
@@ -35,6 +36,8 @@ class Dataset:
             else:
                 if self.config["download"] == "ucimlrepo":
                     self.download_uci()
+                elif self.config["download"] == "sklearn":
+                    self.download_sklearn()
                 else:
                     self.download_imb()
 
@@ -105,6 +108,39 @@ class Dataset:
         self.config["binary_columns"] = self.X.columns.values.tolist()
         self.config["categorical_columns"] = []
         self.config["integer_columns"] = []
+
+    def download_sklearn(self) -> None:
+        try:
+            sk = getattr(sklearn.datasets, "fetch_" + self.config["name"])(
+                as_frame=True
+            )
+        except Exception:
+            sk = getattr(sklearn.datasets, "load_" + self.config["name"])(as_frame=True)
+
+        # metadata
+        print(sk.DESCR)
+
+        sk.frame.fillna("Missing", inplace=True)
+
+        self.X, self.X_test, self.y, self.y_test = train_test_split(
+            sk.frame.loc[:, sk.frame.columns != self.config["y_label"]],
+            sk.frame.loc[:, [self.config["y_label"]]],
+            test_size=1 - self.config["train_size"],
+            random_state=SEED,
+            # stratify=sk.target,
+        )
+        self.X_val, self.X_test, self.y_val, self.y_test = train_test_split(
+            self.X_test,
+            self.y_test,
+            test_size=self.config["test_size"]
+            / (self.config["test_size"] + self.config["val_size"]),
+            random_state=SEED,
+            # stratify=self.y_test,
+        )
+
+        self.reset_indexes()
+
+        print(self.y)
 
     def download_uci(self) -> None:
         Path(os.path.join(self.cache_path, "uci")).mkdir(parents=True, exist_ok=True)
@@ -244,6 +280,7 @@ class Dataset:
         self.label_encoder = LabelEncoder()
         self.label_encoder.fit(self.y)
         self.label_encoder_ohe = OneHotEncoder(sparse_output=False)
+        print(self.y)
         self.label_encoder_ohe.fit(self.y)
 
     def encode_labels(self, df: pd.DataFrame) -> pd.DataFrame:
@@ -311,6 +348,21 @@ class Dataset:
             self.reduce_uniformly_randomly(
                 self.y[self.config["y_label"]] == cls, percent
             )
+
+    def create_bins(self, bins, labels) -> None:
+        self.y[self.config["y_label"]] = pd.cut(
+            self.y[self.config["y_label"]], bins=bins, labels=labels
+        ).astype(str)
+
+        self.y_val[self.config["y_label"]] = pd.cut(
+            self.y_val[self.config["y_label"]], bins=bins, labels=labels
+        ).astype(str)
+
+        self.y_test[self.config["y_label"]] = pd.cut(
+            self.y_test[self.config["y_label"]], bins=bins, labels=labels
+        ).astype(str)
+
+        self.get_label_encoders()
 
     def reduce_uniformly_randomly(self, condition, percentage) -> None:
         """
