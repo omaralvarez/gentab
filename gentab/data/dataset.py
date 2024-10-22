@@ -20,9 +20,11 @@ from ucimlrepo import fetch_ucirepo
 
 
 class Dataset:
-    def __init__(self, config, cache_path="datasets") -> None:
+    def __init__(self, config, cache_path="datasets", labels=None, bins=None) -> None:
         self.config = config
         self.cache_path = cache_path
+        self.labels = labels
+        self.bins = bins
         self.X_gen = None
         self.y_gen = None
 
@@ -122,12 +124,19 @@ class Dataset:
 
         sk.frame.fillna("Missing", inplace=True)
 
+        if self.labels is not None:
+            sk.frame.loc[:, [self.config["y_label"]]] = pd.cut(
+                sk.frame.loc[:, [self.config["y_label"]]],
+                labels=self.labels,
+                bins=self.bins,
+            ).astype(str)
+
         self.X, self.X_test, self.y, self.y_test = train_test_split(
             sk.frame.loc[:, sk.frame.columns != self.config["y_label"]],
             sk.frame.loc[:, [self.config["y_label"]]],
             test_size=1 - self.config["train_size"],
             random_state=SEED,
-            # stratify=sk.target,
+            stratify=sk.target,
         )
         self.X_val, self.X_test, self.y_val, self.y_test = train_test_split(
             self.X_test,
@@ -135,7 +144,7 @@ class Dataset:
             test_size=self.config["test_size"]
             / (self.config["test_size"] + self.config["val_size"]),
             random_state=SEED,
-            # stratify=self.y_test,
+            stratify=self.y_test,
         )
 
         self.reset_indexes()
@@ -166,6 +175,13 @@ class Dataset:
 
             features = uci.data.features
             targets = uci.data.targets
+
+        if self.labels is not None:
+            targets = pd.cut(
+                targets,
+                labels=self.labels,
+                bins=self.bins,
+            ).astype(str)
 
         self.X, self.X_test, self.y, self.y_test = train_test_split(
             features,
