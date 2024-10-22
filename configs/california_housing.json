@@ -1,0 +1,28 @@
+{
+    "task_type": "multiclass",
+    "name": "california_housing",
+    "download": "sklearn",
+    "save_path": "datasets/california_housing",
+    "id": "california-housing--id",
+    "y_label": "MedHouseVal",
+    "train_size": 0.75,
+    "val_size": 0.05,
+    "test_size": 0.2,
+    "categorical_columns": [],
+    "binary_columns": [],
+    "integer_columns": [
+        "HouseAge",
+        "Population"
+    ],
+    "CTABGAN": {
+        "log_columns": ["Population"],
+        "mixed_columns": {}
+    },
+    "CTABGANPlus": {
+        "log_columns": ["Population"],
+        "general_columns": ["HouseAge"],
+        "non_categorical_columns": [],
+        "mixed_columns": {
+        }
+    }
+}

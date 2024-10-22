@@ -1,0 +1,21 @@
+{
+    "task_type": "binary",
+    "name": "ecoli",
+    "download": "imbalanced",
+    "save_path": "datasets/ecoli",
+    "id": "ecoli--id",
+    "y_label": "imU",
+    "train_size": 0.6,
+    "val_size": 0.05,
+    "test_size": 0.35,
+    "CTABGAN": {
+        "log_columns": [],
+        "mixed_columns": {}
+    },
+    "CTABGANPlus": {
+        "log_columns": [],
+        "general_columns": [],
+        "non_categorical_columns": [],
+        "mixed_columns": {}
+    }
+}
