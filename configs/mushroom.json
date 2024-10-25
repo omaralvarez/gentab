@@ -1,0 +1,48 @@
+{
+    "task_type": "multiclass",
+    "name": "Mushroom",
+    "download": "ucimlrepo",
+    "save_path": "datasets/mushroom",
+    "id": "mushroom--id",
+    "y_label": "poisonous",
+    "train_size": 0.75,
+    "val_size": 0.05,
+    "test_size": 0.2,
+    "categorical_columns": [
+        "cap-shape",
+        "cap-surface",
+        "cap-color",
+        "odor",
+        "gill-attachment",
+        "gill-spacing",
+        "gill-color",
+        "stalk-root",
+        "stalk-surface-above-ring",
+        "stalk-surface-below-ring",
+        "stalk-color-above-ring",
+        "stalk-color-below-ring",
+        "veil-color",
+        "ring-number",
+        "ring-type",
+        "spore-print-color",
+        "population",
+        "habitat"
+    ],
+    "binary_columns": [
+        "bruises",
+        "gill-size",
+        "stalk-shape",
+        "veil-type"
+    ],
+    "integer_columns": [],
+    "CTABGAN": {
+        "log_columns": [],
+        "mixed_columns": {}
+    },
+    "CTABGANPlus": {
+        "log_columns": [],
+        "general_columns": [],
+        "non_categorical_columns": [],
+        "mixed_columns": {}
+    }
+}
