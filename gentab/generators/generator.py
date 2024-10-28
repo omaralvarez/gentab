@@ -43,7 +43,7 @@ class Generator:
     #     self.dataset.save_to_disk(self, tuner)
 
     def load_from_disk(self, tuner: str = "") -> None:
-        self.dataset.load_from_disk(self)
+        self.dataset.load_from_disk(self, tuner)
 
     def resample(self, n_samples, append) -> None:
         n_samples = n_samples.copy()
