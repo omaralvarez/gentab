@@ -298,7 +298,9 @@ class MLP(Evaluator):
 
     def preprocess(self, X, y, X_test, y_test):
         X = self.dataset.encode_categories(X)
+        X = self.dataset.get_normalized_features(X)
         X_test = self.dataset.encode_categories(X_test)
+        X_test = self.dataset.get_normalized_features(X_test)
 
         # TODO Add ohe to label encoding function
         y = self.generator.dataset.label_encoder_ohe.transform(y)

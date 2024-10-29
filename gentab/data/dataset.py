@@ -45,6 +45,7 @@ class Dataset:
 
             self.get_label_encoders()
             self.compute_categories()
+            self.get_min_max()
 
         console.print("✅ Dataset loaded...")
 
@@ -250,9 +251,10 @@ class Dataset:
             lambda col: pd.Categorical(col)
         )
 
-    def normalize_features(self) -> None:
+    def get_min_max(self) -> None:
         cont_features = self.get_continuous()
-        mn = np.min(
+
+        self.mn = np.min(
             [
                 self.X[cont_features].min(),
                 self.X_val[cont_features].min(),
@@ -260,7 +262,7 @@ class Dataset:
             ],
             axis=0,
         )
-        mx = np.max(
+        self.mx = np.max(
             [
                 self.X[cont_features].max(),
                 self.X_val[cont_features].max(),
@@ -269,9 +271,13 @@ class Dataset:
             axis=0,
         )
 
-        self.X[cont_features] = (self.X[cont_features] - mn) / (mx - mn)
-        self.X_val[cont_features] = (self.X_val[cont_features] - mn) / (mx - mn)
-        self.X_test[cont_features] = (self.X_test[cont_features] - mn) / (mx - mn)
+    def get_normalized_features(self, df: pd.DataFrame) -> pd.DataFrame:
+        cont_features = self.get_continuous()
+
+        X_norm = df.copy()
+        X_norm[cont_features] = (X_norm[cont_features] - self.mn) / (self.mx - self.mn)
+
+        return X_norm
 
     def get_categories(self) -> list[str]:
         return self.cats
