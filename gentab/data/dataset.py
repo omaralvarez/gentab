@@ -120,13 +120,13 @@ class Dataset:
             sk = getattr(sklearn.datasets, "load_" + self.config["name"])(as_frame=True)
 
         # metadata
-        print(sk.DESCR)
+        console.print(sk.DESCR)
 
         sk.frame.fillna("Missing", inplace=True)
 
         if self.labels is not None:
-            sk.frame.loc[:, [self.config["y_label"]]] = pd.cut(
-                sk.frame.loc[:, [self.config["y_label"]]],
+            sk.frame[self.config["y_label"]] = pd.cut(
+                sk.frame[self.config["y_label"]],
                 labels=self.labels,
                 bins=self.bins,
             ).astype(str)
@@ -136,7 +136,7 @@ class Dataset:
             sk.frame.loc[:, [self.config["y_label"]]],
             test_size=1 - self.config["train_size"],
             random_state=SEED,
-            stratify=sk.target,
+            stratify=sk.frame.loc[:, [self.config["y_label"]]],
         )
         self.X_val, self.X_test, self.y_val, self.y_test = train_test_split(
             self.X_test,
@@ -250,8 +250,34 @@ class Dataset:
             lambda col: pd.Categorical(col)
         )
 
+    def normalize_features(self) -> None:
+        cont_features = self.get_continuous()
+        mn = np.min(
+            [
+                self.X[cont_features].min(),
+                self.X_val[cont_features].min(),
+                self.X_test[cont_features].min(),
+            ],
+            axis=0,
+        )
+        mx = np.max(
+            [
+                self.X[cont_features].max(),
+                self.X_val[cont_features].max(),
+                self.X_test[cont_features].max(),
+            ],
+            axis=0,
+        )
+
+        self.X[cont_features] = (self.X[cont_features] - mn) / (mx - mn)
+        self.X_val[cont_features] = (self.X_val[cont_features] - mn) / (mx - mn)
+        self.X_test[cont_features] = (self.X_test[cont_features] - mn) / (mx - mn)
+
     def get_categories(self) -> list[str]:
         return self.cats
+
+    def get_binary(self) -> list[str]:
+        return self.config["binary_columns"]
 
     def get_continuous(self) -> list[str]:
         return self.X.columns.difference(
@@ -355,6 +381,32 @@ class Dataset:
         compliant_rows = self.y_gen[self.y_gen[self.config["y_label"]] == cls]
         idx = compliant_rows.index
         return self.X_gen.loc[idx]
+
+    def get_train_samples(self):
+        return len(self.X) + len(self.X_val)
+
+    def get_test_samples(self):
+        return len(self.X_test)
+
+    def get_imbalance_ratio(self) -> float:
+        # Count the number of instances in each class
+        class_counts = self.y[self.config["y_label"]].value_counts()
+
+        # Calculate the imbalance ratio relative to the majority class
+        majority_class_count = (class_counts).max()
+
+        return (majority_class_count / class_counts).max()
+
+    def get_info(self) -> dict:
+        return {
+            "name": self.config["name"],
+            "imbalance": self.get_imbalance_ratio(),
+            "continuous": len(self.get_continuous()),
+            "categorical": len(self.get_categories()),
+            # "binary": len(self.get_binary()),
+            "train_samples": self.get_train_samples(),
+            "test_samples": self.get_test_samples(),
+        }
 
     def reduce_size(self, class_percentages) -> None:
         for cls, percent in class_percentages.items():
