@@ -17,12 +17,10 @@ from gentab.utils import console
 
 config = Config("configs/california_housing_cr.json")
 
-dataset = Dataset(config)
-
 labels = ["lowest", "lower", "low", "medium", "high", "higher", "highest"]
 bins = [float("-inf"), 0.7, 1.4, 2.1, 2.8, 3.5, 4.2, float("inf")]
 
-dataset.create_bins(bins, labels)
+dataset = Dataset(config, bins=bins, labels=labels)
 
 n_samples = dataset.class_counts().to_dict()
 
