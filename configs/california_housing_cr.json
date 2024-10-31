@@ -2,7 +2,7 @@
     "task_type": "multiclass",
     "name": "california_housing",
     "download": "sklearn",
-    "save_path": "datasets/california_housing",
+    "save_path": "datasets/california_housing_cr",
     "id": "california-housing--id",
     "y_label": "MedHouseVal",
     "train_size": 0.75,
