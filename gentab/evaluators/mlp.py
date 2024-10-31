@@ -280,6 +280,7 @@ class MLP(Evaluator):
         layers: List[int] = [128, 128],
         dropout: float = 0.1,
         epochs: int = 1000,
+        lr: float = 1e-5,
         batch_size: int = 1024,
         **kwargs,
     ) -> None:
@@ -291,6 +292,7 @@ class MLP(Evaluator):
             layers,
             dropout,
             epochs=epochs,
+            lr=lr,
             batch_size=batch_size,
             seed=self.seed,
             **kwargs,
@@ -302,7 +304,6 @@ class MLP(Evaluator):
         X_test = self.dataset.encode_categories(X_test)
         X_test = self.dataset.get_normalized_features(X_test)
 
-        # TODO Add ohe to label encoding function
         y = self.generator.dataset.label_encoder_ohe.transform(y)
         y_test = self.generator.dataset.label_encoder_ohe.transform(y_test)
 
