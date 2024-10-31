@@ -27,7 +27,6 @@ from gentab.tuners import (
     TabulaTuner,
     GReaTTuner,
 )
-
 from gentab.data import Config, Dataset
 from gentab.utils import console
 

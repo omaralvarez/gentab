@@ -20,7 +20,8 @@ import pandas as pd
 from functools import reduce
 
 
-def preproc_playnet(dataset):
+def preproc_playnet(path):
+    dataset = Dataset(Config(path))
     dataset.reduce_size(
         {
             "left_attack": 0.97,
@@ -44,13 +45,34 @@ def preproc_playnet(dataset):
     return dataset
 
 
-def preproc_adult(dataset):
+def preproc_adult(path):
+    dataset = Dataset(Config(path))
     dataset.merge_classes({"<=50K": ["<=50K."], ">50K": [">50K."]})
 
     return dataset
 
 
-def preproc_car_eval_4(dataset):
+def preproc_car_eval_4(path):
+    dataset = Dataset(Config(path))
+    return dataset
+
+
+def preproc_ecoli(path):
+    dataset = Dataset(Config(path))
+    return dataset
+
+
+def preproc_sick(path):
+    dataset = Dataset(Config(path))
+    return dataset
+
+
+def preproc_california(path):
+    labels = ["lowest", "lower", "low", "medium", "high", "higher", "highest"]
+    bins = [float("-inf"), 0.7, 1.4, 2.1, 2.8, 3.5, 4.2, float("inf")]
+
+    dataset = Dataset(Config(path), bins=bins, labels=labels)
+
     return dataset
 
 
@@ -184,9 +206,12 @@ def get_latex(averages, maxs, gens):
 
 
 configs = [
-    ("configs/playnet.json", preproc_playnet, "PlayNet"),
-    ("configs/adult.json", preproc_adult, "Adult"),
-    ("configs/car_eval_4.json", preproc_car_eval_4, "Car Evaluation"),
+    # ("configs/playnet.json", preproc_playnet, "PlayNet"),
+    # ("configs/adult.json", preproc_adult, "Adult"),
+    # ("configs/car_eval_4.json", preproc_car_eval_4, "Car Evaluation"),
+    # ("configs/ecoli.json", preproc_ecoli, "Ecoli"),
+    # ("configs/sick.json", preproc_sick, "Sick"),
+    ("configs/california_housing.json", preproc_california, "Calif. Housing"),
 ]
 
 gens = [
@@ -245,7 +270,7 @@ metrics = [
 ]
 
 for c in configs:
-    dataset = c[1](Dataset(Config(c[0])))
+    dataset = c[1](c[0])
 
     averages, maxs = get_metrics(dataset, gens, evals, metrics)
     latex = get_latex(averages, maxs, gens)

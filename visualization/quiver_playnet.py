@@ -16,12 +16,10 @@ from gentab.generators import (
 from gentab.data import Config, Dataset
 from gentab.utils import console
 
-import matplotlib as mpl
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle, Circle, Ellipse, Arc
 import numpy as np
-from scipy.stats import kde
 
 
 def preproc_playnet(dataset):
@@ -71,7 +69,7 @@ fig = plt.figure(figsize=(40, 30))
 fig.subplots_adjust(wspace=0.25, hspace=0.125)
 
 axs, ims = [], []
-maxcnt = 0
+
 i = 0
 for g in gens:
     if g[0] is not None:
@@ -87,9 +85,9 @@ for g in gens:
             ax.set_title("timeout" if c == "time_out" else c, fontsize=19)
         if j == 0:
             if g[0] is not None:
-                ax.set_ylabel(g[1], fontsize=18)
+                ax.set_ylabel(g[1], fontsize=20)
             else:
-                ax.set_ylabel(g[1], fontsize=18)
+                ax.set_ylabel(g[1], fontsize=20)
 
         # Remove chart borders and ticks
         ax.spines["top"].set_visible(False)
@@ -101,37 +99,39 @@ for g in gens:
 
         # Get positions
         if g[0] is not None:
-            row = generator.dataset.get_gen_class_rows(c)
+            row = generator.dataset.get_random_gen_class_rows(c, 1)
         else:
-            row = dataset.get_class_rows(c)
+            row = dataset.get_random_class_rows(c, 1)
 
-        tolerance = 0.05
         xpoints = row.filter(regex="^#x").values.flatten()
         ypoints = row.filter(regex="^#y").values.flatten()
+        vxpoints = row.filter(regex="^#vx").values.flatten()
+        vypoints = row.filter(regex="^#vy").values.flatten()
+        ballx = row.filter(regex="^#ball_x").values.flatten()
+        bally = row.filter(regex="^#ball_y").values.flatten()
+
+        tolerance = 0.05
         xpoints[np.isclose(xpoints, 0, atol=tolerance)] = 0
         ypoints[np.isclose(ypoints, 0, atol=tolerance)] = 0
-        ids = ~(np.array(xpoints == 0) & np.array(ypoints == 0))
+        vxpoints[np.isclose(vxpoints, 0, atol=tolerance)] = 0
+        vypoints[np.isclose(vypoints, 0, atol=tolerance)] = 0
+        ballx[np.isclose(ballx, 0, atol=tolerance)] = 0
+        bally[np.isclose(bally, 0, atol=tolerance)] = 0
+        ids = ~(
+            np.array(xpoints == 0)
+            & np.array(ypoints == 0)
+            & np.array(vxpoints == 0)
+            & np.array(vxpoints == 0)
+        )
         xpoints = xpoints[ids]
         ypoints = ypoints[ids]
+        vxpoints = vxpoints[ids]
+        vypoints = vypoints[ids]
+        ids = ~(np.array(ballx == 0) & np.array(bally == 0))
+        ballx = ballx[ids]
+        bally = bally[ids]
+
         # First array horiz. coords., second vertical
-        # Player position heatmap
-        # ax.hist2d(
-        #     xpoints,
-        #     ypoints,
-        #     # bins=[np.arange(0, 1.0, 0.08), np.arange(0.0, 1.0, 0.08)],
-        #     cmap="Greens",
-        # )
-        # Evaluate a gaussian kde on a regular grid of nbins x nbins over data extents
-        nbins = 20
-        k = kde.gaussian_kde([xpoints, ypoints])
-        xi, yi = np.mgrid[
-            0 : 1 : nbins * 1j,
-            0 : 1 : nbins * 1j,
-        ]
-        zi = k(np.vstack([xi.flatten(), yi.flatten()]))
-        maxcnt = zi.max() if zi.max() > maxcnt else maxcnt
-        # Make the plot
-        ax.pcolormesh(xi, yi, zi.reshape(xi.shape), shading="auto", cmap="Greens")
         # Middle line
         ax.plot([0.5, 0.5], [0.0, 1.0], color="black")
         # Center circle
@@ -162,6 +162,22 @@ for g in gens:
                 lw=2,
             )
         )
+        # Player positions
+        ax.plot(xpoints, ypoints, "o")
+        # Ball
+        # ax.plot(ballx, bally, "o", color="magenta")
+        # Speeds
+        ax.quiver(
+            xpoints,
+            ypoints,
+            vxpoints,
+            vypoints,
+            color="orange",
+            angles="uv",
+            scale=4,
+            headaxislength=3,
+            headlength=3,
+        )
         # Field
         ims.append(
             ax.add_patch(Rectangle((0, 0), 1, 1, facecolor="none", ec="k", lw=2))
@@ -173,17 +189,4 @@ for g in gens:
 
     i += 1
 
-cmap = mpl.cm.Greens
-norm = mpl.colors.Normalize(vmin=0, vmax=round(maxcnt))
-cb = fig.colorbar(
-    mpl.cm.ScalarMappable(norm=norm, cmap=cmap),
-    ax=axs,
-    orientation="vertical",
-    fraction=0.1,
-    aspect=60,
-    pad=0.025,
-)
-cb.ax.tick_params(labelsize=20)
-cb.outline.set_visible(False)
-
-plt.savefig("figures/HeatmapPlaynet.pdf", format="pdf", bbox_inches="tight")
+plt.savefig("figures/VisualPlaynet.pdf", format="pdf", bbox_inches="tight")

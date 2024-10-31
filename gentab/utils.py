@@ -33,7 +33,7 @@ PROG_COLUMNS = [
     TimeRemainingColumn(),
 ]
 
-console = Console()
+console = Console(record=True)
 
 
 class ProgressBar:

@@ -30,10 +30,9 @@ from gentab.tuners import (
 from gentab.data import Config, Dataset
 from gentab.utils import console
 
-config = Config("configs/mushroom.json")
+config = Config("configs/sick.json")
 
 dataset = Dataset(config)
-dataset.reduce_size({"e": 0.0, "p": 0.6})
 
 trials = 10
 

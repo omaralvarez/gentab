@@ -10,6 +10,7 @@ from gentab.generators import (
     Tabula,
     GReaT,
 )
+
 from gentab.data import Config, Dataset
 from gentab.utils import console
 
