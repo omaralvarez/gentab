@@ -30,32 +30,28 @@ from gentab.tuners import (
 from gentab.data import Config, Dataset
 from gentab.utils import console
 
-config = Config("configs/playnet.json")
+config = Config("configs/mushroom.json")
 
 dataset = Dataset(config)
-console.print(dataset.class_counts(), dataset.row_count())
-dataset.reduce_size(
-    {
-        "left_attack": 0.97,
-        "right_attack": 0.97,
-        "right_transition": 0.9,
-        "left_transition": 0.9,
-        "time_out": 0.8,
-        "left_penal": 0.5,
-        "right_penal": 0.5,
-    }
-)
-dataset.merge_classes(
-    {
-        "attack": ["left_attack", "right_attack"],
-        "transition": ["left_transition", "right_transition"],
-        "penalty": ["left_penal", "right_penal"],
-    }
-)
-console.print(dataset.class_counts(), dataset.row_count())
-dataset.reduce_mem()
+dataset.reduce_size({"e": 0.0, "p": 0.6})
 
 trials = 10
+
+console.print(dataset.class_counts(), dataset.row_count())
+generator = SMOTE(dataset)
+evaluator = MLP(generator)
+tuner = SMOTETuner(evaluator, trials)
+tuner.tune()
+tuner.save_to_disk()
+console.print(dataset.generated_class_counts(), dataset.generated_row_count())
+
+console.print(dataset.class_counts(), dataset.row_count())
+generator = ADASYN(dataset, sampling_strategy="minority")
+evaluator = MLP(generator)
+tuner = ADASYNTuner(evaluator, trials)
+tuner.tune()
+tuner.save_to_disk()
+console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 
 console.print(dataset.class_counts(), dataset.row_count())
 generator = TVAE(dataset)

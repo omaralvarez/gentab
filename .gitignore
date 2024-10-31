@@ -12,6 +12,7 @@ lightning_logs/
 tuning/
 catboost_info/
 .scale*
+ml_utility.dat
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

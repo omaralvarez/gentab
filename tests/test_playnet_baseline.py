@@ -15,41 +15,64 @@ from gentab.generators import (
 from gentab.data import Config, Dataset
 from gentab.utils import console
 
-config = Config("configs/california_housing_cr.json")
+config = Config("configs/playnet.json")
 
-labels = ["lowest", "lower", "low", "medium", "high", "higher", "highest"]
-bins = [float("-inf"), 0.7, 1.4, 2.1, 2.8, 3.5, 4.2, float("inf")]
-
-meta = [
-    {"column_name": "Latitude", "sdtype": "latitude", "pii": False},
-    {"column_name": "Longitude", "sdtype": "longitude", "pii": False},
-]
-
-dataset = Dataset(config, bins=bins, labels=labels)
-
-n_samples = dataset.class_counts().to_dict()
+dataset = Dataset(config)
+console.print(dataset.class_counts(), dataset.row_count())
+dataset.reduce_size(
+    {
+        "left_attack": 0.97,
+        "right_attack": 0.97,
+        "right_transition": 0.9,
+        "left_transition": 0.9,
+        "time_out": 0.8,
+        "left_penal": 0.5,
+        "right_penal": 0.5,
+    }
+)
+dataset.merge_classes(
+    {
+        "attack": ["left_attack", "right_attack"],
+        "transition": ["left_transition", "right_transition"],
+        "penalty": ["left_penal", "right_penal"],
+    }
+)
+console.print(dataset.class_counts(), dataset.row_count())
+dataset.reduce_mem()
 
 console.print(dataset.class_counts(), dataset.row_count())
-generator = TVAE(dataset, update_meta=meta)
-generator.generate(n_samples=n_samples, append=False)
+generator = SMOTE(dataset)
+generator.generate()
 dataset.save_to_disk(generator)
 console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 
 console.print(dataset.class_counts(), dataset.row_count())
-generator = CTGAN(dataset, update_meta=meta)
-generator.generate(n_samples=n_samples, append=False)
+generator = ADASYN(dataset, sampling_strategy="minority")
+generator.generate()
 dataset.save_to_disk(generator)
 console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 
 console.print(dataset.class_counts(), dataset.row_count())
-generator = GaussianCopula(dataset, update_meta=meta)
-generator.generate(n_samples=n_samples, append=False)
+generator = TVAE(dataset)
+generator.generate()
 dataset.save_to_disk(generator)
 console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 
 console.print(dataset.class_counts(), dataset.row_count())
-generator = CopulaGAN(dataset, update_meta=meta)
-generator.generate(n_samples=n_samples, append=False)
+generator = CTGAN(dataset)
+generator.generate()
+dataset.save_to_disk(generator)
+console.print(dataset.generated_class_counts(), dataset.generated_row_count())
+
+console.print(dataset.class_counts(), dataset.row_count())
+generator = GaussianCopula(dataset)
+generator.generate()
+dataset.save_to_disk(generator)
+console.print(dataset.generated_class_counts(), dataset.generated_row_count())
+
+console.print(dataset.class_counts(), dataset.row_count())
+generator = CopulaGAN(dataset)
+generator.generate()
 dataset.save_to_disk(generator)
 console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 
@@ -58,7 +81,7 @@ generator = CTABGAN(
     dataset,
     test_ratio=0.10,
 )
-generator.generate(n_samples=n_samples, append=False)
+generator.generate()
 console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 dataset.save_to_disk(generator)
 
@@ -67,19 +90,19 @@ generator = CTABGANPlus(
     dataset,
     test_ratio=0.10,
 )
-generator.generate(n_samples=n_samples, append=False)
+generator.generate()
 console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 dataset.save_to_disk(generator)
 
 console.print(dataset.class_counts(), dataset.row_count())
 generator = AutoDiffusion(dataset)
-generator.generate(n_samples=n_samples, append=False)
+generator.generate()
 console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 dataset.save_to_disk(generator)
 
 console.print(dataset.class_counts(), dataset.row_count())
 generator = ForestDiffusion(dataset, n_jobs=1, duplicate_K=4, n_estimators=100)
-generator.generate(n_samples=n_samples, append=False)
+generator.generate()
 console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 dataset.save_to_disk(generator)
 
@@ -93,7 +116,7 @@ generator = GReaT(
     max_tries_per_batch=4096,
     n_samples=8192,
 )
-generator.generate(n_samples=n_samples, append=False)
+generator.generate()
 console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 dataset.save_to_disk(generator)
 
@@ -108,6 +131,6 @@ generator = Tabula(
     max_tries_per_batch=4096,
     n_samples=8192,
 )
-generator.generate(n_samples=n_samples, append=False)
+generator.generate()
 console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 dataset.save_to_disk(generator)
