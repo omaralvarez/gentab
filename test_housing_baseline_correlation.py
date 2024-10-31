@@ -20,30 +20,35 @@ config = Config("configs/california_housing_cr.json")
 labels = ["lowest", "lower", "low", "medium", "high", "higher", "highest"]
 bins = [float("-inf"), 0.7, 1.4, 2.1, 2.8, 3.5, 4.2, float("inf")]
 
+meta = [
+    {"column_name": "Latitude", "sdtype": "latitude", "pii": False},
+    {"column_name": "Longitude", "sdtype": "longitude", "pii": False},
+]
+
 dataset = Dataset(config, bins=bins, labels=labels)
 
 n_samples = dataset.class_counts().to_dict()
 
 console.print(dataset.class_counts(), dataset.row_count())
-generator = TVAE(dataset)
+generator = TVAE(dataset, update_meta=meta)
 generator.generate(n_samples=n_samples, append=False)
 dataset.save_to_disk(generator)
 console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 
 console.print(dataset.class_counts(), dataset.row_count())
-generator = CTGAN(dataset)
+generator = CTGAN(dataset, update_meta=meta)
 generator.generate(n_samples=n_samples, append=False)
 dataset.save_to_disk(generator)
 console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 
 console.print(dataset.class_counts(), dataset.row_count())
-generator = GaussianCopula(dataset)
+generator = GaussianCopula(dataset, update_meta=meta)
 generator.generate(n_samples=n_samples, append=False)
 dataset.save_to_disk(generator)
 console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 
 console.print(dataset.class_counts(), dataset.row_count())
-generator = CopulaGAN(dataset)
+generator = CopulaGAN(dataset, update_meta=meta)
 generator.generate(n_samples=n_samples, append=False)
 dataset.save_to_disk(generator)
 console.print(dataset.generated_class_counts(), dataset.generated_row_count())
