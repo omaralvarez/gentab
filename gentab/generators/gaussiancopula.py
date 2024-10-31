@@ -19,6 +19,8 @@ class GaussianCopula(Generator):
         default_distribution="beta",
         batch_size=8192,
         max_tries_per_batch=4096,
+        update_meta=[],
+        constraints=[],
     ) -> None:
         super().__init__(dataset)
         self.enforce_min_max_values = enforce_min_max_values
@@ -28,25 +30,31 @@ class GaussianCopula(Generator):
         self.default_distribution = default_distribution
         self.batch_size = batch_size
         self.max_tries_per_batch = max_tries_per_batch
+        self.update_meta = update_meta
+        self.constraints = constraints
 
     def sample(self) -> pd.DataFrame:
         return super().sample()
 
     def preprocess(self) -> None:
         self.data = self.dataset.get_single_df()
+        self.metadata = SingleTableMetadata()
+        self.metadata.detect_from_dataframe(data=self.data)
+        for u in self.update_meta:
+            self.metadata.update_column(
+                column_name=u["column_name"], sdtype=u["sdtype"], pii=u["pii"]
+            )
 
     def train(self) -> None:
-        metadata = SingleTableMetadata()
-        metadata.detect_from_dataframe(data=self.data)
-
         self.synthesizer = GaussianCopulaSynthesizer(
-            metadata,  # required
+            self.metadata,  # required
             enforce_min_max_values=self.enforce_min_max_values,
             enforce_rounding=self.enforce_rounding,
             default_distribution=self.default_distribution,
             numerical_distributions=self.numerical_distributions,
             locales=self.locales,
         )
+        self.synthesizer.add_constraints(constraints=self.constraints)
         self.synthesizer.fit(self.data)
 
     def resample(self, n_samples, append) -> None:

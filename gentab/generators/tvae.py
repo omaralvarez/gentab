@@ -25,6 +25,8 @@ class TVAE(Generator):
         pac=10,
         cuda=True if DEVICE == "cuda" else False,
         max_tries_per_batch=4096,
+        constraints=[],
+        update_meta=[],
     ) -> None:
         super().__init__(dataset)
         self.enforce_min_max_values = enforce_min_max_values
@@ -39,19 +41,24 @@ class TVAE(Generator):
         self.pac = pac
         self.cuda = cuda
         self.max_tries_per_batch = max_tries_per_batch
+        self.update_meta = update_meta
+        self.constraints = constraints
 
     def sample(self) -> pd.DataFrame:
         return super().sample()
 
     def preprocess(self) -> None:
         self.data = self.dataset.get_single_df()
+        self.metadata = SingleTableMetadata()
+        self.metadata.detect_from_dataframe(data=self.data)
+        for u in self.update_meta:
+            self.metadata.update_column(
+                column_name=u["column_name"], sdtype=u["sdtype"], pii=u["pii"]
+            )
 
     def train(self) -> None:
-        metadata = SingleTableMetadata()
-        metadata.detect_from_dataframe(data=self.data)
-
         self.synthesizer = TVAESynthesizer(
-            metadata,  # required
+            self.metadata,  # required
             enforce_min_max_values=self.enforce_min_max_values,
             enforce_rounding=self.enforce_rounding,
             epochs=self.epochs,
@@ -61,6 +68,8 @@ class TVAE(Generator):
             embedding_dim=self.embedding_dim,
             cuda=self.cuda,
         )
+
+        self.synthesizer.add_constraints(constraints=self.constraints)
         self.synthesizer.fit(self.data)
 
     def resample(self, n_samples, append) -> None:
