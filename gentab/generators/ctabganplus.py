@@ -43,6 +43,7 @@ class CTABGANPlus(Generator):
     def __init__(
         self,
         dataset,
+        high_quality=True,
         test_ratio=0.20,
         epochs=300,
         class_dim=(256, 256, 256, 256),
@@ -53,6 +54,7 @@ class CTABGANPlus(Generator):
         max_tries_per_batch=4096,
     ) -> None:
         super().__init__(dataset, batch_size, max_tries_per_batch)
+        self.high_quality = high_quality
         self.epochs = epochs
         self.raw_df = self.dataset.get_single_df()
         self.test_ratio = test_ratio
@@ -76,6 +78,7 @@ class CTABGANPlus(Generator):
             self.problem_type = {"Regression": dataset.config["y_label"]}
 
         self.synthesizer = CTABGANSynthesizer(
+            high_quality=self.high_quality,
             class_dim=self.class_dim,
             random_dim=self.random_dim,
             num_channels=self.num_channels,

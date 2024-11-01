@@ -398,6 +398,7 @@ def weights_init(m):
 class CTABGANSynthesizer:
     def __init__(
         self,
+        high_quality=True,
         class_dim=(256, 256, 256, 256),
         random_dim=100,
         num_channels=64,
@@ -405,7 +406,7 @@ class CTABGANSynthesizer:
         batch_size=500,
         epochs=150,
     ):
-
+        self.high_quality = high_quality
         self.random_dim = random_dim
         self.class_dim = class_dim
         self.num_channels = num_channels
@@ -436,6 +437,7 @@ class CTABGANSynthesizer:
                 target_index = train_data.columns.get_loc(type[problem_type])
 
         self.transformer = DataTransformer(
+            high_quality=self.high_quality,
             train_data=train_data,
             categorical_list=categorical,
             mixed_dict=mixed,
