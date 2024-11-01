@@ -668,7 +668,7 @@ class Dataset:
             real_data.corr(method="pearson") - gen_data.corr(method="pearson")
         ).abs()
 
-    def distance_closest_record(self):
+    def distance_closest_records(self):
         with ProgressBar(indeterminate=True).progress as p:
             p.add_task("Computing DCR...", total=None)
 
@@ -684,21 +684,30 @@ class Dataset:
 
             # Function to compute the minimum L2 distance for each row in syn_df with respect to real_df
             def compute_min_l2_distance(row, real_array):
+                # distance_array = np.sqrt(((row.values - real_array) ** 2).sum(axis=1))
+                # return np.min(distance_array)
+
                 distance_array = np.sqrt(((row.values - real_array) ** 2).sum(axis=1))
-                return np.min(distance_array)
+                first, second = np.partition(distance_array, 1)[0:2]
+
+                return (
+                    np.column_stack([first, second])
+                    if first < second
+                    else np.column_stack([second, first])
+                )
 
             # Calculate the minimum L2 distance for each row in syn_df with respect to real_df
             real_array = real_ddf.compute().values
-            gen_ddf["Min_L2_Distance"] = gen_ddf.map_partitions(
+            gen_ddf["Min_L2_Distances"] = gen_ddf.map_partitions(
                 lambda part: part.apply(
                     compute_min_l2_distance, axis=1, args=(real_array,)
                 ),
-                meta=("Min_L2_Distance", "f8"),
+                meta=("Min_L2_Distances", "f8"),
             )
 
             # Convert the Dask DataFrame to a Pandas DataFrame
             gen_df_result = gen_ddf.compute()
-            min_distances = gen_df_result["Min_L2_Distance"]
+            min_distances = np.concatenate(gen_df_result["Min_L2_Distances"].values)
 
         console.print("✅ DCR computation complete...")
 

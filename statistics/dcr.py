@@ -1,7 +1,4 @@
-from gentab.evaluators import KNN, LightGBM, XGBoost, MLP
 from gentab.generators import (
-    SMOTE,
-    ADASYN,
     TVAE,
     CTGAN,
     GaussianCopula,
@@ -55,6 +52,32 @@ def preproc_car(dataset):
     return dataset
 
 
+def get_latex_str(metric, gen, avs, rnks, round):
+    avg = avs[metric][gen]
+    if rnks[metric][gen] == 1.0:
+        return "\\textbf{{{:.{prec}f}}}".format(avg, prec=round)
+    elif rnks[metric][gen] == 2.0:
+        return "\\underline{{{:.{prec}f}}}".format(avg, prec=round)
+    else:
+        return "{:.{prec}f}".format(avg, prec=round)
+
+
+def get_latex(averages, rnks, gens):
+    lines = []
+    for g in gens:
+        line = (
+            g[1]
+            + " & "
+            + get_latex_str("DCR", g[1], averages, rnks, 2)
+            + " & "
+            + get_latex_str("NNDR", g[1], averages, rnks, 2)
+            + " \\\\"
+        )
+        lines.append(line)
+
+    return lines
+
+
 configs = [
     ("configs/car_evaluation_cr.json", preproc_car, "Car Evaluation"),
     ("configs/playnet_cr.json", preproc_playnet, "PlayNet"),
@@ -75,6 +98,7 @@ gens = [
 ]
 
 DCR = pd.DataFrame()
+NNDR = pd.DataFrame()
 
 for c in configs:
     config = Config(c[0])
@@ -87,37 +111,37 @@ for c in configs:
         try:
             generator.load_from_disk()
 
-            min_l2_dist = dataset.distance_closest_record()
-            DCR.loc[c[2], g[1]] = np.mean(min_l2_dist)
+            min_l2_dists = dataset.distance_closest_records()
+
+            DCR.loc[c[2], g[1]] = np.mean(min_l2_dists[:, 0])
+            NNDR.loc[c[2], g[1]] = np.mean(min_l2_dists[:, 0] / min_l2_dists[:, 1])
         except FileNotFoundError:
             DCR.loc[c[2], g[1]] = 0.0
+            NNDR.loc[c[2], g[1]] = 0.0
 
 round = 2
 
 console.print(DCR)
 
 DCR_mean = DCR.mean()
-
 console.print(DCR_mean)
 
 DCR_ranks = DCR.rank(ascending=True, axis=1)
 console.print(DCR_ranks)
 DCR_mean_rank = DCR_ranks.mean().round(round)
 max = DCR_mean_rank.max()
-console.print(DCR_mean_rank)
 
-lines = []
-for index, row in DCR_mean_rank.items():
-    if max == row:
-        line = (
-            index + " & " + "\\textbf{{{:.{prec}f}}}".format(row, prec=round) + " \\\\"
-        )
-    elif row != float("inf"):
-        line = index + " & " + "{:.{prec}f}".format(row, prec=round) + " \\\\"
-    else:
-        line = index + " & - \\\\"
+console.print(NNDR)
 
-    lines.append(line)
+NNDR_mean = NNDR.mean()
 
-for line in lines:
+df = pd.concat(
+    [DCR_mean_rank.rename("DCR"), NNDR_mean.rename("NNDR")],
+    axis=1,
+)
+console.print(df)
+
+latex = get_latex(df, df.rank(method="dense", axis=0, ascending=False), gens)
+
+for line in latex:
     console.print(line)
