@@ -455,10 +455,8 @@ class DataTransformer:
         valid_ids = list(set(all_ids) - set(invalid_ids))
 
         if self.high_quality:
-            print("high")
             return data_t[valid_ids], len(invalid_ids)
         else:
-            print("low")
             return data_t, len(invalid_ids)
 
 
