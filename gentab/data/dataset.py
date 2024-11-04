@@ -20,11 +20,14 @@ from ucimlrepo import fetch_ucirepo
 
 
 class Dataset:
-    def __init__(self, config, cache_path="datasets", labels=None, bins=None) -> None:
+    def __init__(
+        self, config, cache_path="datasets", labels=None, bins=None, n_partitions=5
+    ) -> None:
         self.config = config
         self.cache_path = cache_path
         self.labels = labels
         self.bins = bins
+        self.n_partitions = n_partitions
         self.X_gen = None
         self.y_gen = None
 
@@ -279,6 +282,7 @@ class Dataset:
 
         return X_norm
 
+    # Returns categorical + binary, check compute_categories()
     def get_categories(self) -> list[str]:
         return self.cats
 
@@ -668,19 +672,15 @@ class Dataset:
             real_data.corr(method="pearson") - gen_data.corr(method="pearson")
         ).abs()
 
-    def distance_closest_records(self):
+    def distance_closest_records_hits(self):
         with ProgressBar(indeterminate=True).progress as p:
             p.add_task("Computing DCR...", total=None)
 
             real_data, gen_data = self.get_single_encoded_data()
 
             # Convert DataFrames to Dask DataFrames
-            real_ddf = dd.from_pandas(
-                real_data, npartitions=5
-            )  # Adjust npartitions based on your available memory
-            gen_ddf = dd.from_pandas(
-                gen_data, npartitions=5
-            )  # Adjust npartitions based on your available memory
+            real_ddf = dd.from_pandas(real_data, npartitions=self.n_partitions)
+            gen_ddf = dd.from_pandas(gen_data, npartitions=self.n_partitions)
 
             # Function to compute the minimum L2 distance for each row in syn_df with respect to real_df
             def compute_min_l2_distance(row, real_array):
@@ -689,6 +689,8 @@ class Dataset:
 
                 distance_array = np.sqrt(((row.values - real_array) ** 2).sum(axis=1))
                 first, second = np.partition(distance_array, 1)[0:2]
+                # TODO Check if the subresults are right 7 elements, per part
+                # are secondary distances right per element??? axis right in part 1036,7??
 
                 return (
                     np.column_stack([first, second])
@@ -696,7 +698,7 @@ class Dataset:
                     else np.column_stack([second, first])
                 )
 
-            # Calculate the minimum L2 distance for each row in syn_df with respect to real_df
+            # Calculate the minimum L2 distance for each row in gen_df with respect to real_df
             real_array = real_ddf.compute().values
             gen_ddf["Min_L2_Distances"] = gen_ddf.map_partitions(
                 lambda part: part.apply(
@@ -712,6 +714,55 @@ class Dataset:
         console.print("✅ DCR computation complete...")
 
         return min_distances
+
+    def hitting_rate(self, thres_percent=0.3):
+        with ProgressBar(indeterminate=True).progress as p:
+            p.add_task("Computing Hitting Rate...", total=None)
+
+            real_data, gen_data = self.get_single_encoded_data()
+
+            thres = thres_percent * (real_data.max() - real_data.min())
+            thres[self.get_categories() + [self.config["y_label"]]] = 0
+
+            # Convert DataFrames to Dask DataFrames
+            real_ddf = dd.from_pandas(real_data, npartitions=self.n_partitions)
+            gen_ddf = dd.from_pandas(gen_data, npartitions=self.n_partitions)
+
+            # Function to compute the hit rate for each row in readl_df with respect to gen_df
+            def compute_hr(row, fake_array, thres):
+                distance_array = np.abs(row.values - fake_array)
+                hits = (distance_array <= thres).all(axis=1)
+
+                return hits.any()
+
+            # Calculate the hit rate for each row in real_df with respect to gen_df
+            fake_array = gen_ddf.compute().values
+            real_ddf["Hitting_Rate"] = real_ddf.map_partitions(
+                lambda part: part.apply(
+                    compute_hr,
+                    axis=1,
+                    args=(
+                        fake_array,
+                        thres.values,
+                    ),
+                ),
+                meta=("Hitting_Rate", "?"),
+            )
+
+            # Convert the Dask DataFrame to a Pandas DataFrame
+            real_df_result = real_ddf.compute()
+
+            hit_rate = real_df_result["Hitting_Rate"].values.sum() / len(real_data)
+
+        console.print("✅ Hitting Rate computation complete...")
+
+        return hit_rate
+
+    def mean_distance_closest_record(self, min_l2_dists):
+        return np.mean(min_l2_dists[:, 0])
+
+    def nearest_neighbor_distance_ratio(self, min_l2_dists):
+        return np.mean(min_l2_dists[:, 0] / min_l2_dists[:, 1])
 
     def jensen_shannon_distance(self):
         with ProgressBar(indeterminate=True).progress as p:

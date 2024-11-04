@@ -17,7 +17,8 @@ import pandas as pd
 import numpy as np
 
 
-def preproc_playnet(dataset):
+def preproc_playnet(path):
+    dataset = Dataset(Config(path))
     dataset.reduce_size(
         {
             "left_attack": 0.97,
@@ -41,14 +42,34 @@ def preproc_playnet(dataset):
     return dataset
 
 
-def preproc_adult(dataset):
+def preproc_adult(path):
+    dataset = Dataset(Config(path))
     dataset.merge_classes({"<=50K": ["<=50K."], ">50K": [">50K."]})
-    dataset.reduce_mem()
 
     return dataset
 
 
-def preproc_car(dataset):
+def preproc_car(path):
+    dataset = Dataset(Config(path))
+    return dataset
+
+
+def preproc_ecoli(path):
+    dataset = Dataset(Config(path))
+    return dataset
+
+
+def preproc_sick(path):
+    dataset = Dataset(Config(path))
+    return dataset
+
+
+def preproc_california(path):
+    labels = ["lowest", "lower", "low", "medium", "high", "higher", "highest"]
+    bins = [float("-inf"), 0.7, 1.4, 2.1, 2.8, 3.5, 4.2, float("inf")]
+
+    dataset = Dataset(Config(path), bins=bins, labels=labels)
+
     return dataset
 
 
@@ -71,6 +92,8 @@ def get_latex(averages, rnks, gens):
             + get_latex_str("DCR", g[1], averages, rnks, 2)
             + " & "
             + get_latex_str("NNDR", g[1], averages, rnks, 2)
+            + " & "
+            + get_latex_str("HR", g[1], averages, rnks, 2)
             + " \\\\"
         )
         lines.append(line)
@@ -80,8 +103,11 @@ def get_latex(averages, rnks, gens):
 
 configs = [
     ("configs/car_evaluation_cr.json", preproc_car, "Car Evaluation"),
-    ("configs/playnet_cr.json", preproc_playnet, "PlayNet"),
-    ("configs/adult_cr.json", preproc_adult, "Adult"),
+    # ("configs/playnet_cr.json", preproc_playnet, "PlayNet"),
+    # ("configs/adult_cr.json", preproc_adult, "Adult"),
+    # ("configs/ecoli_cr.json", preproc_ecoli, "Ecoli"),
+    # ("configs/sick_cr.json", preproc_sick, "Sick"),
+    # ("configs/california_housing_cr.json", preproc_california, "Calif. Housing"),
 ]
 
 gens = [
@@ -99,11 +125,11 @@ gens = [
 
 DCR = pd.DataFrame()
 NNDR = pd.DataFrame()
+HR = pd.DataFrame()
+EIR = pd.DataFrame()
 
 for c in configs:
-    config = Config(c[0])
-
-    dataset = c[1](Dataset(config))
+    dataset = c[1](c[0])
     console.print(dataset.class_counts(), dataset.row_count())
 
     for g in gens:
@@ -113,11 +139,16 @@ for c in configs:
 
             min_l2_dists = dataset.distance_closest_records()
 
-            DCR.loc[c[2], g[1]] = np.mean(min_l2_dists[:, 0])
-            NNDR.loc[c[2], g[1]] = np.mean(min_l2_dists[:, 0] / min_l2_dists[:, 1])
+            HR.loc[c[2], g[1]] = dataset.hitting_rate(thres_percent=0.3)
+            DCR.loc[c[2], g[1]] = dataset.mean_distance_closest_record(min_l2_dists)
+            NNDR.loc[c[2], g[1]] = dataset.nearest_neighbor_distance_ratio(min_l2_dists)
+            EIR.loc[c[2], g[1]] = dataset.epsilon_identifiability_risk(min_l2_dists)
+
         except FileNotFoundError:
+            HR.loc[c[2], g[1]] = 1.0
             DCR.loc[c[2], g[1]] = 0.0
             NNDR.loc[c[2], g[1]] = 0.0
+            EIR.loc[c[2], g[1]] = 1.0
 
 round = 2
 
@@ -129,19 +160,32 @@ console.print(DCR_mean)
 DCR_ranks = DCR.rank(ascending=True, axis=1)
 console.print(DCR_ranks)
 DCR_mean_rank = DCR_ranks.mean().round(round)
-max = DCR_mean_rank.max()
 
 console.print(NNDR)
 
 NNDR_mean = NNDR.mean()
 
+console.print(HR)
+
+HR_mean = HR.mean()
+
+console.print(EIR)
+
+EIR_mean = EIR.mean()
+
+
 df = pd.concat(
-    [DCR_mean_rank.rename("DCR"), NNDR_mean.rename("NNDR")],
+    [DCR_mean_rank.rename("DCR"), NNDR_mean.rename("NNDR"), HR_mean.rename("HR")],
     axis=1,
 )
 console.print(df)
 
-latex = get_latex(df, df.rank(method="dense", axis=0, ascending=False), gens)
+ranks = df.rank(method="dense", axis=0, ascending=False)
+ranks["HR"] = len(ranks) + 1 - ranks["HR"]
+
+console.print(ranks)
+
+latex = get_latex(df, ranks, gens)
 
 for line in latex:
     console.print(line)
