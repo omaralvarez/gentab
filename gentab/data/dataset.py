@@ -12,7 +12,7 @@ import torch
 import sklearn.datasets
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder
 from sklearn.model_selection import train_test_split
-from scipy.stats import wasserstein_distance
+from scipy.stats import wasserstein_distance, entropy
 from scipy.spatial.distance import jensenshannon
 from dython.nominal import theils_u
 from imblearn.datasets import fetch_datasets
@@ -672,9 +672,14 @@ class Dataset:
             real_data.corr(method="pearson") - gen_data.corr(method="pearson")
         ).abs()
 
-    def distance_closest_records_hits(self):
+    def column_entropy(self, column):
+        _, counts = np.unique(np.round(column), return_counts=True)
+
+        return entropy(counts)
+
+    def compute_distances_hits(self, thres_percent=0.3):
         with ProgressBar(indeterminate=True).progress as p:
-            p.add_task("Computing DCR...", total=None)
+            p.add_task("Computing distances and hits...", total=None)
 
             real_data, gen_data = self.get_single_encoded_data()
 
@@ -682,87 +687,120 @@ class Dataset:
             real_ddf = dd.from_pandas(real_data, npartitions=self.n_partitions)
             gen_ddf = dd.from_pandas(gen_data, npartitions=self.n_partitions)
 
+            real_array = real_ddf.compute().values
+            fake_array = gen_ddf.compute().values
+
+            def euclidean_distance(source, target, w=None):
+                if w is None:
+                    return np.sqrt(((source - target) ** 2).sum(axis=1))
+                else:
+                    return np.sqrt(
+                        (((source - target) / w[np.newaxis, :]) ** 2).sum(axis=1)
+                    )
+
             # Function to compute the minimum L2 distance for each row in syn_df with respect to real_df
-            def compute_min_l2_distance(row, real_array):
-                # distance_array = np.sqrt(((row.values - real_array) ** 2).sum(axis=1))
-                # return np.min(distance_array)
-
-                distance_array = np.sqrt(((row.values - real_array) ** 2).sum(axis=1))
+            def min_l2_distance(row, real_array):
+                distance_array = euclidean_distance(row.values, real_array)
                 first, second = np.partition(distance_array, 1)[0:2]
-                # TODO Check if the subresults are right 7 elements, per part
-                # are secondary distances right per element??? axis right in part 1036,7??
 
-                return (
-                    np.column_stack([first, second])
-                    if first < second
-                    else np.column_stack([second, first])
-                )
+                return [first, second] if first < second else [second, first]
 
             # Calculate the minimum L2 distance for each row in gen_df with respect to real_df
-            real_array = real_ddf.compute().values
-            gen_ddf["Min_L2_Distances"] = gen_ddf.map_partitions(
-                lambda part: part.apply(
-                    compute_min_l2_distance, axis=1, args=(real_array,)
-                ),
-                meta=("Min_L2_Distances", "f8"),
+            gen_ddf[["s_r_l2_min_1", "s_r_l2_min_2"]] = gen_ddf.apply(
+                min_l2_distance,
+                axis=1,
+                args=(real_array,),
+                result_type="expand",
+                meta={0: "f8", 1: "f8"},
             )
 
             # Convert the Dask DataFrame to a Pandas DataFrame
-            gen_df_result = gen_ddf.compute()
-            min_distances = np.concatenate(gen_df_result["Min_L2_Distances"].values)
+            synth_dists = gen_ddf.compute()[["s_r_l2_min_1", "s_r_l2_min_2"]]
 
-        console.print("✅ DCR computation complete...")
-
-        return min_distances
-
-    def hitting_rate(self, thres_percent=0.3):
-        with ProgressBar(indeterminate=True).progress as p:
-            p.add_task("Computing Hitting Rate...", total=None)
-
-            real_data, gen_data = self.get_single_encoded_data()
-
+            # Obtain range in columns to check for repeated samples within threshold
             thres = thres_percent * (real_data.max() - real_data.min())
             thres[self.get_categories() + [self.config["y_label"]]] = 0
 
-            # Convert DataFrames to Dask DataFrames
-            real_ddf = dd.from_pandas(real_data, npartitions=self.n_partitions)
-            gen_ddf = dd.from_pandas(gen_data, npartitions=self.n_partitions)
+            # Entropy weights for Epsilon Risk
+            w = np.array([self.column_entropy(data) for _, data in real_data.items()])
 
-            # Function to compute the hit rate for each row in readl_df with respect to gen_df
-            def compute_hr(row, fake_array, thres):
-                distance_array = np.abs(row.values - fake_array)
-                hits = (distance_array <= thres).all(axis=1)
+            # Compute hits for Hitting Rate and distances for Epsilon Risk
+            def min_dist_real_synth(row, real_array, fake_array, thres, w):
+                fake_distance = row.values - fake_array
+                hits = (np.abs(fake_distance) <= thres).all(axis=1)
+                fake_distance = np.sqrt(
+                    ((fake_distance / w[np.newaxis, :]) ** 2).sum(axis=1)
+                )
+                real_distance = euclidean_distance(row.values, real_array, w)
+                first, second = np.partition(real_distance, 1)[0:2]
+                min_real_dist = second if first < second else first
 
-                return hits.any()
+                return [hits.any(), fake_distance.min(), min_real_dist]
 
-            # Calculate the hit rate for each row in real_df with respect to gen_df
-            fake_array = gen_ddf.compute().values
-            real_ddf["Hitting_Rate"] = real_ddf.map_partitions(
-                lambda part: part.apply(
-                    compute_hr,
-                    axis=1,
-                    args=(
-                        fake_array,
-                        thres.values,
-                    ),
+            real_ddf[["hit", "r_s_diff_min", "r_r_diff_min"]] = real_ddf.apply(
+                min_dist_real_synth,
+                axis=1,
+                args=(
+                    real_array,
+                    fake_array,
+                    thres.values,
+                    w,
                 ),
-                meta=("Hitting_Rate", "?"),
+                result_type="expand",
+                meta={0: "?", 1: "f8", 2: "f8"},
             )
 
-            # Convert the Dask DataFrame to a Pandas DataFrame
-            real_df_result = real_ddf.compute()
+            real_hits_diffs = real_ddf.compute()[
+                ["hit", "r_s_diff_min", "r_r_diff_min"]
+            ]
 
-            hit_rate = real_df_result["Hitting_Rate"].values.sum() / len(real_data)
+        console.print("✅ Distances and hits computation complete...")
+
+        return synth_dists, real_hits_diffs
+
+    def hitting_rate(self, stats):
+        with ProgressBar(indeterminate=True).progress as p:
+            p.add_task("Computing Hitting Rate...", total=None)
+
+            hit_rate = stats["hit"].values.sum() / len(self.X)
 
         console.print("✅ Hitting Rate computation complete...")
 
         return hit_rate
 
-    def mean_distance_closest_record(self, min_l2_dists):
-        return np.mean(min_l2_dists[:, 0])
+    def epsilon_identifiability_risk(self, stats):
+        with ProgressBar(indeterminate=True).progress as p:
+            p.add_task("Computing Epsilon Identifiability Risk...", total=None)
 
-    def nearest_neighbor_distance_ratio(self, min_l2_dists):
-        return np.mean(min_l2_dists[:, 0] / min_l2_dists[:, 1])
+            # R_Diff = ext_distances - in_dists
+            r_diff = stats["r_s_diff_min"] - stats["r_r_diff_min"]
+            identifiability_value = np.sum(r_diff < 0) / len(self.X)
+
+        console.print("✅ Epsilon Identifiability Risk computation complete...")
+
+        return identifiability_value
+
+    def mean_distance_closest_record(self, stats):
+        with ProgressBar(indeterminate=True).progress as p:
+            p.add_task("Computing mean Distance to Closest Record...", total=None)
+
+            mean_dist_closest = stats["s_r_l2_min_1"].mean()
+
+        console.print("✅ Mean Distance to Closest Record computation complete...")
+
+        return mean_dist_closest
+
+    def nearest_neighbor_distance_ratio(self, stats):
+        with ProgressBar(indeterminate=True).progress as p:
+            p.add_task("Computing Nearest Neighbor Distance Ratio...", total=None)
+
+            nn_dist_ratio = np.mean(
+                stats["s_r_l2_min_1"].values / stats["s_r_l2_min_2"].values
+            )
+
+        console.print("✅ Nearest Neighbor Distance Ratio computation complete...")
+
+        return nn_dist_ratio
 
     def jensen_shannon_distance(self):
         with ProgressBar(indeterminate=True).progress as p:

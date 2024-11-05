@@ -94,6 +94,8 @@ def get_latex(averages, rnks, gens):
             + get_latex_str("NNDR", g[1], averages, rnks, 2)
             + " & "
             + get_latex_str("HR", g[1], averages, rnks, 2)
+            + " & "
+            + get_latex_str("EIR", g[1], averages, rnks, 2)
             + " \\\\"
         )
         lines.append(line)
@@ -103,11 +105,11 @@ def get_latex(averages, rnks, gens):
 
 configs = [
     ("configs/car_evaluation_cr.json", preproc_car, "Car Evaluation"),
-    # ("configs/playnet_cr.json", preproc_playnet, "PlayNet"),
-    # ("configs/adult_cr.json", preproc_adult, "Adult"),
-    # ("configs/ecoli_cr.json", preproc_ecoli, "Ecoli"),
-    # ("configs/sick_cr.json", preproc_sick, "Sick"),
-    # ("configs/california_housing_cr.json", preproc_california, "Calif. Housing"),
+    ("configs/playnet_cr.json", preproc_playnet, "PlayNet"),
+    ("configs/adult_cr.json", preproc_adult, "Adult"),
+    ("configs/ecoli_cr.json", preproc_ecoli, "Ecoli"),
+    ("configs/sick_cr.json", preproc_sick, "Sick"),
+    ("configs/california_housing_cr.json", preproc_california, "Calif. Housing"),
 ]
 
 gens = [
@@ -137,51 +139,52 @@ for c in configs:
         try:
             generator.load_from_disk()
 
-            min_l2_dists = dataset.distance_closest_records()
+            min_l2_dists, hits_diffs = dataset.compute_distances_hits(thres_percent=0.3)
 
-            HR.loc[c[2], g[1]] = dataset.hitting_rate(thres_percent=0.3)
             DCR.loc[c[2], g[1]] = dataset.mean_distance_closest_record(min_l2_dists)
             NNDR.loc[c[2], g[1]] = dataset.nearest_neighbor_distance_ratio(min_l2_dists)
-            EIR.loc[c[2], g[1]] = dataset.epsilon_identifiability_risk(min_l2_dists)
+            HR.loc[c[2], g[1]] = dataset.hitting_rate(hits_diffs)
+            EIR.loc[c[2], g[1]] = dataset.epsilon_identifiability_risk(hits_diffs)
 
         except FileNotFoundError:
-            HR.loc[c[2], g[1]] = 1.0
             DCR.loc[c[2], g[1]] = 0.0
             NNDR.loc[c[2], g[1]] = 0.0
+            HR.loc[c[2], g[1]] = 1.0
             EIR.loc[c[2], g[1]] = 1.0
 
 round = 2
 
-console.print(DCR)
-
 DCR_mean = DCR.mean()
-console.print(DCR_mean)
-
 DCR_ranks = DCR.rank(ascending=True, axis=1)
-console.print(DCR_ranks)
 DCR_mean_rank = DCR_ranks.mean().round(round)
-
-console.print(NNDR)
 
 NNDR_mean = NNDR.mean()
 
-console.print(HR)
-
 HR_mean = HR.mean()
-
-console.print(EIR)
 
 EIR_mean = EIR.mean()
 
+console.print(DCR)
+console.print(DCR_mean)
+console.print(DCR_ranks)
+console.print(NNDR)
+console.print(HR)
+console.print(EIR)
 
 df = pd.concat(
-    [DCR_mean_rank.rename("DCR"), NNDR_mean.rename("NNDR"), HR_mean.rename("HR")],
+    [
+        DCR_mean_rank.rename("DCR"),
+        NNDR_mean.rename("NNDR"),
+        HR_mean.rename("HR"),
+        EIR_mean.rename("EIR"),
+    ],
     axis=1,
 )
 console.print(df)
 
 ranks = df.rank(method="dense", axis=0, ascending=False)
 ranks["HR"] = len(ranks) + 1 - ranks["HR"]
+ranks["EIR"] = len(ranks) + 1 - ranks["EIR"]
 
 console.print(ranks)
 
