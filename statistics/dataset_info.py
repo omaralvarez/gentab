@@ -76,6 +76,10 @@ def preproc_mushroom(dataset):
     return dataset
 
 
+def preproc_oil(dataset):
+    return dataset
+
+
 l = ["lowest", "lower", "low", "medium", "high", "higher", "highest"]
 b = [float("-inf"), 0.7, 1.4, 2.1, 2.8, 3.5, 4.2, float("inf")]
 
@@ -120,6 +124,13 @@ configs = [
         "configs/mushroom.json",
         preproc_mushroom,
         "Mushroom \cite{mushroom_73}",
+        None,
+        None,
+    ),
+    (
+        "configs/oil.json",
+        preproc_oil,
+        "Oil \cite{ding2011diversified}",
         None,
         None,
     ),

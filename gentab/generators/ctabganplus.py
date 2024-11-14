@@ -118,4 +118,6 @@ class CTABGANPlus(Generator):
 
     def sample(self) -> pd.DataFrame:
         sample = self.synthesizer.sample(self.batch_size)
-        return self.data_prep.inverse_prep(sample)
+        return self.data_prep.inverse_prep(sample).astype(
+            dtype=self.raw_df.dtypes.to_dict()
+        )

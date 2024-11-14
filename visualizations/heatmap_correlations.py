@@ -22,7 +22,8 @@ import matplotlib.lines as lines
 from mpl_toolkits.axes_grid1 import ImageGrid
 
 
-def preproc_playnet(dataset):
+def preproc_playnet(path):
+    dataset = Dataset(Config(path))
     dataset.reduce_size(
         {
             "left_attack": 0.97,
@@ -46,20 +47,52 @@ def preproc_playnet(dataset):
     return dataset
 
 
-def preproc_adult(dataset):
+def preproc_adult(path):
+    dataset = Dataset(Config(path))
     dataset.merge_classes({"<=50K": ["<=50K."], ">50K": [">50K."]})
 
     return dataset
 
 
-def preproc_car(dataset):
+def preproc_car_eval_4(path):
+    dataset = Dataset(Config(path))
+    return dataset
+
+
+def preproc_ecoli(path):
+    dataset = Dataset(Config(path))
+    return dataset
+
+
+def preproc_sick(path):
+    dataset = Dataset(Config(path))
+    return dataset
+
+
+def preproc_california(path):
+    labels = ["lowest", "lower", "low", "medium", "high", "higher", "highest"]
+    bins = [float("-inf"), 0.7, 1.4, 2.1, 2.8, 3.5, 4.2, float("inf")]
+
+    dataset = Dataset(Config(path), bins=bins, labels=labels)
+
+    return dataset
+
+
+def preproc_mushroom(path):
+    dataset = Dataset(Config(path))
+    dataset.reduce_size({"e": 0.0, "p": 0.6})
+
     return dataset
 
 
 configs = [
-    ("configs/car_evaluation_cr.json", preproc_car, "Car Evaluation"),
-    ("configs/playnet_cr.json", preproc_playnet, "PlayNet"),
-    ("configs/adult_cr.json", preproc_adult, "Adult"),
+    # ("configs/playnet_cr.json", preproc_playnet, "PlayNet"),
+    # ("configs/adult_cr.json", preproc_adult, "Adult"),
+    # ("configs/car_evaluation_cr.json", preproc_car_eval_4, "Car Evaluation"),
+    ("configs/ecoli_cr.json", preproc_ecoli, "Ecoli"),
+    ("configs/sick_cr.json", preproc_sick, "Sick"),
+    # ("configs/california_housing_cr.json", preproc_california, "Calif. Housing"),
+    # ("configs/mushroom_cr.json", preproc_mushroom, "Mushroom"),
 ]
 
 gens = [
@@ -76,9 +109,7 @@ gens = [
 ]
 
 for c in configs:
-    config = Config(c[0])
-
-    dataset = c[1](Dataset(config))
+    dataset = c[1](c[0])
     console.print(dataset.class_counts(), dataset.row_count())
 
     corrs = []
@@ -87,10 +118,12 @@ for c in configs:
         try:
             generator.load_from_disk()
         except FileNotFoundError:
+            console.print("🚨 Missing {} generated data.".format(g[1]))
             corrs.append(None)
             continue
 
-        corrs.append(dataset.get_pearson_correlation())
+        corrs.append(dataset.get_pearson_correlation().fillna(0))
+        print(dataset.get_pearson_correlation())
 
     max_corr = max(map(lambda x: x.values.max() if x is not None else 0, corrs))
 
@@ -110,7 +143,9 @@ for c in configs:
     axs, ims = [], []
     i = 0
     for corr in corrs:
+        # Iterating over the grid returns the Axes.
         ax = grid.axes_all[i]
+        print(i)
         ax.set_title(gens[i][1])
         ax.spines["top"].set_visible(False)
         ax.spines["right"].set_visible(False)
@@ -132,7 +167,6 @@ for c in configs:
             )
         else:
             axs.append(ax)
-            # Iterating over the grid returns the Axes.
             l1 = lines.Line2D([0, 1], [0, 1], transform=fig.transFigure, figure=fig)
             l2 = lines.Line2D([0, 1], [1, 0], transform=fig.transFigure, figure=fig)
             # fig.lines.extend([l1, l2])
@@ -145,7 +179,7 @@ for c in configs:
                     [0, dataset.num_features()],
                     [dataset.num_features(), 0],
                     color="red",
-                )  # Diagonal from top-left to bottom-right
+                )
             )
 
         i += 1

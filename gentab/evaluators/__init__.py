@@ -2,5 +2,9 @@ from .evaluator import *  # noqa
 from .lightgbm import *  # noqa
 from .knn import *  # noqa
 from .xgboost import *  # noqa
-from .mlp import *  # noqa
+from .mlpgorish import *  # noqa
+from .mlpsklearn import *  # noqa
 from .catboost import *  # noqa
+from .qda import *  # noqa
+from .naivebayes import *  # noqa
+from .svm import *  # noqa

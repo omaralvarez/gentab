@@ -83,19 +83,19 @@ def get_latex_str(metric, gen, avs, rnks, round):
         return "{:.{prec}f}".format(avg, prec=round)
 
 
-def get_latex(averages, rnks, gens):
+def get_latex(averages, rnks, gens, round):
     lines = []
     for g in gens:
         line = (
             g[1]
             + " & "
-            + get_latex_str("DCR", g[1], averages, rnks, 2)
+            + get_latex_str("DCR", g[1], averages, rnks, round)
             + " & "
-            + get_latex_str("NNDR", g[1], averages, rnks, 2)
+            + get_latex_str("NNDR", g[1], averages, rnks, round)
             + " & "
-            + get_latex_str("HR", g[1], averages, rnks, 2)
+            + get_latex_str("HR", g[1], averages, rnks, round)
             + " & "
-            + get_latex_str("EIR", g[1], averages, rnks, 2)
+            + get_latex_str("EIR", g[1], averages, rnks, round)
             + " \\\\"
         )
         lines.append(line)
@@ -139,7 +139,9 @@ for c in configs:
         try:
             generator.load_from_disk()
 
-            min_l2_dists, hits_diffs = dataset.compute_distances_hits(thres_percent=0.3)
+            min_l2_dists, hits_diffs = dataset.compute_distances_hits(
+                thres_percent=0.03
+            )
 
             DCR.loc[c[2], g[1]] = dataset.mean_distance_closest_record(min_l2_dists)
             NNDR.loc[c[2], g[1]] = dataset.nearest_neighbor_distance_ratio(min_l2_dists)
@@ -157,11 +159,8 @@ round = 2
 DCR_mean = DCR.mean()
 DCR_ranks = DCR.rank(ascending=True, axis=1)
 DCR_mean_rank = DCR_ranks.mean().round(round)
-
 NNDR_mean = NNDR.mean()
-
 HR_mean = HR.mean()
-
 EIR_mean = EIR.mean()
 
 console.print(DCR)
@@ -182,13 +181,18 @@ df = pd.concat(
 )
 console.print(df)
 
-ranks = df.rank(method="dense", axis=0, ascending=False)
-ranks["HR"] = len(ranks) + 1 - ranks["HR"]
-ranks["EIR"] = len(ranks) + 1 - ranks["EIR"]
+ranks = pd.DataFrame()
+
+ranks[["DCR", "NNDR"]] = df.round(round)[["DCR", "NNDR"]].rank(
+    method="dense", axis=0, ascending=False
+)
+ranks[["HR", "EIR"]] = df.round(round)[["HR", "EIR"]].rank(
+    method="dense", axis=0, ascending=True
+)
 
 console.print(ranks)
 
-latex = get_latex(df, ranks, gens)
+latex = get_latex(df, ranks, gens, round)
 
 for line in latex:
     console.print(line)

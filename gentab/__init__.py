@@ -9,3 +9,5 @@ os.environ["TRANSFORMERS_NO_ADVISORY_WARNINGS"] = "true"
 np.random.seed(SEED)
 random.seed(SEED)
 torch.manual_seed(SEED)
+torch.cuda.manual_seed(SEED)
+torch.backends.cudnn.deterministic = True

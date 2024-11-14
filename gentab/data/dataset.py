@@ -21,7 +21,13 @@ from ucimlrepo import fetch_ucirepo
 
 class Dataset:
     def __init__(
-        self, config, cache_path="datasets", labels=None, bins=None, n_partitions=5
+        self,
+        config,
+        cache_path="datasets",
+        labels=None,
+        bins=None,
+        n_partitions=5,
+        oversample=0,
     ) -> None:
         self.config = config
         self.cache_path = cache_path
@@ -46,6 +52,9 @@ class Dataset:
                 else:
                     self.download_imb()
 
+            if oversample:
+                self.oversample(oversample)
+
             self.get_label_encoders()
             self.compute_categories()
             self.get_min_max()
@@ -54,6 +63,10 @@ class Dataset:
 
     def __str__(self) -> str:
         return self.config["name"]
+
+    def oversample(self, multiplier: int) -> None:
+        self.X = pd.concat([self.X] * multiplier, ignore_index=True)
+        self.y = pd.concat([self.y] * multiplier, ignore_index=True)
 
     def reset_indexes(self) -> None:
         # Reset indexes
@@ -245,7 +258,11 @@ class Dataset:
                 os.path.join(path, "y_gen_" + str(generator) + ".csv")
             )
 
-        console.print("✅ {} dataset loaded from {}...".format(generator, path))
+        console.print(
+            "✅ {} dataset loaded from {}...".format(
+                generator, os.path.join(path, "*_" + str(generator) + ".csv")
+            )
+        )
 
     def compute_categories(self) -> None:
         self.cats = self.config["categorical_columns"] + self.config["binary_columns"]
@@ -255,30 +272,26 @@ class Dataset:
         )
 
     def get_min_max(self) -> None:
-        cont_features = self.get_continuous()
-
         self.mn = np.min(
             [
-                self.X[cont_features].min(),
-                self.X_val[cont_features].min(),
-                self.X_test[cont_features].min(),
+                self.encode_categories(self.X).min(),
+                self.encode_categories(self.X_val).min(),
+                self.encode_categories(self.X_test).min(),
             ],
             axis=0,
         )
         self.mx = np.max(
             [
-                self.X[cont_features].max(),
-                self.X_val[cont_features].max(),
-                self.X_test[cont_features].max(),
+                self.encode_categories(self.X).max(),
+                self.encode_categories(self.X_val).max(),
+                self.encode_categories(self.X_test).max(),
             ],
             axis=0,
         )
 
     def get_normalized_features(self, df: pd.DataFrame) -> pd.DataFrame:
-        cont_features = self.get_continuous()
-
         X_norm = df.copy()
-        X_norm[cont_features] = (X_norm[cont_features] - self.mn) / (self.mx - self.mn)
+        X_norm = (X_norm - self.mn) / (self.mx - self.mn)
 
         return X_norm
 
@@ -296,6 +309,7 @@ class Dataset:
 
     def encode_categories(self, df: pd.DataFrame) -> pd.DataFrame:
         if self.config.exists("download") and self.config["download"] == "imbalanced":
+            # __________marks_______________
             return df
         else:
             X_enc = df.copy()
@@ -439,6 +453,19 @@ class Dataset:
 
         self.get_label_encoders()
 
+    def remove(self, rows_to_remove) -> None:
+        # Remove the selected rows from the DataFrame
+        self.X.drop(rows_to_remove, inplace=True)
+        self.X.reset_index(drop=True, inplace=True)
+        self.y.drop(rows_to_remove, inplace=True)
+        self.y.reset_index(drop=True, inplace=True)
+
+    def drop_first_n(self, n) -> None:
+        # Get first rows index
+        rows_to_remove = self.X.head(n).index
+
+        self.remove(rows_to_remove)
+
     def reduce_uniformly_randomly(self, condition, percentage) -> None:
         """
         Removes a random subset of rows from a DataFrame based on a condition.
@@ -457,11 +484,7 @@ class Dataset:
         # Randomly select rows to remove
         rows_to_remove = compliant_rows.sample(n=n_remove, random_state=SEED).index
 
-        # Remove the selected rows from the DataFrame
-        self.X.drop(rows_to_remove, inplace=True)
-        self.X.reset_index(drop=True, inplace=True)
-        self.y.drop(rows_to_remove, inplace=True)
-        self.y.reset_index(drop=True, inplace=True)
+        self.remove(rows_to_remove)
 
     def memory_usage_mb(self, df) -> float:
         return df.memory_usage().sum() / 1024**2
@@ -772,7 +795,6 @@ class Dataset:
         with ProgressBar(indeterminate=True).progress as p:
             p.add_task("Computing Epsilon Identifiability Risk...", total=None)
 
-            # R_Diff = ext_distances - in_dists
             r_diff = stats["r_s_diff_min"] - stats["r_r_diff_min"]
             identifiability_value = np.sum(r_diff < 0) / len(self.X)
 

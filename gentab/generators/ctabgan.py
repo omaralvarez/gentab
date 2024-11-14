@@ -49,6 +49,7 @@ class CTABGAN(Generator):
         super().__init__(dataset, batch_size, max_tries_per_batch)
         self.epochs = epochs
         self.raw_df = self.dataset.get_single_df()
+        self.raw_df[self.config["y_label"]] = self.raw_df[self.config["y_label"]]
         self.test_ratio = test_ratio
         self.class_dim = class_dim
         self.random_dim = random_dim
@@ -104,4 +105,7 @@ class CTABGAN(Generator):
 
     def sample(self) -> pd.DataFrame:
         sample = self.synthesizer.sample(self.batch_size)
-        return self.data_prep.inverse_prep(sample)
+
+        return self.data_prep.inverse_prep(sample).astype(
+            dtype=self.raw_df.dtypes.to_dict()
+        )

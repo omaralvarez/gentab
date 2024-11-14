@@ -20,8 +20,10 @@ import matplotlib as mpl
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle, Circle, Ellipse, Arc
+from mycolorpy import colorlist as mcp
 import numpy as np
 from scipy.stats import kde
+from scipy.ndimage import gaussian_filter
 
 
 def preproc_playnet(dataset):
@@ -68,7 +70,9 @@ dataset = preproc_playnet(Dataset(config))
 
 gs = gridspec.GridSpec(len(gens), dataset.num_classes())
 fig = plt.figure(figsize=(40, 30))
-fig.subplots_adjust(wspace=0.25, hspace=0.125)
+fig.subplots_adjust(wspace=0.15, hspace=0.30)
+
+colors = mcp.gen_color(cmap="Greens", n=8)
 
 axs, ims = [], []
 maxcnt = 0
@@ -113,25 +117,26 @@ for g in gens:
         ids = ~(np.array(xpoints == 0) & np.array(ypoints == 0))
         xpoints = xpoints[ids]
         ypoints = ypoints[ids]
-        # First array horiz. coords., second vertical
-        # Player position heatmap
-        # ax.hist2d(
-        #     xpoints,
-        #     ypoints,
-        #     # bins=[np.arange(0, 1.0, 0.08), np.arange(0.0, 1.0, 0.08)],
-        #     cmap="Greens",
-        # )
+
+        aspect_ratio = 0.38
+
+        nbins = 35
+        nbins_x = nbins
+        nbins_y = int(nbins * aspect_ratio)
+
         # Evaluate a gaussian kde on a regular grid of nbins x nbins over data extents
-        nbins = 20
         k = kde.gaussian_kde([xpoints, ypoints])
         xi, yi = np.mgrid[
-            0 : 1 : nbins * 1j,
-            0 : 1 : nbins * 1j,
+            0 : 1 : nbins_x * 1j,
+            0 : 1 : nbins_y * 1j,
         ]
         zi = k(np.vstack([xi.flatten(), yi.flatten()]))
         maxcnt = zi.max() if zi.max() > maxcnt else maxcnt
+
+        # zi = gaussian_filter(zi, sigma=5)
+
         # Make the plot
-        ax.pcolormesh(xi, yi, zi.reshape(xi.shape), shading="auto", cmap="Greens")
+        ax.pcolormesh(xi, yi, zi.reshape(xi.shape), shading="gouraud", cmap="Greens")
         # Middle line
         ax.plot([0.5, 0.5], [0.0, 1.0], color="black")
         # Center circle
@@ -166,6 +171,41 @@ for g in gens:
         ims.append(
             ax.add_patch(Rectangle((0, 0), 1, 1, facecolor="none", ec="k", lw=2))
         )
+
+        ax_histx = ax.inset_axes([0, 1.001, 1, 0.18], sharex=ax)
+        ax_histy = ax.inset_axes([1.0001, 0, 0.08, 1], sharey=ax)
+        # no labels
+        ax_histx.tick_params(axis="x", labelbottom=False)
+        ax_histy.tick_params(axis="y", labelleft=False)
+        # Remove chart borders and ticks
+        ax_histx.spines["top"].set_visible(False)
+        ax_histx.spines["right"].set_visible(False)
+        ax_histx.spines["bottom"].set_visible(False)
+        ax_histx.spines["left"].set_visible(False)
+        # ax_histx.get_xaxis().set_ticks([])
+        ax_histx.get_yaxis().set_ticks([])
+        ax_histy.spines["top"].set_visible(False)
+        ax_histy.spines["right"].set_visible(False)
+        ax_histy.spines["bottom"].set_visible(False)
+        ax_histy.spines["left"].set_visible(False)
+        ax_histy.get_xaxis().set_ticks([])
+        # ax_histy.get_yaxis().set_ticks([])
+        # now determine nice limits by hand:
+        # binwidth = 0.1
+        # # xymax = max(np.max(np.abs(x)), np.max(np.abs(y)))
+        # xymax = 1.0
+        # lim = (int(xymax / binwidth) + 1) * binwidth
+
+        nbins_hist = 28
+        nbins_x_hist = nbins_hist
+        nbins_y_hist = int(nbins_hist * aspect_ratio)
+        bins_x = np.linspace(0.0, 1.0, nbins_x_hist, endpoint=True)
+        bins_y = np.linspace(0.0, 1.0, nbins_y_hist, endpoint=True)
+
+        ax_histx.hist(xpoints, bins=bins_x, color=colors[5])
+        ax_histy.hist(ypoints, bins=bins_y, orientation="horizontal", color=colors[5])
+
+        # ax_histx.set_title(g[1], fontsize=20, loc="right", y=1.0, pad=-20)
 
         axs.append(ax)
 

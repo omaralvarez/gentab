@@ -1,4 +1,13 @@
-from gentab.evaluators import KNN, LightGBM, CatBoost, XGBoost, MLP
+from gentab.evaluators import (
+    LightGBM,
+    CatBoost,
+    XGBoost,
+    MLP,
+    MLPGor,
+    QDA,
+    NaiveBayes,
+    SVM,
+)
 from gentab.generators import (
     SMOTE,
     ADASYN,
@@ -76,6 +85,19 @@ def preproc_california(path):
     return dataset
 
 
+def preproc_mushroom(path):
+    dataset = Dataset(Config(path))
+    dataset.reduce_size({"e": 0.0, "p": 0.6})
+    # dataset.drop_first_n(1500)
+
+    return dataset
+
+
+def preproc_oil(path):
+    dataset = Dataset(Config(path))
+    return dataset
+
+
 def evaluate_metrics(g, generator, e, df):
     evaluator = e[0](generator)
     evaluator.evaluate()
@@ -96,6 +118,7 @@ def evaluate_metrics(g, generator, e, df):
 
 def get_metrics(dataset, gens, evals, metrics):
     results = []
+    evaluators = []
 
     for e in evals:
         data = pd.DataFrame(columns=metrics)
@@ -109,6 +132,9 @@ def get_metrics(dataset, gens, evals, metrics):
                     generator.load_from_disk()
                     evaluator = evaluate_metrics(g, generator, e, data)
             except FileNotFoundError:
+                console.print(
+                    "🚨 Missing {} generated data for {}.".format(g[2], str(e[2]))
+                )
                 data.loc[g[2]] = (0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
 
         evaluator.evaluate_baseline()
@@ -124,8 +150,9 @@ def get_metrics(dataset, gens, evals, metrics):
         )
 
         results.append(data)
+        evaluators.append(e[2])
 
-    console.print(results)
+    console.print(list(zip(evaluators, results)))
 
     averages = reduce(lambda x, y: x + y, results)
     averages /= len(evals)
@@ -206,12 +233,14 @@ def get_latex(averages, maxs, gens):
 
 
 configs = [
-    # ("configs/playnet.json", preproc_playnet, "PlayNet"),
-    # ("configs/adult.json", preproc_adult, "Adult"),
-    # ("configs/car_eval_4.json", preproc_car_eval_4, "Car Evaluation"),
-    # ("configs/ecoli.json", preproc_ecoli, "Ecoli"),
-    # ("configs/sick.json", preproc_sick, "Sick"),
+    ("configs/playnet.json", preproc_playnet, "PlayNet"),
+    ("configs/adult.json", preproc_adult, "Adult"),
+    ("configs/car_eval_4.json", preproc_car_eval_4, "Car Evaluation"),
+    ("configs/ecoli.json", preproc_ecoli, "Ecoli"),
+    ("configs/sick.json", preproc_sick, "Sick"),
     ("configs/california_housing.json", preproc_california, "Calif. Housing"),
+    ("configs/mushroom.json", preproc_mushroom, "Mushroom"),
+    ("configs/oil.json", preproc_oil, "Oil"),
 ]
 
 gens = [
@@ -256,6 +285,16 @@ evals = [
         "\multirow{" + str(len(gens)) + "}{*}{MLP \cite{gorishniy2021revisiting}}",
         "MLP",
     ),
+    (
+        SVM,
+        "\multirow{" + str(len(gens)) + "}{*}{SVM}",
+        "SVM",
+    ),
+    # (
+    #     MLPGor,
+    #     "\multirow{" + str(len(gens)) + "}{*}{MLP \cite{gorishniy2021revisiting}}",
+    #     "MLPSKLearn",
+    # ),
 ]
 
 metrics = [

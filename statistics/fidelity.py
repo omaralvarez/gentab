@@ -20,7 +20,40 @@ import pandas as pd
 import numpy as np
 
 
-def preproc_playnet(dataset):
+def get_latex_str(metric, gen, avs, rnks, round):
+    avg = avs[metric][gen]
+    if rnks[metric][gen] == 1.0:
+        return "\\textbf{{{:.{prec}f}}}".format(avg, prec=round)
+    elif rnks[metric][gen] == 2.0:
+        return "\\underline{{{:.{prec}f}}}".format(avg, prec=round)
+    else:
+        return "{:.{prec}f}".format(avg, prec=round)
+
+
+def get_latex(averages, rnks, gens, round):
+    lines = []
+    for g in gens:
+        line = (
+            g[1]
+            + " & "
+            + get_latex_str("JSD", g[1], averages, rnks, round)
+            + " & "
+            + get_latex_str("WS", g[1], averages, rnks, round)
+            + " & "
+            + get_latex_str("PCC", g[1], averages, rnks, round)
+            + " & "
+            + get_latex_str("TU", g[1], averages, rnks, round)
+            + " & "
+            + get_latex_str("CR", g[1], averages, rnks, round)
+            + " \\\\"
+        )
+        lines.append(line)
+
+    return lines
+
+
+def preproc_playnet(path):
+    dataset = Dataset(Config(path))
     dataset.reduce_size(
         {
             "left_attack": 0.97,
@@ -44,14 +77,34 @@ def preproc_playnet(dataset):
     return dataset
 
 
-def preproc_adult(dataset):
+def preproc_adult(path):
+    dataset = Dataset(Config(path))
     dataset.merge_classes({"<=50K": ["<=50K."], ">50K": [">50K."]})
-    dataset.reduce_mem()
 
     return dataset
 
 
-def preproc_car(dataset):
+def preproc_car(path):
+    dataset = Dataset(Config(path))
+    return dataset
+
+
+def preproc_ecoli(path):
+    dataset = Dataset(Config(path))
+    return dataset
+
+
+def preproc_sick(path):
+    dataset = Dataset(Config(path))
+    return dataset
+
+
+def preproc_california(path):
+    labels = ["lowest", "lower", "low", "medium", "high", "higher", "highest"]
+    bins = [float("-inf"), 0.7, 1.4, 2.1, 2.8, 3.5, 4.2, float("inf")]
+
+    dataset = Dataset(Config(path), bins=bins, labels=labels)
+
     return dataset
 
 
@@ -59,6 +112,9 @@ configs = [
     ("configs/car_evaluation_cr.json", preproc_car, "Car Evaluation"),
     ("configs/playnet_cr.json", preproc_playnet, "PlayNet"),
     ("configs/adult_cr.json", preproc_adult, "Adult"),
+    ("configs/ecoli_cr.json", preproc_ecoli, "Ecoli"),
+    ("configs/sick_cr.json", preproc_sick, "Sick"),
+    ("configs/california_housing_cr.json", preproc_california, "Calif. Housing"),
 ]
 
 gens = [
@@ -81,9 +137,7 @@ theils = pd.DataFrame()
 ratio = pd.DataFrame()
 
 for c in configs:
-    config = Config(c[0])
-
-    dataset = c[1](Dataset(config))
+    dataset = c[1](c[0])
     console.print(dataset.class_counts(), dataset.row_count())
 
     for g in gens:
@@ -125,9 +179,7 @@ console.print("Jensen Shannon: \n", js_ranks)
 console.print("Wasserstein \n", ws_ranks)
 
 js_mean = js_ranks.mean().round(round)
-js_min = js_mean.min()
 ws_mean = ws_ranks.mean().round(round)
-ws_min = ws_mean.min()
 
 console.print(js_mean)
 console.print(ws_mean)
@@ -137,56 +189,26 @@ console.print("Theils: \n", theils)
 console.print("Ratio: \n", ratio)
 
 ps_mean = pearson.mean().round(round)
-ps_min = ps_mean.min()
 tu_mean = theils.mean().round(round)
-tu_min = tu_mean.min()
 rt_mean = ratio.mean().round(round)
-rt_min = rt_mean.min()
 
-console.print(ps_mean)
-console.print(tu_mean)
-console.print(rt_mean)
+df = pd.concat(
+    [
+        js_mean.rename("JSD"),
+        ws_mean.rename("WS"),
+        ps_mean.rename("PCC"),
+        tu_mean.rename("TU"),
+        rt_mean.rename("CR"),
+    ],
+    axis=1,
+)
 
-lines = []
-for (index, js), (_, ws), (_, ps), (_, tu), (_, rt) in zip(
-    js_mean.items(), ws_mean.items(), ps_mean.items(), tu_mean.items(), rt_mean.items()
-):
-    if js_min == js:
-        line = index + " & " + "\\textbf{{{:.{prec}f}}}".format(js, prec=round) + " & "
-    elif js != float("inf"):
-        line = index + " & " + "{:.{prec}f}".format(js, prec=round) + " & "
-    else:
-        line = index + " & - & "
+console.print(df)
 
-    if ws_min == ws:
-        line += "\\textbf{{{:.{prec}f}}}".format(ws, prec=round) + " & "
-    elif ws != float("inf"):
-        line += "{:.{prec}f}".format(ws, prec=round) + " & "
-    else:
-        line += " & - & "
+ranks = df.rank(method="dense", axis=0, ascending=True)
+console.print(ranks)
 
-    if ps_min == ps:
-        line += "\\textbf{{{:.{prec}f}}}".format(ps, prec=round) + " & "
-    elif ps != float("inf"):
-        line += "{:.{prec}f}".format(ps, prec=round) + " & "
-    else:
-        line += " & - & "
+latex = get_latex(df, ranks, gens, round)
 
-    if tu_min == tu:
-        line += "\\textbf{{{:.{prec}f}}}".format(tu, prec=round) + " & "
-    elif tu != float("inf"):
-        line += "{:.{prec}f}".format(tu, prec=round) + " & "
-    else:
-        line += " & - & "
-
-    if rt_min == rt:
-        line += "\\textbf{{{:.{prec}f}}}".format(rt, prec=round) + " \\\\"
-    elif rt != float("inf"):
-        line += "{:.{prec}f}".format(rt, prec=round) + " \\\\"
-    else:
-        line += "-  \\\\"
-
-    lines.append(line)
-
-for line in lines:
+for line in latex:
     console.print(line)

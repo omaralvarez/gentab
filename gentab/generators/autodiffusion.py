@@ -47,6 +47,11 @@ class AutoDiffusion(Generator):
         self.num_batches_per_epoch = num_batches_per_epoch
         self.T = T
         self.data = self.dataset.get_single_df()
+        if self.config["task_type"] in ["multiclass", "binary"]:
+            self.types = self.data.dtypes.to_dict()
+            self.data[dataset.config["y_label"]] = self.data[
+                dataset.config["y_label"]
+            ].astype(str)
 
     def preprocess(self) -> None:
         super().preprocess()
@@ -103,4 +108,9 @@ class AutoDiffusion(Generator):
         sample = Euler_Maruyama_sampling(self.score, T, N, P, self.device)
         gen_output = self.ds[0](sample, self.ds[2], self.ds[3])
 
-        return convert_to_table(self.data, gen_output, self.threshold)
+        if self.config["task_type"] in ["multiclass", "binary"]:
+            return convert_to_table(self.data, gen_output, self.threshold).astype(
+                dtype=self.types
+            )
+        else:
+            return convert_to_table(self.data, gen_output, self.threshold)
