@@ -1,8 +1,8 @@
 Out-of-the-box stuff
 ====================
 
-GenTab's last release (v0.5) implements 12 generators and includes
-configuration for working with 9 datasets.
+GenTab's last release (v0.x.y) features 12 generators and provides
+configurations for working with 9 datasets.
 
 Generators
 ----------
@@ -31,3 +31,8 @@ Datasets
 - Calif. Housing
 - Mushroom
 - Oil
+
+
+GenTab's modular design makes it easy to add new generators and
+datasets, allowing the software to stay up-to-date with bleeding-edge
+technologies and methodologies.

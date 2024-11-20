@@ -1,6 +1,10 @@
 In a nutshell
 =============
 
+GenTab defines 5 main entities: Config, Dataset, Generator, Evaluator,
+and Tuner. The following diagram illustrates their typical dataflow
+within GenTab:
+
 .. figure:: /_static/figs/architecture.svg
    :align: center
    :width: 70%
