@@ -32,16 +32,18 @@ Sample code to implement a basic GenTab workflow:
 
                 generator = AutoDiffusion(dataset)
                 evaluator = LightGBM(generator)
+
                 tuner = AutoDiffusionTuner(evaluator, trials)
                 tuner.tune()
+
                 tuner.save_to_disk()
 
 In the code we
 
 1. Parse a Config
-2. Create a Dataset and do some operations on it
+2. Create a Dataset and preprocess it
 3. Create a Generator
 4. Create an Evaluator
-5. Create a Tuner and run hyperparameter tuning for the desired generator
+5. Create a Tuner and perform hyperparameter tuning for the desired generator
 6. Store the best dataset and model parameters obtained after ten tries
 

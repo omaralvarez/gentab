@@ -1,24 +1,53 @@
 Out-of-the-box stuff
 ====================
 
-GenTab's last release (v0.x.y) features 12 generators and provides
-configurations for working with 9 datasets.
+GenTab's last release (v0.x.y) features **12 generators** and provides
+configurations for working with **9 datasets**.
 
-Generators
-----------
+..
+   Generators
+   ----------
 
-- SMOTE
-- ADASYN
-- GaussianCopula
-- TVAE
-- CTGAN
-- CTAB-GAN
-- CTAB-GAN+
-- CopulaGAN
-- ForestDiffusion
-- AutoDiffusion
-- GReaT
-- TabuLa
+   - SMOTE
+   - ADASYN
+   - GaussianCopula
+   - TVAE
+   - CTGAN
+   - CTAB-GAN
+   - CTAB-GAN+
+   - CopulaGAN
+   - ForestDiffusion
+   - AutoDiffusion
+   - GReaT
+   - TabuLa
+
++-----------------+---------------+------------------------------------+------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------+
+| Generator       | Architecture  | Type                               | Paper                                                                                                      | Example                                                                                             |
++=================+===============+====================================+============================================================================================================+=====================================================================================================+
+| SMOTE           | Randomized    | Linear                             | `link <https://arxiv.org/abs/1106.1813>`_                                                                  | `notebook <https://colab.research.google.com/drive/1-rg7tSR1llSMs9HhVVIDsgFmDELDVjma?usp=sharing>`_ |
++-----------------+               +                                    +------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------+
+| ADASYN          |               |                                    | `link <https://ieeexplore.ieee.org/document/4633969>`_                                                     | `notebook <https://colab.research.google.com/drive/1JYfrozyK1ilvKcMUO_w2mwiJHq46Vqi9?usp=sharing>`_ |
++-----------------+---------------+------------------------------------+------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------+
+| GaussianCopula  | Probabilistic | Probability Density Function       | `link <https://ieeexplore.ieee.org/abstract/document/7796926>`_                                            | `notebook <https://colab.research.google.com/drive/1EvBAc4i1zXZu8BTxe_IDYJFoP4tNswlD?usp=sharing>`_ |
++-----------------+---------------+------------------------------------+------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------+
+| TVAE            | Network       | AutoEncoder                        | `link <https://arxiv.org/abs/1907.00503>`_                                                                 | `notebook <https://colab.research.google.com/drive/1GJqa9extrsLoNrCQIPUCe9sn5OjqkwgT?usp=sharing>`_ |
++-----------------+               +------------------------------------+------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------+
+| CTGAN           |               | GAN                                | `link <https://arxiv.org/abs/1907.00503>`_                                                                 | `notebook <https://colab.research.google.com/drive/1BpwgH8xMG247m6c9WJM_MDxRoQYUaYKB?usp=sharing>`_ |
++-----------------+               +                                    +------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------+
+| CTAB-GAN        |               |                                    | `link <https://proceedings.mlr.press/v157/zhao21a.html>`_                                                  | `notebook <https://colab.research.google.com/drive/1WRRH0iPJpS9ORji2-k0F425zF2qVMM6z?usp=sharing>`_ |
++-----------------+               +                                    +------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------+
+| CTAB-GAN+       |               |                                    | `link <https://arxiv.org/abs/2204.00401>`_                                                                 | `notebook <https://colab.research.google.com/drive/1M4fZh27ammDWlsnMzYdpb80y9akKY00-?usp=sharing>`_ |
++-----------------+               +------------------------------------+------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------+
+| Copula GAN      |               | Probability Density Function + GAN | `link <https://ieeexplore.ieee.org/abstract/document/7796926>`_ `link <https://arxiv.org/abs/1907.00503>`_ | `notebook <https://colab.research.google.com/drive/1Rh0y1lV06GMUY8iwQk7vkUWejuY4omTC?usp=sharing>`_ |
++-----------------+               +------------------------------------+------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------+
+| ForestDiffusion |               | Diffusion Model                    | `link <https://arxiv.org/abs/2309.09968>`_                                                                 | `notebook <https://colab.research.google.com/drive/16la5HFEzyPkhEVurXsbp7MzVxqjqlNGH?usp=sharing>`_ |
++-----------------+               +------------------------------------+------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------+
+| AutoDiffusion   |               | AutoEncoder + Diffusion Model      | `link <https://arxiv.org/abs/2310.15479>`_                                                                 | `notebook <https://colab.research.google.com/drive/1OOLa7zNPhncCow2V_D1kWdBO9ILF3HxF?usp=sharing>`_ |
++-----------------+               +------------------------------------+------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------+
+| GReaT           |               | LLM                                | `link <https://arxiv.org/abs/2210.06280>`_                                                                 | `notebook <https://colab.research.google.com/drive/1wLcf8r-AQV5OEvxrBEB9wwgIk2QwQyiu?usp=sharing>`_ |
++-----------------+               +                                    +------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------+
+| TabuLa          |               |                                    | `link <https://arxiv.org/abs/2310.12746>`_                                                                 | `notebook <https://colab.research.google.com/drive/1OmA2oIKiCzhy7rpnG0Tt_abnSEpNymPf?usp=sharing>`_ |
++-----------------+---------------+------------------------------------+------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------+
 
 Datasets
 --------
