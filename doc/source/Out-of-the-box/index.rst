@@ -105,6 +105,19 @@ Evaluators
    | Multilayer Perceptron  | `[Gorishniy, 2021] <https://dl.acm.org/doi/10.5555/3540261.3541708>`_         |
    +------------------------+-------------------------------------------------------------------------------+
 
+To provide a comprehensive assessment of model performance, GenTab's
+Evaluator module supports the following metrics:
+
+- **Matthews Correlation Coefficient (MCC)**: A balanced measure that takes into account all four confusion matrix categories: True/False Positives and True/False Negatives.
+
+- **Accuracy**: The overall correctness of predictions.
+
+- **Precision**: The exactness of predictions for a specific class.
+
+- **Recall**: The percentage of total occurrences of a class that the model can accurately detect.
+
+- **F-Score**: The harmonic mean of precision and recall, balancing these two metrics into a single value.
+
 Extending SynTab
 ----------------
 
