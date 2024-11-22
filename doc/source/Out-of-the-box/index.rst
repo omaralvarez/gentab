@@ -2,7 +2,9 @@ Out-of-the-box stuff
 ====================
 
 GenTab's last release (v0.x.y) features **12 generators** and provides
-configurations for working with **9 datasets**.
+configurations for working with **9 datasets**. **5 evaluators** are
+available to assess the performance and quality of the generated
+synthetic data.
 
 Generators
 ----------
@@ -86,9 +88,26 @@ Datasets
    | Oil                |     21.48 |          0 |          49 | `[Ding, 2011] <https://doi.org/10.57709/1997714>`_              |
    +--------------------+-----------+------------+-------------+-----------------------------------------------------------------+
 
+Evaluators
+----------
+
+   +------------------------+-------------------------------------------------------------------------------+
+   | Evaluator              | Reference                                                                     |
+   +========================+===============================================================================+
+   | LightGBM               | `[Ke, 2017] <https://dl.acm.org/doi/10.5555/3294996.3295074>`_                |
+   +------------------------+-------------------------------------------------------------------------------+
+   | XGBoost                | `[Chen, 2016] <https://dl.acm.org/doi/10.1145/2939672.2939785>`_              |
+   +------------------------+-------------------------------------------------------------------------------+
+   | CatBoost               | `[Prokhorenkova, 2018] <https://dl.acm.org/doi/abs/10.5555/3327757.3327770>`_ |
+   +------------------------+-------------------------------------------------------------------------------+
+   | Support Vector Machine | `[Chan, 2011] <https://dl.acm.org/doi/10.1145/1961189.1961199>`_              |
+   +------------------------+-------------------------------------------------------------------------------+
+   | Multilayer Perceptron  | `[Gorishniy, 2021] <https://dl.acm.org/doi/10.5555/3540261.3541708>`_         |
+   +------------------------+-------------------------------------------------------------------------------+
+
 Extending SynTab
 ----------------
 
-GenTab's modular design makes it easy to **add new generators and
-datasets**, allowing the software to stay up-to-date with
-bleeding-edge technologies and methodologies.
+GenTab's modular design makes it easy to **add new generators,
+datasets and evaluators**, allowing the software to stay up-to-date
+with bleeding-edge technologies and methodologies.

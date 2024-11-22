@@ -22,6 +22,7 @@
    Install/index
    Nutshell/index
    Out-of-the-box/index
+   API/index
 
 Features
 """"""""
