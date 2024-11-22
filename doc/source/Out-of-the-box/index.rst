@@ -4,22 +4,22 @@ Out-of-the-box stuff
 GenTab's last release (v0.x.y) features **12 generators** and provides
 configurations for working with **9 datasets**.
 
-..
-   Generators
-   ----------
+Generators
+----------
 
-   - SMOTE
-   - ADASYN
-   - GaussianCopula
-   - TVAE
-   - CTGAN
-   - CTAB-GAN
-   - CTAB-GAN+
-   - CopulaGAN
-   - ForestDiffusion
-   - AutoDiffusion
-   - GReaT
-   - TabuLa
+   ..
+      - SMOTE
+      - ADASYN
+      - GaussianCopula
+      - TVAE
+      - CTGAN
+      - CTAB-GAN
+      - CTAB-GAN+
+      - CopulaGAN
+      - ForestDiffusion
+      - AutoDiffusion
+      - GReaT
+      - TabuLa
 
 +-----------------+---------------+------------------------------------+---------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------+
 | Generator       | Architecture  | Type                               | Reference                                                                                                                 | Example                                                                                 |
@@ -52,16 +52,43 @@ configurations for working with **9 datasets**.
 Datasets
 --------
 
-- Car Evaluation
-- PlayNet
-- Adult
-- Ecoli
-- Sick Euthyroid
-- Calif. Housing
-- Mushroom
-- Oil
+..
+   - Car Evaluation
+   - PlayNet
+   - Adult
+   - Ecoli
+   - Sick Euthyroid
+   - Calif. Housing
+   - Mushroom
+   - Oil
 
+.. table::
+   :widths: 7 4 5 5 6
 
-GenTab's modular design makes it easy to add new generators and
-datasets, allowing the software to stay up-to-date with bleeding-edge
-technologies and methodologies.
+   +--------------------+-----------+------------+-------------+-----------------------------------------------------------------+
+   | Dataset            | Imbalance | Continuous | Categorical | Reference                                                       |
+   |                    | ratio     | features   | features    |                                                                 |
+   +====================+===========+============+=============+=================================================================+
+   | Car Evaluation     |     18.62 |          0 |           6 | `[Bohanec, 1997] <https://doi.org/10.24432/C5JP48>`_            |
+   +--------------------+-----------+------------+-------------+-----------------------------------------------------------------+
+   | PlayNet            |      3.17 |         66 |           0 | `[Mures, 2024] <https://doi.org/10.1016/j.dib.2023.109848>`_    |
+   +--------------------+-----------+------------+-------------+-----------------------------------------------------------------+
+   | Adult              |      3.18 |          6 |           8 | `[Becker, 1996] <https://doi.org/10.24432/C5XW20>`_             |
+   +--------------------+-----------+------------+-------------+-----------------------------------------------------------------+
+   | Ecoli              |      8.57 |          0 |           7 | `[Ding, 2011] <https://doi.org/10.57709/1997714>`_              |
+   +--------------------+-----------+------------+-------------+-----------------------------------------------------------------+
+   | Sick Euthyroid     |      9.78 |          0 |          42 | `[Quinlan, 1986] <https://doi.org/10.24432/C5D010>`_            |
+   +--------------------+-----------+------------+-------------+-----------------------------------------------------------------+
+   | California Housing |      5.49 |          8 |           0 | `[Pace, 1997] <https://doi.org/10.1016/S0167-7152(96)00140-X>`_ |
+   +--------------------+-----------+------------+-------------+-----------------------------------------------------------------+
+   | Mushroom           |      2.69 |          0 |          22 | `[UCI, 1981] <https://doi.org/10.24432/C5959T>`_                |
+   +--------------------+-----------+------------+-------------+-----------------------------------------------------------------+
+   | Oil                |     21.48 |          0 |          49 | `[Ding, 2011] <https://doi.org/10.57709/1997714>`_              |
+   +--------------------+-----------+------------+-------------+-----------------------------------------------------------------+
+
+Extending SynTab
+----------------
+
+GenTab's modular design makes it easy to **add new generators and
+datasets**, allowing the software to stay up-to-date with
+bleeding-edge technologies and methodologies.
