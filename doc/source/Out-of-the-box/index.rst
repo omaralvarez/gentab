@@ -2,7 +2,7 @@ Out-of-the-box stuff
 ====================
 
 GenTab's last release (v0.x.y) features **12 generators** and provides
-configurations for working with **9 datasets**. **5 evaluators** are
+configurations for working with **8 datasets**. **5 evaluators** are
 available to assess the performance and quality of the generated
 synthetic data.
 
