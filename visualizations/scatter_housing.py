@@ -11,13 +11,11 @@ from gentab.generators import (
     GReaT,
 )
 from gentab.data import Config, Dataset
-from gentab.utils import console
 
 import numpy as np
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 import matplotlib as mpl
-from matplotlib.patches import Rectangle, Circle, Ellipse, Arc
 from mycolorpy import colorlist as mcp
 import geopandas as gpd
 
@@ -73,14 +71,6 @@ for g in gens:
     ax.set_ylabel("Latitude", fontsize=16)
     ax.set_xlabel("Longitude", fontsize=16)
 
-    # Remove chart borders and ticks
-    # ax.spines["top"].set_visible(False)
-    # ax.spines["right"].set_visible(False)
-    # ax.spines["bottom"].set_visible(False)
-    # ax.spines["left"].set_visible(False)
-    # ax.get_xaxis().set_ticks([])
-    # ax.get_yaxis().set_ticks([])
-
     cali.boundary.plot(ax=ax, edgecolor="black", linewidth=2)
 
     x = []
@@ -90,25 +80,24 @@ for g in gens:
         # Get positions
         if g[0] is not None:
             if c != "highest":
-                rows = generator.dataset.get_gen_class_rows(c)
-                # rows = generator.dataset.get_random_gen_class_rows(c, 770)
+                # rows = generator.dataset.get_gen_class_rows(c)
+                rows = generator.dataset.get_random_gen_class_rows(c, 770)
             else:
                 rows = generator.dataset.get_random_gen_class_rows(c, 300)
         else:
             if c != "highest":
-                rows = dataset.get_class_rows(c)
-                # rows = dataset.get_random_class_rows(c, 770)
+                # rows = dataset.get_class_rows(c)
+                rows = dataset.get_random_class_rows(c, 770)
             else:
                 rows = dataset.get_random_class_rows(c, 300)
 
         lat = rows["Latitude"].values.flatten()
         lon = rows["Longitude"].values.flatten()
 
-        # the scatter plot:
+        # The scatter plot
         scat = ax.scatter(
             lon, lat, s=(k + 4) ** 2, c=colors[k], alpha=0.35, label=labels[k]
         )
-        # ax.legend()
 
         x = np.concatenate((x, lon), axis=None)
         y = np.concatenate((y, lat), axis=None)
@@ -117,7 +106,7 @@ for g in gens:
 
     ax_histx = ax.inset_axes([0, 1.001, 1, 0.12], sharex=ax)
     ax_histy = ax.inset_axes([1.001, 0, 0.12, 1], sharey=ax)
-    # no labels
+    # No labels
     ax_histx.tick_params(axis="x", labelbottom=False)
     ax_histy.tick_params(axis="y", labelleft=False)
     # Remove chart borders and ticks
@@ -125,17 +114,14 @@ for g in gens:
     ax_histx.spines["right"].set_visible(False)
     ax_histx.spines["bottom"].set_visible(False)
     ax_histx.spines["left"].set_visible(False)
-    # ax_histx.get_xaxis().set_ticks([])
     ax_histx.get_yaxis().set_ticks([])
     ax_histy.spines["top"].set_visible(False)
     ax_histy.spines["right"].set_visible(False)
     ax_histy.spines["bottom"].set_visible(False)
     ax_histy.spines["left"].set_visible(False)
     ax_histy.get_xaxis().set_ticks([])
-    # ax_histy.get_yaxis().set_ticks([])
-    # now determine nice limits by hand:
+    # Now determine nice limits by hand
     binwidth = 0.5
-    # xymax = max(np.max(np.abs(x)), np.max(np.abs(y)))
     xymax = 130
     lim = (int(xymax / binwidth) + 1) * binwidth
 
@@ -157,18 +143,6 @@ for g in gens:
 
 ax = fig.add_subplot(gs[2, 3])
 
-# norm = mpl.colors.Normalize(vmin=0, vmax=5)
-# cb = fig.colorbar(
-#     mpl.cm.ScalarMappable(norm=norm, cmap=cmap),
-#     ax=axs,
-#     orientation="vertical",
-#     fraction=0.1,
-#     aspect=60,
-#     pad=0.025,
-# )
-# cb.ax.tick_params(labelsize=20)
-# cb.outline.set_visible(False)
-
 h, l = axs[0].get_legend_handles_labels()
 ax.legend(
     h,
@@ -176,7 +150,7 @@ ax.legend(
     loc="center",
     fontsize=35,
     markerscale=4,
-    title="Price",
+    # title="Price",
     title_fontsize=38,
     frameon=False,
 )

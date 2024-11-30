@@ -1,7 +1,4 @@
-from gentab.evaluators import KNN, LightGBM, XGBoost, MLP
 from gentab.generators import (
-    SMOTE,
-    ADASYN,
     TVAE,
     CTGAN,
     GaussianCopula,
@@ -14,12 +11,11 @@ from gentab.generators import (
     GReaT,
 )
 from gentab.data import Config, Dataset
-from gentab.utils import console
 
 import matplotlib as mpl
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
-from matplotlib.patches import Rectangle, Circle, Ellipse, Arc
+from matplotlib.patches import Rectangle, Ellipse, Arc
 import numpy as np
 from scipy.stats import kde
 
@@ -80,7 +76,6 @@ def preproc_playnet(dataset):
 
 
 gens = [
-    # (None, "Baseline"),
     (TVAE, "TVAE"),
     (CTGAN, "CTGAN"),
     (GaussianCopula, "Gaussian Copula"),
@@ -115,13 +110,6 @@ for c in class_names:
     xpoints = xpoints[ids]
     ypoints = ypoints[ids]
     # First array horiz. coords., second vertical
-    # Player position heatmap
-    # ax.hist2d(
-    #     xpoints,
-    #     ypoints,
-    #     # bins=[np.arange(0, 1.0, 0.08), np.arange(0.0, 1.0, 0.08)],
-    #     cmap="Greens",
-    # )
     # Evaluate a gaussian kde on a regular grid of nbins x nbins over data extents
     nbins = 20
     k = kde.gaussian_kde([xpoints, ypoints])
@@ -177,13 +165,6 @@ for g in gens:
         xpoints = xpoints[ids]
         ypoints = ypoints[ids]
         # First array horiz. coords., second vertical
-        # Player position heatmap
-        # ax.hist2d(
-        #     xpoints,
-        #     ypoints,
-        #     # bins=[np.arange(0, 1.0, 0.08), np.arange(0.0, 1.0, 0.08)],
-        #     cmap="Greens",
-        # )
         # Evaluate a gaussian kde on a regular grid of nbins x nbins over data extents
         nbins = 20
         k = kde.gaussian_kde([xpoints, ypoints])

@@ -1,7 +1,4 @@
-from gentab.evaluators import KNN, LightGBM, XGBoost, MLP
 from gentab.generators import (
-    SMOTE,
-    ADASYN,
     TVAE,
     CTGAN,
     GaussianCopula,
@@ -14,16 +11,14 @@ from gentab.generators import (
     GReaT,
 )
 from gentab.data import Config, Dataset
-from gentab.utils import console
 
 import matplotlib as mpl
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
-from matplotlib.patches import Rectangle, Circle, Ellipse, Arc
+from matplotlib.patches import Rectangle, Ellipse, Arc
 from mycolorpy import colorlist as mcp
 import numpy as np
 from scipy.stats import kde
-from scipy.ndimage import gaussian_filter
 
 
 def preproc_playnet(dataset):
@@ -133,8 +128,6 @@ for g in gens:
         zi = k(np.vstack([xi.flatten(), yi.flatten()]))
         maxcnt = zi.max() if zi.max() > maxcnt else maxcnt
 
-        # zi = gaussian_filter(zi, sigma=5)
-
         # Make the plot
         ax.pcolormesh(xi, yi, zi.reshape(xi.shape), shading="gouraud", cmap="Greens")
         # Middle line
@@ -182,19 +175,12 @@ for g in gens:
         ax_histx.spines["right"].set_visible(False)
         ax_histx.spines["bottom"].set_visible(False)
         ax_histx.spines["left"].set_visible(False)
-        # ax_histx.get_xaxis().set_ticks([])
         ax_histx.get_yaxis().set_ticks([])
         ax_histy.spines["top"].set_visible(False)
         ax_histy.spines["right"].set_visible(False)
         ax_histy.spines["bottom"].set_visible(False)
         ax_histy.spines["left"].set_visible(False)
         ax_histy.get_xaxis().set_ticks([])
-        # ax_histy.get_yaxis().set_ticks([])
-        # now determine nice limits by hand:
-        # binwidth = 0.1
-        # # xymax = max(np.max(np.abs(x)), np.max(np.abs(y)))
-        # xymax = 1.0
-        # lim = (int(xymax / binwidth) + 1) * binwidth
 
         nbins_hist = 28
         nbins_x_hist = nbins_hist
@@ -204,8 +190,6 @@ for g in gens:
 
         ax_histx.hist(xpoints, bins=bins_x, color=colors[5])
         ax_histy.hist(ypoints, bins=bins_y, orientation="horizontal", color=colors[5])
-
-        # ax_histx.set_title(g[1], fontsize=20, loc="right", y=1.0, pad=-20)
 
         axs.append(ax)
 

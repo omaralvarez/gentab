@@ -1,7 +1,4 @@
-from gentab.evaluators import KNN, LightGBM, XGBoost, MLP
 from gentab.generators import (
-    SMOTE,
-    ADASYN,
     TVAE,
     CTGAN,
     GaussianCopula,
@@ -17,7 +14,6 @@ from gentab.data import Config, Dataset
 from gentab.utils import console
 
 import matplotlib.pyplot as plt
-import matplotlib as mpl
 import matplotlib.lines as lines
 from mpl_toolkits.axes_grid1 import ImageGrid
 
@@ -85,14 +81,20 @@ def preproc_mushroom(path):
     return dataset
 
 
+def preproc_oil(path):
+    dataset = Dataset(Config(path))
+    return dataset
+
+
 configs = [
-    # ("configs/playnet_cr.json", preproc_playnet, "PlayNet"),
-    # ("configs/adult_cr.json", preproc_adult, "Adult"),
-    # ("configs/car_evaluation_cr.json", preproc_car_eval_4, "Car Evaluation"),
+    ("configs/playnet_cr.json", preproc_playnet, "PlayNet"),
+    ("configs/adult_cr.json", preproc_adult, "Adult"),
+    ("configs/car_evaluation_cr.json", preproc_car_eval_4, "Car Evaluation"),
     ("configs/ecoli_cr.json", preproc_ecoli, "Ecoli"),
     ("configs/sick_cr.json", preproc_sick, "Sick"),
-    # ("configs/california_housing_cr.json", preproc_california, "Calif. Housing"),
-    # ("configs/mushroom_cr.json", preproc_mushroom, "Mushroom"),
+    ("configs/california_housing_cr.json", preproc_california, "Calif. Housing"),
+    ("configs/mushroom_cr.json", preproc_mushroom, "Mushroom"),
+    ("configs/oil_cr.json", preproc_oil, "Oil"),
 ]
 
 gens = [
@@ -123,7 +125,6 @@ for c in configs:
             continue
 
         corrs.append(dataset.get_pearson_correlation().fillna(0))
-        print(dataset.get_pearson_correlation())
 
     max_corr = max(map(lambda x: x.values.max() if x is not None else 0, corrs))
 
@@ -145,7 +146,6 @@ for c in configs:
     for corr in corrs:
         # Iterating over the grid returns the Axes.
         ax = grid.axes_all[i]
-        print(i)
         ax.set_title(gens[i][1])
         ax.spines["top"].set_visible(False)
         ax.spines["right"].set_visible(False)
@@ -169,7 +169,6 @@ for c in configs:
             axs.append(ax)
             l1 = lines.Line2D([0, 1], [0, 1], transform=fig.transFigure, figure=fig)
             l2 = lines.Line2D([0, 1], [1, 0], transform=fig.transFigure, figure=fig)
-            # fig.lines.extend([l1, l2])
             ax.plot(
                 [0, dataset.num_features()], [0, dataset.num_features()], color="red"
             )  # Diagonal from bottom-left to top-right

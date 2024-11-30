@@ -1,7 +1,4 @@
-from gentab.evaluators import KNN, LightGBM, XGBoost, MLP
 from gentab.generators import (
-    SMOTE,
-    ADASYN,
     TVAE,
     CTGAN,
     GaussianCopula,
@@ -18,7 +15,7 @@ from gentab.utils import console
 
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
-from matplotlib.patches import Rectangle, Circle, Ellipse, Arc
+from matplotlib.patches import Rectangle, Ellipse, Arc
 import numpy as np
 
 
