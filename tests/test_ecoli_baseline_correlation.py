@@ -47,33 +47,34 @@ console.print(dataset.class_counts(), dataset.row_count())
 generator = CTABGAN(
     dataset,
     test_ratio=0.1,
-    epochs=1000,
+    epochs=700,
 )
 generator.generate(n_samples=n_samples, append=False)
-console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 dataset.save_to_disk(generator)
+console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 
 console.print(dataset.class_counts(), dataset.row_count())
 generator = CTABGANPlus(
     dataset,
-    test_ratio=0.2,
-    epochs=2000,
+    test_ratio=0.1,
+    high_quality=False,
+    epochs=1000,
 )
 generator.generate(n_samples=n_samples, append=False)
-console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 dataset.save_to_disk(generator)
+console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 
 console.print(dataset.class_counts(), dataset.row_count())
-generator = AutoDiffusion(dataset)
+generator = AutoDiffusion(dataset, batch_size=64)
 generator.generate(n_samples=n_samples, append=False)
-console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 dataset.save_to_disk(generator)
+console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 
 console.print(dataset.class_counts(), dataset.row_count())
 generator = ForestDiffusion(dataset, n_jobs=1, duplicate_K=4, n_estimators=100)
 generator.generate(n_samples=n_samples, append=False)
-console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 dataset.save_to_disk(generator)
+console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 
 console.print(dataset.class_counts(), dataset.row_count())
 generator = GReaT(
@@ -86,13 +87,12 @@ generator = GReaT(
     n_samples=8192,
 )
 generator.generate(n_samples=n_samples, append=False)
-console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 dataset.save_to_disk(generator)
+console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 
 console.print(dataset.class_counts(), dataset.row_count())
 generator = Tabula(
     dataset,
-    # categorical_columns=[dataset.config["y_label"]],
     epochs=600,
     max_length=1024,
     temperature=0.6,
@@ -101,5 +101,5 @@ generator = Tabula(
     n_samples=8192,
 )
 generator.generate(n_samples=n_samples, append=False)
-console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 dataset.save_to_disk(generator)
+console.print(dataset.generated_class_counts(), dataset.generated_row_count())

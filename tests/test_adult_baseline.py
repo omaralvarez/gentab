@@ -21,18 +21,6 @@ dataset = Dataset(config)
 dataset.merge_classes({"<=50K": ["<=50K."], ">50K": [">50K."]})
 
 console.print(dataset.class_counts(), dataset.row_count())
-generator = SMOTE(dataset)
-generator.generate()
-dataset.save_to_disk(generator)
-console.print(dataset.generated_class_counts(), dataset.generated_row_count())
-
-console.print(dataset.class_counts(), dataset.row_count())
-generator = ADASYN(dataset, sampling_strategy="minority")
-generator.generate()
-dataset.save_to_disk(generator)
-console.print(dataset.generated_class_counts(), dataset.generated_row_count())
-
-console.print(dataset.class_counts(), dataset.row_count())
 generator = TVAE(dataset)
 generator.generate()
 dataset.save_to_disk(generator)
@@ -62,8 +50,8 @@ generator = CTABGAN(
     test_ratio=0.10,
 )
 generator.generate()
-console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 dataset.save_to_disk(generator)
+console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 
 console.print(dataset.class_counts(), dataset.row_count())
 generator = CTABGANPlus(
@@ -71,20 +59,20 @@ generator = CTABGANPlus(
     test_ratio=0.10,
 )
 generator.generate()
-console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 dataset.save_to_disk(generator)
-[]
+console.print(dataset.generated_class_counts(), dataset.generated_row_count())
+
 console.print(dataset.class_counts(), dataset.row_count())
 generator = AutoDiffusion(dataset)
 generator.generate()
-console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 dataset.save_to_disk(generator)
+console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 
 console.print(dataset.class_counts(), dataset.row_count())
 generator = ForestDiffusion(dataset, n_jobs=1, duplicate_K=4, n_estimators=100)
 generator.generate()
-console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 dataset.save_to_disk(generator)
+console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 
 console.print(dataset.class_counts(), dataset.row_count())
 generator = GReaT(
@@ -97,8 +85,8 @@ generator = GReaT(
     n_samples=8192,
 )
 generator.generate()
-console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 dataset.save_to_disk(generator)
+console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 
 console.print(dataset.class_counts(), dataset.row_count())
 generator = Tabula(
@@ -111,5 +99,18 @@ generator = Tabula(
     n_samples=8192,
 )
 generator.generate()
-console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 dataset.save_to_disk(generator)
+console.print(dataset.generated_class_counts(), dataset.generated_row_count())
+
+
+console.print(dataset.class_counts(), dataset.row_count())
+generator = SMOTE(dataset)
+generator.generate()
+dataset.save_to_disk(generator)
+console.print(dataset.generated_class_counts(), dataset.generated_row_count())
+
+console.print(dataset.class_counts(), dataset.row_count())
+generator = ADASYN(dataset, sampling_strategy="minority")
+generator.generate()
+dataset.save_to_disk(generator)
+console.print(dataset.generated_class_counts(), dataset.generated_row_count())

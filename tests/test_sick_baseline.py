@@ -20,18 +20,6 @@ config = Config("configs/sick.json")
 dataset = Dataset(config)
 
 console.print(dataset.class_counts(), dataset.row_count())
-generator = SMOTE(dataset)
-generator.generate()
-dataset.save_to_disk(generator)
-console.print(dataset.generated_class_counts(), dataset.generated_row_count())
-
-console.print(dataset.class_counts(), dataset.row_count())
-generator = ADASYN(dataset, sampling_strategy="minority")
-generator.generate()
-dataset.save_to_disk(generator)
-console.print(dataset.generated_class_counts(), dataset.generated_row_count())
-
-console.print(dataset.class_counts(), dataset.row_count())
 generator = TVAE(dataset)
 generator.generate()
 dataset.save_to_disk(generator)
@@ -74,7 +62,7 @@ console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 dataset.save_to_disk(generator)
 
 console.print(dataset.class_counts(), dataset.row_count())
-generator = AutoDiffusion(dataset)
+generator = AutoDiffusion(dataset, n_epochs=100, diff_n_epochs=100)
 generator.generate()
 console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 dataset.save_to_disk(generator)
@@ -102,7 +90,7 @@ dataset.save_to_disk(generator)
 console.print(dataset.class_counts(), dataset.row_count())
 generator = Tabula(
     dataset,
-    epochs=15,
+    epochs=1000,
     max_length=1024,
     temperature=0.6,
     batch_size=32,
@@ -112,3 +100,15 @@ generator = Tabula(
 generator.generate()
 console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 dataset.save_to_disk(generator)
+
+console.print(dataset.class_counts(), dataset.row_count())
+generator = SMOTE(dataset)
+generator.generate()
+dataset.save_to_disk(generator)
+console.print(dataset.generated_class_counts(), dataset.generated_row_count())
+
+console.print(dataset.class_counts(), dataset.row_count())
+generator = ADASYN(dataset, sampling_strategy="minority")
+generator.generate()
+dataset.save_to_disk(generator)
+console.print(dataset.generated_class_counts(), dataset.generated_row_count())

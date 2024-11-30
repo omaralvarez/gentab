@@ -32,30 +32,12 @@ from gentab.utils import console
 
 config = Config("configs/california_housing.json")
 
-config = Config("configs/california_housing.json")
-
 labels = ["lowest", "lower", "low", "medium", "high", "higher", "highest"]
 bins = [float("-inf"), 0.7, 1.4, 2.1, 2.8, 3.5, 4.2, float("inf")]
 
 dataset = Dataset(config, bins=bins, labels=labels)
 
 trials = 10
-
-console.print(dataset.class_counts(), dataset.row_count())
-generator = SMOTE(dataset)
-evaluator = MLP(generator)
-tuner = SMOTETuner(evaluator, trials)
-tuner.tune()
-tuner.save_to_disk()
-console.print(dataset.generated_class_counts(), dataset.generated_row_count())
-
-console.print(dataset.class_counts(), dataset.row_count())
-generator = ADASYN(dataset, sampling_strategy="minority")
-evaluator = MLP(generator)
-tuner = ADASYNTuner(evaluator, trials)
-tuner.tune()
-tuner.save_to_disk()
-console.print(dataset.generated_class_counts(), dataset.generated_row_count())
 
 console.print(dataset.class_counts(), dataset.row_count())
 generator = TVAE(dataset)
@@ -159,6 +141,22 @@ evaluator = MLP(generator)
 tuner = TabulaTuner(
     evaluator, trials, min_epochs=15, max_epochs=30, max_tries_per_batch=16384
 )
+tuner.tune()
+tuner.save_to_disk()
+console.print(dataset.generated_class_counts(), dataset.generated_row_count())
+
+console.print(dataset.class_counts(), dataset.row_count())
+generator = SMOTE(dataset)
+evaluator = MLP(generator)
+tuner = SMOTETuner(evaluator, trials)
+tuner.tune()
+tuner.save_to_disk()
+console.print(dataset.generated_class_counts(), dataset.generated_row_count())
+
+console.print(dataset.class_counts(), dataset.row_count())
+generator = ADASYN(dataset, sampling_strategy="minority")
+evaluator = MLP(generator)
+tuner = ADASYNTuner(evaluator, trials)
 tuner.tune()
 tuner.save_to_disk()
 console.print(dataset.generated_class_counts(), dataset.generated_row_count())
