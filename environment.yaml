@@ -3,8 +3,8 @@ channels:
   - pytorch
   - nvidia
   - cudistas
-  - conda-forge
   - defaults
+  - conda-forge
 dependencies:
   - python=3.10
   - pip=23.3.1

@@ -13,6 +13,7 @@ tuning/
 catboost_info/
 .scale*
 ml_utility.dat
+dataset_info.json
 us_state_info/
 
 # Byte-compiled / optimized / DLL files
