@@ -8,7 +8,7 @@ from collections import Counter
 
 
 class SMOTE(Generator):
-    def __init__(self, dataset, k_neighbors=5, sampling_strategy="auto") -> None:
+    def __init__(self, dataset, k_neighbors=7, sampling_strategy="auto") -> None:
         super().__init__(dataset)
         self.k_neighbors = k_neighbors
         self.sampling_strategy = sampling_strategy

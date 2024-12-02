@@ -1,5 +1,5 @@
 from . import Evaluator
-from gentab.utils import console, SPINNER, REFRESH
+from gentab.utils import console
 
 from xgboost import XGBClassifier
 

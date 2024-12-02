@@ -7,7 +7,7 @@ from collections import Counter
 
 
 class ADASYN(Generator):
-    def __init__(self, dataset, n_neighbors=5, sampling_strategy="minority") -> None:
+    def __init__(self, dataset, n_neighbors=6, sampling_strategy="minority") -> None:
         super().__init__(dataset)
         self.n_neighbors = n_neighbors
         self.sampling_strategy = sampling_strategy
