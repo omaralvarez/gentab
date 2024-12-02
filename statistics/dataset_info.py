@@ -16,6 +16,8 @@ from gentab.generators import (
 from gentab.data import Config, Dataset
 from gentab.utils import console
 
+import json
+
 import pandas as pd
 import numpy as np
 
@@ -146,6 +148,9 @@ for c in configs:
     info[c[2]] = dataset.get_info()
 
 console.print(info)
+
+with open("dataset_info.json", "w", encoding="utf-8") as f:
+    json.dump(info, f, ensure_ascii=False, indent=4)
 
 round = 2
 lines = []
