@@ -1,62 +1,293 @@
-import re
+from gentab.evaluators import (
+    LightGBM,
+    CatBoost,
+    XGBoost,
+    MLP,
+    SVM,
+)
+from gentab.generators import (
+    SMOTE,
+    ADASYN,
+    TVAE,
+    CTGAN,
+    GaussianCopula,
+    CopulaGAN,
+    CTABGAN,
+    CTABGANPlus,
+    AutoDiffusion,
+    ForestDiffusion,
+    Tabula,
+    GReaT,
+)
+from gentab.data import Config, Dataset
 from gentab.utils import console
 
 import pandas as pd
-import numpy as np
+from functools import reduce
 
 
-def get_latex_str(metric, gen, avs, rnks, round):
+def preproc_playnet(path):
+    dataset = Dataset(Config(path))
+    dataset.reduce_size(
+        {
+            "left_attack": 0.97,
+            "right_attack": 0.97,
+            "right_transition": 0.9,
+            "left_transition": 0.9,
+            "time_out": 0.8,
+            "left_penal": 0.5,
+            "right_penal": 0.5,
+        }
+    )
+    dataset.merge_classes(
+        {
+            "attack": ["left_attack", "right_attack"],
+            "transition": ["left_transition", "right_transition"],
+            "penalty": ["left_penal", "right_penal"],
+        }
+    )
+    dataset.reduce_mem()
+
+    return dataset
+
+
+def preproc_adult(path):
+    dataset = Dataset(Config(path))
+    dataset.merge_classes({"<=50K": ["<=50K."], ">50K": [">50K."]})
+
+    return dataset
+
+
+def preproc_car_eval_4(path):
+    dataset = Dataset(Config(path))
+    return dataset
+
+
+def preproc_ecoli(path):
+    dataset = Dataset(Config(path))
+    return dataset
+
+
+def preproc_sick(path):
+    dataset = Dataset(Config(path))
+    return dataset
+
+
+def preproc_california(path):
+    labels = ["lowest", "lower", "low", "medium", "high", "higher", "highest"]
+    bins = [float("-inf"), 0.7, 1.4, 2.1, 2.8, 3.5, 4.2, float("inf")]
+
+    dataset = Dataset(Config(path), bins=bins, labels=labels)
+
+    return dataset
+
+
+def preproc_mushroom(path):
+    dataset = Dataset(Config(path))
+    dataset.reduce_size({"e": 0.0, "p": 0.6})
+
+    return dataset
+
+
+def preproc_oil(path):
+    dataset = Dataset(Config(path))
+    return dataset
+
+
+def evaluate_metrics(g, generator, e, df):
+    evaluator = e[0](generator)
+    evaluator.evaluate()
+
+    df.loc[g[2]] = (
+        evaluator.mcc,
+        evaluator.accuracy,
+        evaluator.weighted[0],
+        evaluator.macro[0],
+        evaluator.weighted[1],
+        evaluator.macro[1],
+        evaluator.weighted[2],
+        evaluator.macro[2],
+    )
+
+    return evaluator
+
+
+def get_metrics(dataset, gens, evals, metrics):
+    results = []
+    evaluators = []
+
+    for e in evals:
+        data = pd.DataFrame(columns=metrics)
+        for g in gens:
+            generator = g[0](dataset)
+            try:
+                try:
+                    generator.load_from_disk(str(e[2]))
+                    evaluator = evaluate_metrics(g, generator, e, data)
+                except FileNotFoundError:
+                    generator.load_from_disk()
+                    evaluator = evaluate_metrics(g, generator, e, data)
+            except FileNotFoundError:
+                console.print(
+                    "🚨 Missing {} generated data for {}.".format(g[2], str(e[2]))
+                )
+                data.loc[g[2]] = (0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
+
+        evaluator.evaluate_baseline()
+        data.loc["Baseline"] = (
+            evaluator.mcc,
+            evaluator.accuracy,
+            evaluator.weighted[0],
+            evaluator.macro[0],
+            evaluator.weighted[1],
+            evaluator.macro[1],
+            evaluator.weighted[2],
+            evaluator.macro[2],
+        )
+
+        results.append(data)
+        evaluators.append(e[2])
+
+    console.print(list(zip(evaluators, results)))
+
+    averages = reduce(lambda x, y: x + y, results)
+    averages /= len(evals)
+    averages.loc[:, averages.columns != "MCC"] *= 100.0
+
+    maxs = averages.max()
+    maxs[maxs.index != "MCC"] = maxs[maxs.index != "MCC"].round(1)
+    maxs.loc["MCC"] = maxs.loc["MCC"].round(2)
+
+    averages.loc[:, averages.columns != "MCC"] = averages.loc[
+        :, averages.columns != "MCC"
+    ].round(1)
+    averages["MCC"] = averages["MCC"].round(2)
+
+    return averages, maxs
+
+
+def get_latex_str(metric, gen, avs, mxs, round):
     avg = avs[metric][gen]
-    if rnks[metric][gen] == 1.0:
+    if avg == mxs[metric]:
         return "\\textbf{{{:.{prec}f}}}".format(avg, prec=round)
-    elif rnks[metric][gen] == 2.0:
-        return "\\underline{{{:.{prec}f}}}".format(avg, prec=round)
     else:
         return "{:.{prec}f}".format(avg, prec=round)
 
 
-def get_latex(averages, ranks):
+def get_latex(averages, maxs, gens):
     lines = []
+    line = (
+        "None"
+        + " & "
+        + get_latex_str("MCC", "Baseline", averages, maxs, 2)
+        + " & "
+        + get_latex_str("Acc", "Baseline", averages, maxs, 1)
+        + "\\%  & "
+        + get_latex_str("WPr", "Baseline", averages, maxs, 1)
+        + "\\% & "
+        + get_latex_str("MPr", "Baseline", averages, maxs, 1)
+        + "\\% & "
+        + get_latex_str("WRe", "Baseline", averages, maxs, 1)
+        + "\\% & "
+        + get_latex_str("MRe", "Baseline", averages, maxs, 1)
+        + "\\%  & "
+        + get_latex_str("WF", "Baseline", averages, maxs, 1)
+        + "\\% & "
+        + get_latex_str("MF", "Baseline", averages, maxs, 1)
+        + "\\% \\\\"
+    )
+    lines.append(line)
+    line = " & "
 
-    base = averages.iloc[0]
-
-    for a in averages.iterrows():
-        if a[1]["MCC"] == base["MCC"]:
-            color = "\\rowcolor{lightgray!30!}"
-        elif a[1]["MCC"] > base["MCC"]:
-            color = "\\rowcolor{SeaGreen3!30!}"
+    for g in gens:
+        if averages.loc[g[2]].sum() == 0.0:
+            line = g[1] + " & - & - & - & - & - & - & - & - \\\\"
         else:
-            color = "\\rowcolor{RosyBrown2!30!}"
-
-        line = (
-            color
-            + a[0]
-            + " & "
-            + get_latex_str("Rank", a[0], averages, ranks, 1)
-            + " & "
-            + get_latex_str("MCC", a[0], averages, ranks, 2)
-            + " & "
-            + get_latex_str("Acc", a[0], averages, ranks, 1)
-            + "\\%  & "
-            + get_latex_str("WPr", a[0], averages, ranks, 1)
-            + "\\% & "
-            + get_latex_str("MPr", a[0], averages, ranks, 1)
-            + "\\% & "
-            + get_latex_str("WRe", a[0], averages, ranks, 1)
-            + "\\% & "
-            + get_latex_str("MRe", a[0], averages, ranks, 1)
-            + "\\%  & "
-            + get_latex_str("WF", a[0], averages, ranks, 1)
-            + "\\% & "
-            + get_latex_str("MF", a[0], averages, ranks, 1)
-            + "\\% \\\\"
-        )
+            line = (
+                g[1]
+                + " & "
+                + get_latex_str("MCC", g[2], averages, maxs, 2)
+                + " & "
+                + get_latex_str("Acc", g[2], averages, maxs, 1)
+                + "\\%  & "
+                + get_latex_str("WPr", g[2], averages, maxs, 1)
+                + "\\% & "
+                + get_latex_str("MPr", g[2], averages, maxs, 1)
+                + "\\% & "
+                + get_latex_str("WRe", g[2], averages, maxs, 1)
+                + "\\% & "
+                + get_latex_str("MRe", g[2], averages, maxs, 1)
+                + "\\%  & "
+                + get_latex_str("WF", g[2], averages, maxs, 1)
+                + "\\% & "
+                + get_latex_str("MF", g[2], averages, maxs, 1)
+                + "\\% \\\\"
+            )
         lines.append(line)
 
     return lines
 
 
-keys = ["Dataset", "Model"]
+configs = [
+    ("configs/car_eval_4.json", preproc_car_eval_4, "Car Evaluation"),
+    ("configs/playnet.json", preproc_playnet, "PlayNet"),
+    ("configs/adult.json", preproc_adult, "Adult"),
+    ("configs/ecoli.json", preproc_ecoli, "Ecoli"),
+    ("configs/sick.json", preproc_sick, "Sick"),
+    ("configs/california_housing.json", preproc_california, "Calif. Housing"),
+    ("configs/mushroom.json", preproc_mushroom, "Mushroom"),
+    ("configs/oil.json", preproc_oil, "Oil"),
+]
+
+gens = [
+    (SMOTE, "SMOTE \cite{chawla2002smote}", "SMOTE"),
+    (ADASYN, "ADASYN \cite{he2008adasyn}", "ADASYN"),
+    (TVAE, "TVAE \cite{xu2019modeling}", "TVAE"),
+    (CTGAN, "CTGAN \cite{xu2019modeling}", "CTGAN"),
+    (GaussianCopula, "GaussianCopula \cite{patki2016synthetic}", "GaussianCopula"),
+    (CopulaGAN, "CopulaGAN \cite{xu2019modeling}", "CopulaGAN"),
+    (CTABGAN, "CTAB-GAN \cite{zhao2021ctab}", "CTAB-GAN"),
+    (CTABGANPlus, "CTAB-GAN+ \cite{zhao2022ctab}", "CTAB-GAN+"),
+    (AutoDiffusion, "AutoDiffusion \cite{suh2023autodiff}", "AutoDiffusion"),
+    (
+        ForestDiffusion,
+        "ForestDiffusion \cite{jolicoeur2023generating}",
+        "ForestDiffusion",
+    ),
+    (GReaT, "GReaT \cite{borisov2022language}", "GReaT"),
+    (Tabula, "Tabula \cite{zhao2023tabula}", "Tabula"),
+]
+
+evals = [
+    (
+        LightGBM,
+        "\multirow{" + str(len(gens)) + "}{*}{LightGBM \cite{ke2017lightgbm}}",
+        "LightGBM",
+    ),
+    (
+        CatBoost,
+        "\multirow{"
+        + str(len(gens))
+        + "}{*}{CatBoost \cite{prokhorenkova2018catboost}}",
+        "CatBoost",
+    ),
+    (
+        XGBoost,
+        "\multirow{" + str(len(gens)) + "}{*}{XGBoost \cite{chen2016xgboost}}",
+        "XGBoost",
+    ),
+    (
+        MLP,
+        "\multirow{" + str(len(gens)) + "}{*}{MLP \cite{gorishniy2021revisiting}}",
+        "MLP",
+    ),
+    (
+        SVM,
+        "\multirow{" + str(len(gens)) + "}{*}{Linear SVM \cite{chang2011libsvm}}",
+        "SVM",
+    ),
+]
+
 metrics = [
     "MCC",
     "Acc",
@@ -68,65 +299,11 @@ metrics = [
     "MF",
 ]
 
-file = open("mlperf.dat", "r")
+for c in configs:
+    dataset = c[1](c[0])
 
-df = pd.DataFrame(columns=keys + metrics)
-values = []
-while True:
-    content = file.readline()
+    averages, maxs = get_metrics(dataset, gens, evals, metrics)
+    latex = get_latex(averages, maxs, gens)
 
-    if not content:
-        # datasets.append(values)
-        break
-
-    if content.find("@") != -1:
-        dset = content
-    else:
-        split = content.split("&")
-
-        row = [
-            dset,
-            split[0],
-            *[
-                float(re.findall("\d+\.\d+", num)[0]) if num.find("-") == -1 else 0.0
-                for num in split[1:]
-            ],
-        ]
-
-        # not including 0s in stats
-        if not all(v == 0 for v in row[2:]):
-            df.loc[len(df)] = row
-
-        # Including 0s in mean
-        # df.loc[len(df)] = row
-
-
-console.print(df)
-
-avgs = df.groupby(["Model"], sort=False).agg({m: "mean" for m in metrics})
-rnd_avgs = avgs.round(2)
-
-console.print(avgs)
-
-# Get real ranks to compute final rank
-ranks = avgs.rank(method="dense", axis=0, ascending=False)
-# Get ranks of rounded to know which rows need bf or underline
-# rnd_ranks = rnd_avgs.rank(method="dense", axis=0, ascending=False)
-
-# Real ranks average column
-avgs["Rank"] = ranks.mean(axis=1)
-rnd_avgs["Rank"] = ranks.mean(axis=1).round(2)
-
-console.print(avgs["Rank"])
-
-# Second round to compute averages including rank
-ranks = rnd_avgs.rank(method="dense", axis=0, ascending=False)
-ranks["Rank"] = len(ranks) + 1 - ranks["Rank"]
-console.print(ranks)
-
-latex = get_latex(avgs, ranks)
-
-for line in latex:
-    console.print(line)
-
-file.close()
+    for line in latex:
+        console.print(line)
