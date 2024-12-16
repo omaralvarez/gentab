@@ -112,7 +112,9 @@ while True:
         break
 
     if content.find("@") != -1:
+        print(content)
         dset = content.strip().replace("@", "")
+        bsl = None
     else:
         split = content.split("&")
 
@@ -124,9 +126,13 @@ while True:
                 for num in split[1:]
             ],
         ]
+        if bsl is None:
+            bsl = row
 
         if not all(v == 0 for v in row[2:]):
             df.loc[len(df)] = row
+        else:
+            df.loc[len(df)] = bsl
 
 console.print(df)
 
