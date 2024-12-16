@@ -81,6 +81,7 @@ class Tuner:
         # Add timing information
         self.trial.params["train_time"] = self.trial.user_attrs["timing"][0]
         self.trial.params["gen_time"] = self.trial.user_attrs["timing"][1]
+        self.trial.params["metric_value"] = self.trial.value
 
         # Save generator parameters to JSON
         Path(self.folder).mkdir(parents=True, exist_ok=True)
