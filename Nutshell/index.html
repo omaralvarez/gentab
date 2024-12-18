@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>In a nutshell &#8212; gentab-doc v0.1.2 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d1102ebc" />
+    <link rel="stylesheet" type="text/css" href="../_static/basic.css?v=686e5160" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=11885564" />
+    <script src="../_static/documentation_options.js?v=69c7a37b"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Out-of-the-box stuff" href="../Out-of-the-box/index.html" />
+    <link rel="prev" title="Install" href="../Install/index.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="in-a-nutshell">
+<h1>In a nutshell<a class="headerlink" href="#in-a-nutshell" title="Link to this heading">¶</a></h1>
+<p>GenTab defines 5 main entities: Config, Dataset, Generator, Evaluator,
+and Tuner. The following diagram illustrates their typical dataflow
+within GenTab:</p>
+<figure class="align-center" id="id1">
+<a class="reference internal image-reference" href="../_images/architecture.svg"><img alt="../_images/architecture.svg" src="../_images/architecture.svg" style="width: 70%;" />
+</a>
+<figcaption>
+<p><span class="caption-text">System overview of GenTab</span><a class="headerlink" href="#id1" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>Sample code to implement a basic GenTab workflow:</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">gentab.generators</span> <span class="kn">import</span> <span class="n">AutoDiffusion</span>
+<span class="kn">from</span> <span class="nn">gentab.evaluators</span> <span class="kn">import</span> <span class="n">LightGBM</span>
+<span class="kn">from</span> <span class="nn">gentab.tuners</span> <span class="kn">import</span> <span class="n">AutoDiffusionTuner</span>
+<span class="kn">from</span> <span class="nn">gentab.data</span> <span class="kn">import</span> <span class="n">Config</span><span class="p">,</span> <span class="n">Dataset</span>
+
+<span class="n">config</span> <span class="o">=</span> <span class="n">Config</span><span class="p">(</span><span class="s2">&quot;configs/adult.json&quot;</span><span class="p">)</span>
+
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">Dataset</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+<span class="n">dataset</span><span class="o">.</span><span class="n">merge_classes</span><span class="p">({</span>
+  <span class="s2">&quot;&lt;=50K&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;&lt;=50K.&quot;</span><span class="p">],</span> <span class="s2">&quot;&gt;50K&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;&gt;50K.&quot;</span><span class="p">]</span>
+<span class="p">})</span>
+<span class="n">dataset</span><span class="o">.</span><span class="n">reduce_mem</span><span class="p">()</span>
+
+<span class="n">trials</span> <span class="o">=</span> <span class="mi">10</span>
+
+<span class="n">generator</span> <span class="o">=</span> <span class="n">AutoDiffusion</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
+<span class="n">evaluator</span> <span class="o">=</span> <span class="n">LightGBM</span><span class="p">(</span><span class="n">generator</span><span class="p">)</span>
+
+<span class="n">tuner</span> <span class="o">=</span> <span class="n">AutoDiffusionTuner</span><span class="p">(</span><span class="n">evaluator</span><span class="p">,</span> <span class="n">trials</span><span class="p">)</span>
+<span class="n">tuner</span><span class="o">.</span><span class="n">tune</span><span class="p">()</span>
+
+<span class="n">tuner</span><span class="o">.</span><span class="n">save_to_disk</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>In the code we</p>
+<ol class="arabic simple">
+<li><p>Parse a Config</p></li>
+<li><p>Create a Dataset and preprocess it</p></li>
+<li><p>Create a Generator</p></li>
+<li><p>Create an Evaluator</p></li>
+<li><p>Create a Tuner and perform hyperparameter tuning for the desired generator</p></li>
+<li><p>Store the best dataset and model parameters obtained after ten tries</p></li>
+</ol>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">gentab-doc</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../Install/index.html">Install</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">In a nutshell</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Out-of-the-box/index.html">Out-of-the-box stuff</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../API/index.html">API Reference</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="../Install/index.html" title="previous chapter">Install</a></li>
+      <li>Next: <a href="../Out-of-the-box/index.html" title="next chapter">Out-of-the-box stuff</a></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Omar A. Mures.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.1.3</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="../_sources/Nutshell/index.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
