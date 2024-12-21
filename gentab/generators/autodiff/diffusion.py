@@ -69,7 +69,7 @@ def compute_v(ll, alpha, beta):
     return v
 
 
-def loss_fn(model, Input_Data, T, eps=1e-5):
+def loss_fn(model, Input_Data, T, eps=1e-5, device="cuda"):
     N, input_dim = Input_Data.shape
     loss_values = torch.empty(N)
 
@@ -152,6 +152,8 @@ def train_diffusion(
     weight_decay,
     n_epochs,
     batch_size,
+    progress,
+    task,
     device,
 ):
     ScoreNet = TabNetwork(hidden_dims, converted_table_dim)  # Stasy Architecture
@@ -166,20 +168,18 @@ def train_diffusion(
         epochs=n_epochs,
     )
 
-    # tqdm_epoch = tqdm.trange(n_epochs)
     losses = []
 
     # alpha0 = 0.25
     # beta0 = 0.95
 
-    # TODO Progress here
     for epoch in range(n_epochs):
         batch_idx = random.choices(
             range(latent_features.shape[0]), k=batch_size
         )  ## Choose random indices
         batch_X = latent_features[batch_idx, :]
 
-        loss_values = loss_fn(ScoreNet_Parallel, batch_X, T, eps)
+        loss_values = loss_fn(ScoreNet_Parallel, batch_X, T, eps, device=device)
 
         # q_alpha = torch.tensor(alpha0 + torch.log( torch.tensor(1+0.0001718*epoch* (1-alpha0), dtype=torch.float32))).clamp_(max=1).to(device)
         # q_beta = torch.tensor(beta0 + torch.log( torch.tensor(1+0.0001718*epoch* (1-beta0), dtype=torch.float32) )).clamp_(max=1).to(device)
@@ -199,7 +199,7 @@ def train_diffusion(
 
         # Print the training loss over the epoch.
         losses.append(loss.item())
-        # tqdm_epoch.set_description("Average Loss: {:5f}".format(loss.item()))
+        progress.update(task, completed=epoch + 1)
 
     return ScoreNet
 
@@ -294,7 +294,7 @@ def from_flattened_numpy(x, shape):
     return torch.from_numpy(x.reshape(shape))
 
 
-def drift_fn(model, x, vec_t):
+def drift_fn(model, x, vec_t, device="cuda"):
     N, P = x.shape
 
     mean = marginal_prob_mean_fn(x, vec_t).to(device)
@@ -331,16 +331,16 @@ def get_div_fn(fn):
     return div_fn
 
 
-def div_fn(model, x, t, noise):
-    return get_div_fn(lambda xx, tt: drift_fn(model, xx, tt))(x, t, noise)
+def div_fn(model, x, t, noise, device):
+    return get_div_fn(lambda xx, tt: drift_fn(model, xx, tt, device))(x, t, noise)
 
 
-def ode_func(t, x):
-    sample = from_flattened_numpy(x[: -shape[0]], shape).to(device).type(torch.float32)
-    vec_t = torch.ones(sample.shape[0], device=device) * t
-    drift = to_flattened_numpy(drift_fn(score, sample, vec_t))
-    logp_grad = to_flattened_numpy(div_fn(score, sample, vec_t, epsilon))
-    return np.concatenate([drift, logp_grad], axis=0)
+# def ode_func(t, x, device):
+#     sample = from_flattened_numpy(x[: -shape[0]], shape).to(device).type(torch.float32)
+#     vec_t = torch.ones(sample.shape[0], device=device) * t
+#     drift = to_flattened_numpy(drift_fn(score, sample, vec_t, device))
+#     logp_grad = to_flattened_numpy(div_fn(score, sample, vec_t, epsilon, device))
+#     return np.concatenate([drift, logp_grad], axis=0)
 
 
 # init = np.concatenate([to_flattened_numpy(data), np.zeros((shape[0],))], axis = 0)

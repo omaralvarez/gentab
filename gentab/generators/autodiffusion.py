@@ -1,7 +1,9 @@
 from . import Generator
-from .autodiff.process_GQ import DataFrameParser, convert_to_table
+from .autodiff.process_GQ import convert_to_table as convert_to_table_gq
+from .autodiff.process_edited import convert_to_table as convert_to_table_ed
 from .autodiff.autoencoder import train_autoencoder
-from .autodiff.TabDDPMdiff import train_diffusion
+from .autodiff.TabDDPMdiff import train_diffusion as train_diffusion_tab
+from .autodiff.diffusion import train_diffusion as train_diffusion_sta
 from .autodiff.diffusion import Euler_Maruyama_sampling
 from gentab.utils import console, PROG_COLUMNS, DEVICE
 
@@ -28,6 +30,7 @@ class AutoDiffusion(Generator):
         sigma=20,
         num_batches_per_epoch=50,
         T=100,
+        backend="TabDDPM",  # TabDDPM or STaSy
     ) -> None:
         super().__init__(dataset, batch_size, max_tries_per_batch)
         self.threshold = threshold
@@ -46,12 +49,12 @@ class AutoDiffusion(Generator):
         self.sigma = sigma
         self.num_batches_per_epoch = num_batches_per_epoch
         self.T = T
+        self.backend = backend
         self.data = self.dataset.get_single_df()
-        if self.config["task_type"] in ["multiclass", "binary"]:
-            self.types = self.data.dtypes.to_dict()
-            self.data[dataset.config["y_label"]] = self.data[
-                dataset.config["y_label"]
-            ].astype(str)
+        self.types = self.data.dtypes.to_dict()
+        self.data[dataset.config["y_label"]] = self.data[
+            dataset.config["y_label"]
+        ].astype(str)
 
     def preprocess(self) -> None:
         super().preprocess()
@@ -84,21 +87,40 @@ class AutoDiffusion(Generator):
         self.latent_features = self.ds[1].detach()
         self.converted_table_dim = self.latent_features.shape[1]
 
-        self.score = train_diffusion(
-            self.latent_features,
-            self.T,
-            self.eps,
-            self.sigma,
-            self.lr,
-            self.num_batches_per_epoch,
-            self.maximum_learning_rate,
-            self.weight_decay,
-            self.diff_n_epochs,
-            self.batch_size,
-            self.device,
-            self.p,
-            dm_task,
-        )
+        if self.backend == "TabDDPM":
+            self.score = train_diffusion_tab(
+                self.latent_features,
+                self.T,
+                self.eps,
+                self.sigma,
+                self.lr,
+                self.num_batches_per_epoch,
+                self.maximum_learning_rate,
+                self.weight_decay,
+                self.diff_n_epochs,
+                self.batch_size,
+                self.device,
+                self.p,
+                dm_task,
+            )
+        else:
+            self.score = train_diffusion_sta(
+                self.latent_features,
+                self.T,
+                self.hidden_dims,
+                self.converted_table_dim,
+                self.eps,
+                self.sigma,
+                self.lr,
+                self.num_batches_per_epoch,
+                self.maximum_learning_rate,
+                self.weight_decay,
+                self.diff_n_epochs,
+                self.batch_size,
+                self.p,
+                dm_task,
+                self.device,
+            )
 
     def sample(self) -> pd.DataFrame:
         T = self.T
@@ -108,9 +130,11 @@ class AutoDiffusion(Generator):
         sample = Euler_Maruyama_sampling(self.score, T, N, P, self.device)
         gen_output = self.ds[0](sample, self.ds[2], self.ds[3])
 
-        if self.config["task_type"] in ["multiclass", "binary"]:
-            return convert_to_table(self.data, gen_output, self.threshold).astype(
+        if self.backend == "TabDDPM":
+            return convert_to_table_gq(self.data, gen_output, self.threshold).astype(
                 dtype=self.types
             )
         else:
-            return convert_to_table(self.data, gen_output, self.threshold)
+            return convert_to_table_ed(self.data, gen_output, self.threshold).astype(
+                dtype=self.types
+            )
