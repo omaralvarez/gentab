@@ -192,3 +192,6 @@ tuner.load_from_disk()
 evaluator.evaluate()
 evaluator.evaluate_baseline()
 ```
+## Acknowledgements
+
+This project has received support from the Spanish Ministry of Science and Innovation (AEI/PID2020-115734RB-C22 and AEI/RYC2018-025385-I), Xunta de Galicia (ED431F 2021/11) and EU-FEDER Galicia (ED431G 2019/01).
