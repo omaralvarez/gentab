@@ -184,3 +184,19 @@ tuner.load_from_disk()
 evaluator.evaluate()
 evaluator.evaluate_baseline()
 ```
+
+## 📜 Citation
+
+```
+@Article{mures2025mitigating,
+  author = {Mures, Omar A. Mures, Omar A. and Taibo, Javier and Padr{\'o}n, Emilio J. and Iglesias-Guitian, Jose A.},
+  title = {Mitigating Class Imbalance in Tabular Data through Neural Network-based Synthetic Data Generation: A Comprehensive Survey and Library},
+  year = {2025}
+}
+```
+
+## Acknowledgements
+
+This project has received support from the Spanish Ministry of Science and Innovation (AEI/PID2020-115734RB-C22 and AEI/RYC2018-025385-I), Xunta de Galicia (ED431F 2021/11) and EU-FEDER Galicia (ED431G 2019/01).
+
+<img src="https://www.urbansyn.org/images/funding/ministry.jpg" width="300"> 
